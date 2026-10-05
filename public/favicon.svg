@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Patitas">
+  <rect width="128" height="128" rx="32" fill="#0B3B3C"/>
+  <!-- 2 dedos sol sobre círculo ink -->
+  <ellipse cx="48" cy="38" rx="10" ry="14" transform="rotate(-8 48 38)" fill="#FFC857"/>
+  <ellipse cx="80" cy="38" rx="10" ry="14" transform="rotate(8 80 38)" fill="#FFC857"/>
+  <!-- pin mamey con hueco -->
+  <defs>
+    <mask id="favicon-hole">
+      <rect width="128" height="128" fill="white"/>
+      <circle cx="64" cy="78" r="9" fill="black"/>
+    </mask>
+  </defs>
+  <path d="M64 116 C64 116 34 95 34 76 C34 63 46 54 64 54 C82 54 94 63 94 76 C94 95 64 116 64 116Z" fill="#FF6B35" mask="url(#favicon-hole)"/>
+</svg>

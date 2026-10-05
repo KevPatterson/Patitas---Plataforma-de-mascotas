@@ -1,0 +1,83 @@
+const CACHE_NAME = 'patitas-v1';
+const RUNTIME_CACHE = 'patitas-runtime-v1';
+
+// Recursos esenciales para cachear durante la instalación
+const PRECACHE_URLS = [
+  '/',
+  '/index.html',
+  '/favicon.svg',
+  '/manifest.webmanifest',
+];
+
+// Instalación del Service Worker
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(PRECACHE_URLS);
+    })
+  );
+  self.skipWaiting();
+});
+
+// Activación y limpieza de cachés antiguos
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames
+          .filter((cacheName) => {
+            return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
+          })
+          .map((cacheName) => caches.delete(cacheName))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// Estrategia de caché: Network First con fallback a caché
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Solo cachear requests del mismo origen
+  if (url.origin !== location.origin) {
+    return;
+  }
+
+  // No cachear llamadas a la API
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // Estrategia Network First
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        // Solo cachear respuestas exitosas
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(RUNTIME_CACHE).then((cache) => {
+            cache.put(request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Si falla la red, intentar servir desde caché
+        return caches.match(request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Si no hay caché, retornar página offline básica
+          if (request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+          return new Response('Sin conexión', {
+            status: 503,
+            statusText: 'Service Unavailable',
+          });
+        });
+      })
+  );
+});

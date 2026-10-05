@@ -1,0 +1,9 @@
+project_id = "patitas"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
