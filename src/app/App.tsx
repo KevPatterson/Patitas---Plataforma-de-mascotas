@@ -22,28 +22,40 @@ import { HowItWorksPage } from '../routes/how-it-works-page';
 import { DashboardPage } from '../routes/dashboard-page';
 function NotFound() {
   return (
-    <div className="border-2 border-[#CFEFE6] bg-white rounded-[24px] p-10 max-w-lg mx-auto mt-10 text-center">
-      <div className="flex justify-center mb-6">
-        <Logo variant="mark" size={56} />
-      </div>
-      <h1
-        className="text-2xl md:text-[28px] text-[#0B3B3C] leading-tight mb-3"
-        style={{ fontFamily: '"Baloo 2", cursive', fontWeight: 800 }}
-      >
-        ¡Ups! Esta patita se perdió
-      </h1>
-      <p className="text-sm leading-relaxed text-[#0B3B3C]/70 mb-8">
-        La página que buscas no existe o se movió. Pero ninguna patita se queda sin casa — te ayudamos a volver.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <LinkButton href="/" variant="primary">
-          <Home className="h-4 w-4" aria-hidden="true" />
-          Volver al inicio
-        </LinkButton>
-        <LinkButton href="/buscar" variant="secondary">
-          <PawPrint className="h-4 w-4" aria-hidden="true" />
-          Buscar mascota
-        </LinkButton>
+    <div className="flex items-center justify-center min-h-[60vh] py-16 px-4">
+      <div className="max-w-lg w-full">
+        <div className="relative overflow-hidden rounded-3xl border-2 border-navy/10 bg-white p-10 text-center shadow-xl">
+          {/* Decoraciones de fondo */}
+          <div className="blob-decoration absolute top-5 right-5 w-20 h-20 bg-orange/10" />
+          <div className="blob-decoration absolute bottom-5 left-5 w-16 h-16 bg-turquoise/10" style={{ animationDelay: '2s' }} />
+          
+          <div className="relative z-10 space-y-6">
+            {/* Mascota perdida animada */}
+            <div className="flex justify-center mb-4">
+              <div className="text-6xl animate-shake">🐶</div>
+            </div>
+            
+            <div className="space-y-3">
+              <h1 className="font-display text-3xl md:text-4xl font-extrabold text-navy leading-tight">
+                ¡Ups! Esta patita se perdió
+              </h1>
+              <p className="text-navy/70 leading-relaxed">
+                La página que buscas no existe o se movió. Pero ninguna patita se queda sin casa — te ayudamos a volver.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+              <LinkButton href="/" variant="primary">
+                <Home className="h-4 w-4" aria-hidden="true" />
+                Volver al inicio
+              </LinkButton>
+              <LinkButton href="/buscar" variant="secondary">
+                <PawPrint className="h-4 w-4" aria-hidden="true" />
+                Buscar mascota
+              </LinkButton>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

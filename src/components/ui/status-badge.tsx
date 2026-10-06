@@ -23,29 +23,28 @@ const labels: Record<string, string> = {
 };
 
 const toneByStatus: Record<string, string> = {
-  perdida: 'bg-[#C2332C] text-white',
-  LOST: 'bg-[#C2332C] text-white',
-  encontrada: 'bg-[#0E7C66] text-white',
-  FOUND: 'bg-[#0E7C66] text-white',
-  adopcion: 'bg-[#FFC857] text-[#0B3B3C]',
-  ADOPTION: 'bg-[#FFC857] text-[#0B3B3C]',
-  abandonada: 'bg-[#FFC857] text-[#0B3B3C]',
-  ABANDONED: 'bg-[#FFC857] text-[#0B3B3C]',
-  avistamiento: 'bg-[#0E7C66] text-white',
-  SIGHTING: 'bg-[#0E7C66] text-white',
-  activa: 'bg-[#CFEFE6] text-[#0B3B3C] border border-[#0B3B3C]/10',
-  ACTIVE: 'bg-[#CFEFE6] text-[#0B3B3C] border border-[#0B3B3C]/10',
-  resuelta: 'bg-[#0B3B3C] text-[#F5FBF9]',
-  RESOLVED: 'bg-[#0B3B3C] text-[#F5FBF9]',
+  perdida: 'bg-lost text-white shadow-sm',
+  LOST: 'bg-lost text-white shadow-sm',
+  encontrada: 'bg-found text-white shadow-sm',
+  FOUND: 'bg-found text-white shadow-sm',
+  adopcion: 'bg-purple text-white shadow-sm',
+  ADOPTION: 'bg-purple text-white shadow-sm',
+  abandonada: 'bg-orange text-white shadow-sm',
+  ABANDONED: 'bg-orange text-white shadow-sm',
+  avistamiento: 'bg-turquoise text-white shadow-sm',
+  SIGHTING: 'bg-turquoise text-white shadow-sm',
+  activa: 'bg-turquoise/10 text-turquoise border border-turquoise/30',
+  ACTIVE: 'bg-turquoise/10 text-turquoise border border-turquoise/30',
+  resuelta: 'bg-navy text-cream shadow-sm',
+  RESOLVED: 'bg-navy text-cream shadow-sm',
 };
 
 export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
   const label = labels[status] ?? status;
-  const tone = toneByStatus[status] ?? 'bg-[#CFEFE6] text-[#0B3B3C]';
+  const tone = toneByStatus[status] ?? 'bg-navy/10 text-navy border border-navy/20';
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3.5 py-1 text-xs font-semibold tracking-wide ${tone} ${className}`}
-      style={{ fontFamily: 'Figtree, sans-serif' }}
+      className={`inline-flex items-center rounded-pill px-3.5 py-1.5 text-xs font-bold tracking-wide transition-all duration-base hover:scale-105 ${tone} ${className}`}
     >
       {label}
     </span>

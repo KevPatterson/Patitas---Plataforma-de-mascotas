@@ -4,7 +4,9 @@ import { useAuth } from '../app/auth-context';
 import { getMyPublications, deleteMyPublication, resolveMyPublication, type MyPublication } from '../lib/supabase/my-publications';
 import { PublicationCard } from '../components/publications/publication-card';
 import { Button } from '../components/ui/button';
-import { Trash2, CheckCircle, Eye, Loader2 } from 'lucide-react';
+import { PawLoader } from '../components/ui/paw-loader';
+import { EmptyState } from '../components/ui/empty-state';
+import { Trash2, CheckCircle, Eye, PlusCircle, FileText, User as UserIcon, PawPrint, TrendingUp } from 'lucide-react';
 
 type Tab = 'resumen' | 'publicaciones' | 'perfil';
 
@@ -40,6 +42,7 @@ export function DashboardPage() {
       navigate('/auth/login', { replace: true });
     }
   }, [authLoading, user, navigate]);
+
   useEffect(() => {
     if (user) {
       loadData();
@@ -83,9 +86,9 @@ export function DashboardPage() {
 
   if (authLoading || loading) {
     return (
-      <section className="soft-panel rounded-4xl p-8 text-center">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto text-(--color-primary)" />
-        <p className="mt-2 text-(--color-muted)">Cargando tu panel...</p>
+      <section className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <PawLoader size="lg" />
+        <p className="font-display text-lg font-semibold text-navy">Cargando tu panel...</p>
       </section>
     );
   }
@@ -93,33 +96,45 @@ export function DashboardPage() {
   if (!user) return null;
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'resumen', label: 'Resumen', icon: <Eye className="h-5 w-5" /> },
-    { id: 'publicaciones', label: 'Mis publicaciones', icon: <Eye className="h-5 w-5" /> },
-    { id: 'perfil', label: 'Perfil', icon: <Eye className="h-5 w-5" /> },
+    { id: 'resumen', label: 'Resumen', icon: <TrendingUp className="h-4 w-4" /> },
+    { id: 'publicaciones', label: 'Mis publicaciones', icon: <FileText className="h-4 w-4" /> },
+    { id: 'perfil', label: 'Perfil', icon: <UserIcon className="h-4 w-4" /> },
   ];
 
   return (
-    <section className="space-y-6 py-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-display text-4xl font-semibold text-(--color-text)">Panel de control</h1>
-          <p className="text-(--color-muted)">Gestiona tus publicaciones y tu perfil</p>
+    <section className="space-y-8 py-8">
+      {/* Header del dashboard */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
+        <div className="blob-decoration absolute top-5 right-5 w-24 h-24 bg-purple/20" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <PawPrint className="h-5 w-5 text-orange animate-paw-bounce" />
+              <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Tu espacio</span>
+            </div>
+            <h1 className="font-display text-4xl font-extrabold text-navy">Panel de control</h1>
+            <p className="text-navy/60 mt-1">Gestiona tus publicaciones y tu perfil</p>
+          </div>
+          <Link to="/publicar">
+            <Button variant="primary" className="gap-2 shadow-lg">
+              <PlusCircle className="h-5 w-5" />
+              Publicar caso
+            </Button>
+          </Link>
         </div>
-        <Link to="/publicar">
-          <Button className="gap-2"><span>+</span> Publicar caso</Button>
-        </Link>
       </div>
 
-      <nav className="flex gap-2 border-b-2 border-[#CFEFE6] pb-2" aria-label="Pestañas del panel">
+      {/* Tabs de navegación */}
+      <nav className="flex flex-wrap gap-2 border-b-2 border-navy/10 pb-2" aria-label="Pestañas del panel">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={[
-              'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition',
+              'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-base ease-smooth',
               activeTab === tab.id
-                ? 'bg-[#0F3D33] text-white'
-                : 'text-[#0B3B3C]/70 hover:bg-[#0B3B3C]/5 hover:text-[#0B3B3C] dark:text-[#F5FBF9]/70 dark:hover:bg-white/10',
+                ? 'bg-navy text-white shadow-md scale-105'
+                : 'text-navy/70 hover:bg-navy/5 hover:text-navy hover:scale-102',
             ].join(' ')}
           >
             {tab.icon} {tab.label}
@@ -127,19 +142,31 @@ export function DashboardPage() {
         ))}
       </nav>
 
+      {/* Contenido según tab activo */}
       {activeTab === 'resumen' && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="soft-panel rounded-3xl p-6">
-            <p className="text-sm font-medium text-(--color-muted)">Publicaciones activas</p>
-            <p className="font-display text-4xl font-bold text-(--color-text)">{stats.active}</p>
+        <div className="grid gap-6 sm:grid-cols-3">
+          <div className="group rounded-2xl border-2 border-turquoise/20 bg-white p-6 shadow-md hover:shadow-lg transition-all duration-base hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-navy/70">Publicaciones activas</p>
+              <Eye className="h-5 w-5 text-turquoise/40 group-hover:text-turquoise transition-colors" />
+            </div>
+            <p className="font-display text-4xl font-extrabold text-turquoise">{stats.active}</p>
           </div>
-          <div className="soft-panel rounded-3xl p-6">
-            <p className="text-sm font-medium text-(--color-muted)">Casos resueltos</p>
-            <p className="font-display text-4xl font-bold text-(--color-success)">{stats.resolved}</p>
+          
+          <div className="group rounded-2xl border-2 border-found/20 bg-white p-6 shadow-md hover:shadow-lg transition-all duration-base hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-navy/70">Casos resueltos</p>
+              <CheckCircle className="h-5 w-5 text-found/40 group-hover:text-found transition-colors" />
+            </div>
+            <p className="font-display text-4xl font-extrabold text-found">{stats.resolved}</p>
           </div>
-          <div className="soft-panel rounded-3xl p-6">
-            <p className="text-sm font-medium text-(--color-muted)">Total publicaciones</p>
-            <p className="font-display text-4xl font-bold text-(--color-text)">{stats.total}</p>
+          
+          <div className="group rounded-2xl border-2 border-purple/20 bg-white p-6 shadow-md hover:shadow-lg transition-all duration-base hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-navy/70">Total publicaciones</p>
+              <FileText className="h-5 w-5 text-purple/40 group-hover:text-purple transition-colors" />
+            </div>
+            <p className="font-display text-4xl font-extrabold text-purple">{stats.total}</p>
           </div>
         </div>
       )}
@@ -147,14 +174,21 @@ export function DashboardPage() {
       {activeTab === 'publicaciones' && (
         <div className="space-y-4">
           {publications.length === 0 ? (
-            <div className="soft-panel rounded-4xl p-8 text-center">
-              <p className="text-(--color-muted)">No tienes publicaciones aún.</p>
-              <Link to="/publicar" className="mt-4 inline-block">
-                <Button>Crear mi primera publicación</Button>
-              </Link>
-            </div>
+            <EmptyState
+              title="No tienes publicaciones aún"
+              description="Crea tu primera publicación y ayuda a una patita a volver a casa."
+              illustration="dog"
+              action={
+                <Link to="/publicar">
+                  <Button variant="primary">
+                    <PlusCircle className="h-5 w-5" />
+                    Crear mi primera publicación
+                  </Button>
+                </Link>
+              }
+            />
           ) : (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {publications.map((pub) => (
                 <div key={pub.id} className="relative">
                   <PublicationCard
@@ -179,24 +213,26 @@ export function DashboardPage() {
                       coverImageUrl: pub.coverImageUrl,
                     }}
                   />
-                  <div className="absolute top-3 right-3 flex gap-1">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleResolve(pub.id)}
-                      disabled={actionLoading === pub.id || pub.status === 'RESOLVED'}
-                      aria-label="Marcar como resuelto"
-                      className="p-2 min-h-[36px] px-3"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
+                  <div className="absolute top-3 right-3 flex gap-2 z-10">
+                    {pub.status !== 'RESOLVED' && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleResolve(pub.id)}
+                        disabled={actionLoading === pub.id}
+                        aria-label="Marcar como resuelto"
+                        className="p-2 min-h-[36px] px-3 bg-white/90 hover:bg-found/10 border border-navy/10"
+                      >
+                        <CheckCircle className="h-4 w-4 text-found" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       onClick={() => handleDelete(pub.id)}
                       disabled={actionLoading === pub.id}
-                      className="p-2 min-h-[36px] px-3 text-(--color-danger) hover:bg-[rgba(181,76,69,0.1)]"
+                      className="p-2 min-h-[36px] px-3 bg-white/90 hover:bg-lost/10 border border-navy/10"
                       aria-label="Eliminar"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-lost" />
                     </Button>
                   </div>
                 </div>
@@ -207,24 +243,52 @@ export function DashboardPage() {
       )}
 
       {activeTab === 'perfil' && (
-        <div className="soft-panel rounded-4xl p-6 max-w-md">
-          <h2 className="font-display text-2xl font-semibold text-(--color-text) mb-4">Tu perfil</h2>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-medium text-(--color-muted)">Usuario</p>
-              <p className="font-semibold text-(--color-text)">{user.user_metadata?.username ?? '—'}</p>
+        <div className="max-w-2xl">
+          <div className="rounded-2xl border-2 border-navy/10 bg-white p-8 shadow-md">
+            <div className="flex items-center gap-4 mb-6 pb-6 border-b-2 border-navy/10">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange to-turquoise flex items-center justify-center text-white text-2xl font-display font-extrabold">
+                {user.user_metadata?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
+              </div>
+              <div>
+                <h2 className="font-display text-2xl font-extrabold text-navy">Tu perfil</h2>
+                <p className="text-sm text-navy/60">Información de tu cuenta</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-(--color-muted)">Nombre completo</p>
-              <p className="font-semibold text-(--color-text)">{user.user_metadata?.full_name ?? '—'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-(--color-muted)">Correo</p>
-              <p className="font-semibold text-(--color-text)">{user.email}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-(--color-muted)">Miembro desde</p>
-              <p className="font-semibold text-(--color-text)">{new Date(user.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}</p>
+            
+            <div className="space-y-5">
+              <div className="flex items-start justify-between py-3 border-b border-navy/5">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-navy/60 mb-1">Usuario</p>
+                  <p className="font-semibold text-navy">{user.user_metadata?.username ?? '—'}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start justify-between py-3 border-b border-navy/5">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-navy/60 mb-1">Nombre completo</p>
+                  <p className="font-semibold text-navy">{user.user_metadata?.full_name ?? '—'}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start justify-between py-3 border-b border-navy/5">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-navy/60 mb-1">Correo</p>
+                  <p className="font-semibold text-navy">{user.email}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start justify-between py-3">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-navy/60 mb-1">Miembro desde</p>
+                  <p className="font-semibold text-navy">
+                    {new Date(user.created_at).toLocaleDateString('es-ES', { 
+                      year: 'numeric', 
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

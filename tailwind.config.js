@@ -5,14 +5,57 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#0B3B3C',
-        mamey: '#FF6B35',
-        sol: '#FFC857',
-        espuma: '#CFEFE6',
-        arena: '#F5FBF9',
-        perdida: '#C2332C',
-        encontrada: '#0E7C66',
-        adopcion: '#FFC857',
+        // Paleta Patitas Anime Edition
+        navy: {
+          DEFAULT: '#1a2332',
+          light: '#2a3650',
+          dark: '#0f1621',
+        },
+        cream: {
+          DEFAULT: '#fef8f0',
+          dark: '#f5eee3',
+        },
+        orange: {
+          DEFAULT: '#ff8c42',
+          light: '#ffaa6f',
+          dark: '#f56e20',
+        },
+        turquoise: {
+          DEFAULT: '#4ecdc4',
+          light: '#7eddd6',
+          dark: '#3bb5ac',
+        },
+        purple: {
+          DEFAULT: '#a78bfa',
+          light: '#c4b5fd',
+          dark: '#8b5cf6',
+        },
+        // Estados de mascotas
+        lost: {
+          DEFAULT: '#ef4444',
+          light: '#f87171',
+          dark: '#dc2626',
+        },
+        found: {
+          DEFAULT: '#10b981',
+          light: '#34d399',
+          dark: '#059669',
+        },
+        adoption: {
+          DEFAULT: '#a78bfa',
+          light: '#c4b5fd',
+          dark: '#8b5cf6',
+        },
+        // Legacy (compatibilidad)
+        ink: '#1a2332',
+        mamey: '#ff8c42',
+        sol: '#ffc857',
+        espuma: '#4ecdc4',
+        arena: '#fef8f0',
+        perdida: '#ef4444',
+        encontrada: '#10b981',
+        adopcion: '#a78bfa',
+        // Shadcn tokens
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -52,9 +95,39 @@ export default {
         sans: ['Figtree', 'sans-serif'],
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        '2xl': 'var(--radius-2xl)',
+        '3xl': 'var(--radius-3xl)',
+        pill: 'var(--radius-pill)',
+      },
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
+        xl: 'var(--shadow-xl)',
+        paw: 'var(--shadow-paw)',
+      },
+      transitionDuration: {
+        fast: 'var(--duration-fast)',
+        base: 'var(--duration-base)',
+        slow: 'var(--duration-slow)',
+        slower: 'var(--duration-slower)',
+      },
+      transitionTimingFunction: {
+        smooth: 'var(--ease-smooth)',
+        bounce: 'var(--ease-bounce)',
+        soft: 'var(--ease-soft)',
+      },
+      animation: {
+        'paw-bounce': 'paw-bounce 2s ease-in-out infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'paw-pulse': 'paw-pulse 1.2s ease-in-out infinite',
+        'shake': 'shake 0.5s ease-in-out',
+        'fade-up': 'fade-up 0.6s var(--ease-smooth) forwards',
+        'blob-morph': 'blob-morph 8s ease-in-out infinite',
       },
     },
   },

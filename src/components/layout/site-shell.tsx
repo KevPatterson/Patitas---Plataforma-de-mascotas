@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, type LucideIcon } from 'lucide-react';
+import { Bell, Search, MapPin, PlusCircle, type LucideIcon } from 'lucide-react';
 import { Logo } from '../Logo';
 import { useAuth } from '../../app/auth-context';
 import { getUnreadNotificationsCount } from '../../lib/supabase/notifications';
@@ -16,17 +16,17 @@ function NavItem({ href, label, Icon, badge }: { href: string; label: string; Ic
     <Link
       to={href}
       className={[
-        'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition',
+        'flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-base ease-smooth relative',
         isActive
-          ? 'bg-[#0F3D33] text-white'
-          : 'text-[#0B3B3C]/70 hover:bg-[#0B3B3C]/5 hover:text-[#0B3B3C] dark:text-[#F5FBF9]/70 dark:hover:bg-white/10',
+          ? 'bg-navy text-white shadow-md'
+          : 'text-navy/70 hover:bg-navy/5 hover:text-navy hover:scale-105',
       ].join(' ')}
       aria-current={isActive ? 'page' : undefined}
     >
-      <Icon className="h-5 w-5" aria-hidden="true" />
+      <Icon className="h-4 w-4" aria-hidden="true" />
       {label}
       {badge && badge > 0 && (
-        <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-(--color-danger) text-white text-[10px] font-bold">
+        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-lost text-white text-[10px] font-bold shadow-sm animate-paw-pulse">
           {badge > 9 ? '9+' : badge}
         </span>
       )}
@@ -61,44 +61,111 @@ export function SiteShell({ children }: SiteShellProps) {
   }, [user, authLoading]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F5FBF9] dark:bg-[#0B3B3C] dark:text-[#F5FBF9]">
-      <header className="sticky top-0 z-40 border-b-2 border-[#CFEFE6] bg-[#F5FBF9]/95 backdrop-blur supports-[backdrop-filter]:bg-[#F5FBF9]/80 dark:border-white/10 dark:bg-[#0B3B3C]">
+    <div className="flex min-h-screen flex-col bg-cream">
+      {/* Header con nueva estética */}
+      <header className="sticky top-0 z-40 border-b-2 border-navy/10 bg-white/95 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-3 text-[#0B3B3C] no-underline dark:text-[#F5FBF9]" aria-label="Patitas - inicio">
-            <Logo variant="full" size={36} />
+          <Link 
+            to="/" 
+            className="flex items-center gap-3 text-navy no-underline transition-transform duration-base hover:scale-105" 
+            aria-label="Patitas - inicio"
+          >
+            <Logo variant="full" size={36} animated />
           </Link>
+          
           <nav className="hidden items-center gap-2 md:flex" aria-label="Navegación principal">
-            <NavItem href="/buscar" label="Buscar" Icon={Bell} />
-            <NavItem href="/mapa" label="Mapa" Icon={Bell} />
+            <NavItem href="/buscar" label="Buscar" Icon={Search} />
+            <NavItem href="/mapa" label="Mapa" Icon={MapPin} />
+            
+            {/* CTA destacado */}
             <Link
               to="/publicar"
-              className="inline-flex min-h-[44px] items-center justify-center rounded-[20px] bg-[#FF6B35] px-5 py-2 text-sm font-extrabold text-[#0B3B3C] shadow-sm transition hover:brightness-95"
+              className="group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-orange px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:shadow-lg hover:scale-105 hover:bg-orange-dark active:scale-95"
               style={{ fontFamily: '"Baloo 2", cursive' }}
             >
+              <PlusCircle className="h-4 w-4 transition-transform duration-base group-hover:rotate-90" aria-hidden="true" />
               Publicar
             </Link>
+            
             {user && (
               <NavItem href="/notificaciones" label="Notificaciones" Icon={Bell} badge={unreadCount} />
             )}
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-24 sm:px-6 lg:px-8">{children}</main>
-      <footer className="border-t-2 border-[#CFEFE6] bg-[#0B3B3C] text-[#CFEFE6] dark:border-white/10">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-8 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3 text-[#F5FBF9]">
-            <Logo variant="full" size={28} className="text-[#F5FBF9]" />
+
+      {/* Main content */}
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-24 sm:px-6 lg:px-8">
+        {children}
+      </main>
+
+      {/* Footer rediseñado con personalidad */}
+      <footer className="relative border-t-2 border-navy/10 bg-navy text-cream overflow-hidden">
+        {/* Decoración de fondo */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-10 left-10 w-20 h-20">
+            <svg viewBox="0 0 120 120" fill="currentColor">
+              <ellipse cx="24" cy="48" rx="9" ry="12" transform="rotate(-22 24 48)" />
+              <ellipse cx="45" cy="28" rx="9" ry="13" transform="rotate(-8 45 28)" />
+              <ellipse cx="75" cy="28" rx="9" ry="13" transform="rotate(8 75 28)" />
+              <ellipse cx="96" cy="48" rx="9" ry="12" transform="rotate(22 96 48)" />
+              <path d="M60 110 C60 110 33 91 33 74 C33 62 44 54 60 54 C76 54 87 62 87 74 C87 91 60 110 60 110Z" />
+            </svg>
           </div>
-          <p className="max-w-md text-sm leading-6 text-[#CFEFE6]" style={{ fontFamily: 'Figtree, sans-serif' }}>
-            Que ninguna patita se quede sin casa.
-            <span className="block text-xs opacity-80">Plataforma comunitaria · Hecho con cercanía en Cuba</span>
-          </p>
-          <nav className="flex gap-4 text-xs font-semibold tracking-wide" aria-label="Enlaces del pie">
-            <Link to="/buscar" className="hover:text-white">Buscar</Link>
-            <Link to="/adopciones" className="hover:text-white">Adopciones</Link>
-            <Link to="/mapa" className="hover:text-white">Mapa</Link>
+          <div className="absolute bottom-10 right-20 w-16 h-16 transform rotate-12">
+            <svg viewBox="0 0 120 120" fill="currentColor">
+              <ellipse cx="24" cy="48" rx="9" ry="12" transform="rotate(-22 24 48)" />
+              <ellipse cx="45" cy="28" rx="9" ry="13" transform="rotate(-8 45 28)" />
+              <ellipse cx="75" cy="28" rx="9" ry="13" transform="rotate(8 75 28)" />
+              <ellipse cx="96" cy="48" rx="9" ry="12" transform="rotate(22 96 48)" />
+              <path d="M60 110 C60 110 33 91 33 74 C33 62 44 54 60 54 C76 54 87 62 87 74 C87 91 60 110 60 110Z" />
+            </svg>
+          </div>
+        </div>
+
+        <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-cream">
+              <Logo variant="full" size={32} className="text-cream" />
+            </div>
+            <p className="max-w-md font-display text-lg leading-relaxed text-cream/90">
+              🐾 Cada patita merece volver a casa
+            </p>
+            <p className="text-sm text-cream/60">
+              Plataforma comunitaria · Hecho con ❤️ en Cuba
+            </p>
+          </div>
+          
+          <nav className="flex flex-col gap-2 text-sm font-semibold" aria-label="Enlaces del pie">
+            <Link 
+              to="/buscar" 
+              className="text-cream/80 hover:text-orange transition-colors duration-base"
+            >
+              Buscar mascotas
+            </Link>
+            <Link 
+              to="/adopciones" 
+              className="text-cream/80 hover:text-purple transition-colors duration-base"
+            >
+              Adopciones
+            </Link>
+            <Link 
+              to="/mapa" 
+              className="text-cream/80 hover:text-turquoise transition-colors duration-base"
+            >
+              Mapa de casos
+            </Link>
+            <Link 
+              to="/como-funciona" 
+              className="text-cream/80 hover:text-cream transition-colors duration-base"
+            >
+              Cómo funciona
+            </Link>
           </nav>
         </div>
+
+        {/* Barra decorativa inferior */}
+        <div className="h-2 bg-gradient-to-r from-orange via-turquoise to-purple" />
       </footer>
     </div>
   );

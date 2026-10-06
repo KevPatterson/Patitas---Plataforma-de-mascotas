@@ -4,16 +4,16 @@ type CasePillProps = {
 };
 
 const toneClasses: Record<CasePillProps['tone'], string> = {
-  lost: 'bg-[#C2332C] text-white',
-  found: 'bg-[#0E7C66] text-white',
-  abandoned: 'bg-[#FFC857] text-[#0B3B3C]',
-  adoption: 'bg-[#FFC857] text-[#0B3B3C]',
-  sighting: 'bg-[#0E7C66] text-white',
+  lost: 'bg-lost text-white shadow-sm',
+  found: 'bg-found text-white shadow-sm',
+  abandoned: 'bg-orange text-white shadow-sm',
+  adoption: 'bg-purple text-white shadow-sm',
+  sighting: 'bg-turquoise text-white shadow-sm',
 };
 
 export function CasePill({ label, tone }: CasePillProps) {
   return (
-    <span className={`inline-flex items-center rounded-full px-3.5 py-1 text-xs font-semibold tracking-wide ${toneClasses[tone]}`}>
+    <span className={`inline-flex items-center rounded-pill px-3.5 py-1.5 text-xs font-bold tracking-wide transition-all duration-base hover:scale-105 ${toneClasses[tone]}`}>
       {label}
     </span>
   );

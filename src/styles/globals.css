@@ -1,63 +1,127 @@
 @import 'tailwindcss';
 
 @theme inline {
-  --color-ink: #0b3b3c;
-  --color-mamey: #ff6b35;
+  /* Paleta Patitas Anime Edition */
+  /* Navy - Color principal estructural */
+  --color-navy: #1a2332;
+  --color-navy-light: #2a3650;
+  --color-navy-dark: #0f1621;
+  
+  /* Cream - Fondo cálido */
+  --color-cream: #fef8f0;
+  --color-cream-dark: #f5eee3;
+  
+  /* Orange - Acento principal */
+  --color-orange: #ff8c42;
+  --color-orange-light: #ffaa6f;
+  --color-orange-dark: #f56e20;
+  
+  /* Turquoise - Acento secundario */
+  --color-turquoise: #4ecdc4;
+  --color-turquoise-light: #7eddd6;
+  --color-turquoise-dark: #3bb5ac;
+  
+  /* Purple - Adopción */
+  --color-purple: #a78bfa;
+  --color-purple-light: #c4b5fd;
+  --color-purple-dark: #8b5cf6;
+  
+  /* Lost - Rojo/coral */
+  --color-lost: #ef4444;
+  --color-lost-light: #f87171;
+  --color-lost-dark: #dc2626;
+  
+  /* Found - Verde/turquesa */
+  --color-found: #10b981;
+  --color-found-light: #34d399;
+  --color-found-dark: #059669;
+  
+  /* Colores legacy (compatibilidad) */
+  --color-ink: #1a2332;
+  --color-mamey: #ff8c42;
   --color-sol: #ffc857;
-  --color-espuma: #cfefe6;
-  --color-arena: #f5fbf9;
-  --color-perdida: #c2332c;
-  --color-encontrada: #0e7c66;
-  --color-adopcion: #ffc857;
+  --color-espuma: #4ecdc4;
+  --color-arena: #fef8f0;
+  --color-perdida: #ef4444;
+  --color-encontrada: #10b981;
+  --color-adopcion: #a78bfa;
+  
+  /* Tipografía */
   --font-display: 'Baloo 2', cursive;
   --font-sans: 'Figtree', sans-serif;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius-pill: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(26, 35, 50, 0.04);
+  --shadow-md: 0 4px 16px rgba(26, 35, 50, 0.08);
+  --shadow-lg: 0 8px 24px rgba(26, 35, 50, 0.12);
+  --shadow-xl: 0 16px 40px rgba(26, 35, 50, 0.16);
+  --shadow-paw: 0 8px 32px rgba(255, 140, 66, 0.2);
+  
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 350ms;
+  --duration-slower: 500ms;
+  
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @layer base {
   :root {
-    /* shadcn tokens mapped to Patitas - light = arena / ink */
-    --background: 156 40% 97%;
-    --foreground: 182 69% 14%;
+    /* Tokens Patitas Anime Edition - Modo claro */
+    --background: 39 100% 97%;  /* cream */
+    --foreground: 220 24% 15%;  /* navy */
     --card: 0 0% 100%;
-    --card-foreground: 182 69% 14%;
+    --card-foreground: 220 24% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 182 69% 14%;
-    --primary: 16 100% 60%;
-    --primary-foreground: 182 69% 14%;
-    --secondary: 162 47% 93%;
-    --secondary-foreground: 182 69% 14%;
-    --muted: 162 47% 93%;
-    --muted-foreground: 182 20% 38%;
-    --accent: 40 100% 67%;
-    --accent-foreground: 182 69% 14%;
-    --destructive: 3 63% 47%;
+    --popover-foreground: 220 24% 15%;
+    --primary: 22 100% 63%;  /* orange */
+    --primary-foreground: 220 24% 15%;
+    --secondary: 177 51% 55%;  /* turquoise */
+    --secondary-foreground: 220 24% 15%;
+    --muted: 39 100% 97%;
+    --muted-foreground: 220 15% 45%;
+    --accent: 22 100% 63%;
+    --accent-foreground: 220 24% 15%;
+    --destructive: 0 84% 60%;  /* lost red */
     --destructive-foreground: 0 0% 100%;
-    --border: 162 47% 93%;
-    --input: 162 47% 93%;
-    --ring: 16 100% 60%;
+    --border: 39 62% 93%;
+    --input: 39 62% 93%;
+    --ring: 22 100% 63%;
     --radius: 1rem;
   }
 
   .dark {
-    --background: 182 69% 14%;
-    --foreground: 156 40% 97%;
-    --card: 183 30% 18%;
-    --card-foreground: 156 40% 97%;
-    --popover: 183 30% 18%;
-    --popover-foreground: 156 40% 97%;
-    --primary: 16 100% 60%;
-    --primary-foreground: 182 69% 14%;
-    --secondary: 183 20% 24%;
-    --secondary-foreground: 156 40% 97%;
-    --muted: 183 20% 24%;
-    --muted-foreground: 160 12% 72%;
-    --accent: 40 100% 67%;
-    --accent-foreground: 182 69% 14%;
-    --destructive: 3 63% 47%;
+    --background: 220 24% 15%;
+    --foreground: 39 100% 97%;
+    --card: 220 20% 18%;
+    --card-foreground: 39 100% 97%;
+    --popover: 220 20% 18%;
+    --popover-foreground: 39 100% 97%;
+    --primary: 22 100% 63%;
+    --primary-foreground: 220 24% 15%;
+    --secondary: 177 51% 55%;
+    --secondary-foreground: 220 24% 15%;
+    --muted: 220 20% 24%;
+    --muted-foreground: 220 12% 72%;
+    --accent: 22 100% 63%;
+    --accent-foreground: 220 24% 15%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 183 18% 26%;
-    --input: 183 18% 26%;
-    --ring: 16 100% 60%;
+    --border: 220 18% 26%;
+    --input: 220 18% 26%;
+    --ring: 22 100% 63%;
   }
 }
 
@@ -73,18 +137,23 @@
   body {
     margin: 0;
     min-width: 320px;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: 'Figtree', sans-serif;
+    background-color: var(--color-cream);
+    color: var(--color-navy);
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1,
   h2,
   h3,
   h4,
+  h5,
+  h6,
   .font-display {
-    font-family: 'Baloo 2', cursive;
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -93,21 +162,156 @@
 }
 
 ::selection {
-  background: rgba(255, 107, 53, 0.22);
+  background: rgba(255, 140, 66, 0.25);
+  color: var(--color-navy);
 }
 
+/* Panel suave con nueva estética */
 .soft-panel {
-  background: hsl(var(--card));
-  border: 2px solid hsl(var(--border));
-  box-shadow: 0 18px 50px rgba(11, 59, 60, 0.08);
+  background: white;
+  border: 2px solid rgba(26, 35, 50, 0.08);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  transition: all var(--duration-base) var(--ease-smooth);
 }
 
+.soft-panel:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Balance de texto */
 .text-balance {
   text-wrap: balance;
 }
 
-/* Focus visible ring mamey */
+/* Focus visible con ring naranja */
 *:focus-visible {
-  outline: 2px solid hsl(var(--ring));
+  outline: 2px solid var(--color-orange);
   outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Animación de huella */
+@keyframes paw-bounce {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-5deg);
+  }
+}
+
+.animate-paw {
+  animation: paw-bounce 2s ease-in-out infinite;
+}
+
+/* Animación de flotación suave */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Loader de huella */
+@keyframes paw-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+}
+
+.loader-paw {
+  animation: paw-pulse 1.2s ease-in-out infinite;
+}
+
+/* Efecto de shake para errores */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Gradiente hero anime */
+.hero-gradient {
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 140, 66, 0.15), transparent 40%),
+    radial-gradient(circle at 80% 10%, rgba(78, 205, 196, 0.12), transparent 35%),
+    radial-gradient(circle at 50% 80%, rgba(167, 139, 250, 0.1), transparent 40%);
+}
+
+/* Blob decorativo */
+.blob-decoration {
+  position: absolute;
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  opacity: 0.3;
+  filter: blur(40px);
+  animation: blob-morph 8s ease-in-out infinite;
+}
+
+@keyframes blob-morph {
+  0%, 100% {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    transform: rotate(0deg);
+  }
+  50% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: rotate(180deg);
+  }
+}
+
+/* Scroll reveal */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s var(--ease-smooth) forwards;
+}
+
+/* Reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-paw,
+  .animate-float,
+  .loader-paw,
+  .blob-decoration {
+    animation: none !important;
+  }
 }

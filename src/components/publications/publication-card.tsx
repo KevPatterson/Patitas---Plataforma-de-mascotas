@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { PawPrint } from 'lucide-react';
+import { PawPrint, MapPin, Calendar } from 'lucide-react';
 import type { PublicationSummary } from '../../lib/supabase/publication-search';
 import { StatusBadge } from '../ui/status-badge';
 
@@ -15,45 +15,106 @@ const typeLabels: Record<PublicationSummary['type'], string> = {
   SIGHTING: 'Avistamiento',
 };
 
+const typeEmojis: Record<PublicationSummary['type'], string> = {
+  LOST: '🔴',
+  FOUND: '🟢',
+  ABANDONED: '🟠',
+  ADOPTION: '🟣',
+  SIGHTING: '🔵',
+};
+
 export function PublicationCard({ publication }: PublicationCardProps) {
+  const formattedDate = new Date(publication.publishedAt).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+  });
+
   return (
     <Link
       to={`/p/${publication.slug}`}
-      className="group block overflow-hidden rounded-[24px] border-2 border-[#CFEFE6] bg-white shadow-[0_12px_32px_rgba(11,59,60,0.08)] transition hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(11,59,60,0.12)] dark:border-white/15 dark:bg-white"
+      className="group block overflow-hidden rounded-2xl border-2 border-navy/10 bg-white shadow-md transition-all duration-base ease-smooth hover:-translate-y-2 hover:shadow-xl hover:border-orange/30"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#CFEFE6]/40">
+      {/* Imagen con overlay decorativo */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-orange/10 to-turquoise/10">
         {publication.coverImageUrl ? (
           <img
             src={publication.coverImageUrl}
             alt={publication.title}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-110"
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-[#0B3B3C]/30">
-            <PawPrint className="h-12 w-12" aria-hidden="true" />
+          <div className="flex h-full w-full items-center justify-center text-navy/20">
+            <PawPrint className="h-16 w-16 animate-paw-bounce" aria-hidden="true" strokeWidth={1.5} />
           </div>
         )}
+        
+        {/* Badge de tipo en esquina superior izquierda */}
         <div className="absolute left-3 top-3">
           <StatusBadge status={publication.type} />
         </div>
+        
+        {/* Badge de estado en esquina superior derecha */}
+        <div className="absolute right-3 top-3">
+          <StatusBadge status={publication.status} />
+        </div>
+
+        {/* Decoración de huella en hover */}
+        <div className="absolute bottom-3 right-3 opacity-0 transition-opacity duration-base group-hover:opacity-30">
+          <PawPrint className="h-8 w-8 text-white" strokeWidth={2} />
+        </div>
       </div>
+
+      {/* Contenido */}
       <div className="space-y-3 p-5">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="font-display text-[22px] font-extrabold leading-tight text-[#0B3B3C]" style={{ fontFamily: '"Baloo 2", cursive' }}>
+        {/* Título con emoji */}
+        <div className="flex items-start gap-2">
+          <span className="text-lg flex-shrink-0 mt-0.5">{typeEmojis[publication.type]}</span>
+          <h2 className="font-display text-xl font-extrabold leading-tight text-navy group-hover:text-orange transition-colors">
             {publication.title}
           </h2>
-          <StatusBadge status={publication.status} className="shrink-0" />
         </div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#0B3B3C]/60">{typeLabels[publication.type]}</p>
-        <p className="line-clamp-3 text-sm leading-6 text-[#0B3B3C]/70" style={{ fontFamily: 'Figtree, sans-serif' }}>
+
+        {/* Descripción */}
+        <p className="line-clamp-2 text-sm leading-relaxed text-navy/70">
           {publication.description}
         </p>
-        <p className="text-sm font-semibold text-[#0B3B3C]" style={{ fontFamily: 'Figtree, sans-serif' }}>
-          {[publication.municipality, publication.province].filter(Boolean).join(', ')}
-          {publication.zone ? ` · ${publication.zone}` : ''}
-        </p>
+
+        {/* Metadatos */}
+        <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-navy/60">
+          {(publication.municipality || publication.province) && (
+            <div className="flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>
+                {[publication.municipality, publication.province].filter(Boolean).join(', ')}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center gap-1">
+            <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{formattedDate}</span>
+          </div>
+        </div>
+
+        {/* Detalles adicionales */}
+        {(publication.species || publication.breed) && (
+          <div className="flex flex-wrap gap-2">
+            {publication.species && (
+              <span className="inline-flex items-center rounded-lg bg-navy/5 px-2.5 py-1 text-xs font-medium text-navy">
+                {publication.species}
+              </span>
+            )}
+            {publication.breed && (
+              <span className="inline-flex items-center rounded-lg bg-navy/5 px-2.5 py-1 text-xs font-medium text-navy">
+                {publication.breed}
+              </span>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Barra inferior decorativa en hover */}
+      <div className="h-1 bg-gradient-to-r from-orange via-turquoise to-purple transform scale-x-0 group-hover:scale-x-100 transition-transform duration-base origin-left" />
     </Link>
   );
 }
