@@ -7,6 +7,7 @@ import { useAuth } from '../app/auth-context';
 import { Button, LinkButton } from '../components/ui/button';
 import { TextField } from '../components/ui/text-field';
 import { TextareaField } from '../components/ui/textarea-field';
+import { PawLoader } from '../components/ui/paw-loader';
 import { createLocation, createPublication, uploadPublicationImages, createPet } from '../lib/supabase/publications';
 import { buildPublicationSlug } from '../lib/utils/slug';
 import { publicationFormSchema, type PublicationFormValues } from '../lib/validations/publication';
@@ -201,21 +202,33 @@ export function PublishPage() {
 
   return (
     <section className="space-y-6 py-8">
-      <div className="max-w-3xl space-y-4">
-        <p className="text-xs font-bold uppercase tracking-[0.28em] text-(--color-muted)">Crear publicación</p>
-        <h1 className="font-display text-4xl font-semibold text-(--color-text)">{stepTitle}</h1>
-        <p className="max-w-2xl text-(--color-muted)">
-          El wizard guía la publicación en pasos cortos para que el caso quede estructurado y fácil de buscar.
-        </p>
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
+        <div className="blob-decoration absolute top-5 right-5 w-24 h-24 bg-purple/20" />
+        
+        <div className="relative space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Publicar caso</span>
+          </div>
+          <h1 className="font-display text-4xl md:text-5xl font-extrabold text-navy">
+            {stepTitle}
+          </h1>
+          <p className="text-lg text-navy/70 max-w-2xl">
+            El wizard guía la publicación en pasos cortos para que el caso quede estructurado y fácil de buscar.
+          </p>
+        </div>
       </div>
 
       {loading ? (
-        <div className="soft-panel rounded-4xl p-6">Cargando sesión...</div>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <PawLoader size="lg" />
+          <p className="font-display text-lg font-semibold text-navy">Cargando sesión...</p>
+        </div>
       ) : user ? (
-        <div className="soft-panel rounded-4xl p-6 space-y-6">
-          <div className="flex items-center justify-between gap-4 text-sm font-semibold text-(--color-muted)">
+        <div className="rounded-3xl border-2 border-navy/10 bg-white p-6 lg:p-8 space-y-6 shadow-md">
+          <div className="flex items-center justify-between gap-4 text-sm font-semibold text-navy/70">
             <span>Paso {step} de {totalSteps}</span>
-            <span>{user.email}</span>
+            <span className="text-turquoise">{user.email}</span>
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2" aria-label="Pasos del wizard">
@@ -223,12 +236,12 @@ export function PublishPage() {
               <div
                 key={s}
                 className={[
-                  'flex-shrink-0 size-8 rounded-full flex items-center justify-center text-sm font-bold transition',
+                  'shrink-0 size-10 rounded-full flex items-center justify-center text-sm font-bold transition-all',
                   s === step
-                    ? 'bg-[#FF6B35] text-white'
+                    ? 'bg-orange text-white shadow-paw scale-110'
                     : s < step
-                    ? 'bg-[#0F3D33] text-white'
-                    : 'bg-[#CFEFE6] text-[#0B3B3C]/60',
+                    ? 'bg-turquoise text-white'
+                    : 'bg-navy/10 text-navy/60',
                 ].join(' ')}
               >
                 {s}
@@ -239,7 +252,7 @@ export function PublishPage() {
           {step === 1 && (
             <div className="space-y-4">
               <fieldset className="space-y-3">
-                <legend className="text-sm font-semibold text-(--color-text)">Tipo de caso</legend>
+                <legend className="text-sm font-semibold text-navy">Tipo de caso</legend>
                 <div className="grid gap-3 sm:grid-cols-5">
                   {(Object.entries(TYPE_LABELS) as [string, string][]).map(([value, label]) => (
                     <button
@@ -247,14 +260,14 @@ export function PublishPage() {
                       type="button"
                       onClick={() => updateValue('type', value as PublicationFormValues['type'])}
                       className={[
-                        'rounded-2xl border px-4 py-4 text-left transition',
+                        'rounded-2xl border-2 px-4 py-4 text-left transition-all hover:shadow-md hover:-translate-y-1',
                         values.type === value
-                          ? 'border-(--color-primary) bg-[rgba(15,61,51,0.08)]'
-                          : 'border-black/10 bg-white/80 hover:bg-white',
+                          ? 'border-orange bg-orange/10 shadow-paw'
+                          : 'border-navy/10 bg-white',
                       ].join(' ')}
                     >
-                      <span className="block text-xs font-bold uppercase tracking-[0.2em] text-(--color-muted)">Tipo</span>
-                      <span className="mt-2 block font-semibold text-(--color-text)">{label}</span>
+                      <span className="block text-xs font-bold uppercase tracking-[0.2em] text-navy/60">Tipo</span>
+                      <span className="mt-2 block font-semibold text-navy">{label}</span>
                     </button>
                   ))}
                 </div>
@@ -279,9 +292,9 @@ export function PublishPage() {
             <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-(--color-text)">Especie</span>
+                  <span className="block text-sm font-semibold text-navy">Especie</span>
                   <select
-                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
                     value={values.species}
                     onChange={(event) => updateValue('species', event.target.value)}
                   >
@@ -298,9 +311,9 @@ export function PublishPage() {
                   onChange={(event) => updateValue('breed', event.target.value)}
                 />
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-(--color-text)">Sexo</span>
+                  <span className="block text-sm font-semibold text-navy">Sexo</span>
                   <select
-                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
                     value={values.sex}
                     onChange={(event) => updateValue('sex', event.target.value)}
                   >
@@ -311,9 +324,9 @@ export function PublishPage() {
                   </select>
                 </label>
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-(--color-text)">Tamaño</span>
+                  <span className="block text-sm font-semibold text-navy">Tamaño</span>
                   <select
-                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
                     value={values.size}
                     onChange={(event) => updateValue('size', event.target.value)}
                   >
@@ -345,12 +358,12 @@ export function PublishPage() {
               </div>
 
               <div className="flex flex-wrap gap-4">
-                <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm font-semibold text-(--color-text)">
-                  <input type="checkbox" checked={values.collar} onChange={(event) => updateValue('collar', event.target.checked)} />
+                <label className="flex items-center gap-3 rounded-2xl border-2 border-turquoise/20 bg-turquoise/5 px-4 py-3 text-sm font-semibold text-navy cursor-pointer transition hover:bg-turquoise/10">
+                  <input type="checkbox" className="rounded border-turquoise text-turquoise focus:ring-turquoise" checked={values.collar} onChange={(event) => updateValue('collar', event.target.checked)} />
                   Tiene collar
                 </label>
-                <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm font-semibold text-(--color-text)">
-                  <input type="checkbox" checked={values.plate} onChange={(event) => updateValue('plate', event.target.checked)} />
+                <label className="flex items-center gap-3 rounded-2xl border-2 border-purple/20 bg-purple/5 px-4 py-3 text-sm font-semibold text-navy cursor-pointer transition hover:bg-purple/10">
+                  <input type="checkbox" className="rounded border-purple text-purple focus:ring-purple" checked={values.plate} onChange={(event) => updateValue('plate', event.target.checked)} />
                   Tiene placa
                 </label>
               </div>
@@ -368,9 +381,9 @@ export function PublishPage() {
             <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-(--color-text)">Provincia</span>
+                  <span className="block text-sm font-semibold text-navy">Provincia</span>
                   <select
-                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
                     value={values.province}
                     onChange={(event) => updateValue('province', event.target.value)}
                   >
@@ -381,9 +394,9 @@ export function PublishPage() {
                   </select>
                 </label>
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-(--color-text)">Municipio</span>
+                  <span className="block text-sm font-semibold text-navy">Municipio</span>
                   <select
-                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20 disabled:opacity-50"
                     value={values.municipality}
                     onChange={(event) => updateValue('municipality', event.target.value)}
                     disabled={municipalities.length === 0}
@@ -421,7 +434,7 @@ export function PublishPage() {
               </div>
 
               <fieldset className="space-y-3">
-                <legend className="text-sm font-semibold text-(--color-text)">Ubicación aproximada (click en el mapa)</legend>
+                <legend className="text-sm font-semibold text-navy">📍 Ubicación aproximada (click en el mapa)</legend>
                 <div className="grid gap-4 md:grid-cols-2">
                   <TextField
                     label="Latitud aprox."
@@ -438,7 +451,7 @@ export function PublishPage() {
                     readOnly
                   />
                 </div>
-                <div className="h-64 rounded-2xl border-2 border-[#CFEFE6] overflow-hidden">
+                <div className="h-64 rounded-2xl border-2 border-turquoise/20 overflow-hidden shadow-md">
                   <MapContainer center={[23.1136, -82.3666]} zoom={8} className="h-full w-full">
                     <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     {values.approximateLat && values.approximateLng && (
@@ -452,35 +465,59 @@ export function PublishPage() {
                     />
                   </MapContainer>
                 </div>
-                <p className="text-xs text-(--color-muted)">Haz clic en el mapa para seleccionar. Las coordenadas se difuminan ±0.02° para privacidad.</p>
+                <p className="text-xs text-navy/60 bg-turquoise/5 border border-turquoise/20 rounded-2xl px-4 py-3">
+                  🔒 Haz clic en el mapa para seleccionar. Las coordenadas se difuminan ±0.02° para privacidad.
+                </p>
               </fieldset>
             </div>
           )}
 
           {step === 4 && (
             <div className="space-y-4">
-              <label className="block space-y-2 text-sm font-semibold text-(--color-text)">
-                <span>Imágenes (máx. {MAX_IMAGES}, JPG/PNG/WebP, 8 MB c/u)</span>
-                <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFiles} className="w-full rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm" disabled={files.length >= MAX_IMAGES} />
-                {files.length >= MAX_IMAGES && <span className="text-xs text-(--color-danger)">Límite de {MAX_IMAGES} imágenes alcanzado.</span>}
+              <label className="block space-y-3">
+                <span className="text-sm font-semibold text-navy">📸 Imágenes (máx. {MAX_IMAGES}, JPG/PNG/WebP, 8 MB c/u)</span>
+                <input 
+                  type="file" 
+                  accept="image/jpeg,image/png,image/webp" 
+                  multiple 
+                  onChange={handleFiles} 
+                  className="w-full rounded-2xl border-2 border-navy/10 bg-white px-4 py-3 text-sm transition hover:border-orange/50 file:mr-4 file:rounded-pill file:border-0 file:bg-orange/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-orange hover:file:bg-orange/20" 
+                  disabled={files.length >= MAX_IMAGES} 
+                />
+                {files.length >= MAX_IMAGES && (
+                  <span className="text-xs font-medium text-lost bg-lost/10 border border-lost/20 rounded-full px-3 py-1 inline-block">
+                    Límite de {MAX_IMAGES} imágenes alcanzado
+                  </span>
+                )}
               </label>
 
               {filePreviews.length > 0 && (
                 <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {filePreviews.map((preview, index) => (
-                    <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-[#CFEFE6]">
-                      <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
-                      {index === 0 && <span className="absolute top-2 left-2 rounded-full bg-white/90 px-2 py-1 text-xs font-bold">Portada</span>}
+                    <div key={index} className="group relative aspect-square rounded-2xl overflow-hidden border-2 border-navy/10 shadow-md transition-all hover:shadow-lg hover:-translate-y-1">
+                      <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                      {index === 0 && (
+                        <span className="absolute top-2 left-2 rounded-full bg-orange text-white px-3 py-1 text-xs font-bold shadow-paw">
+                          Portada
+                        </span>
+                      )}
                       <button
                         type="button"
                         onClick={() => removeFile(index)}
-                        className="absolute top-2 right-2 rounded-full bg-black/60 text-white p-1 hover:bg-black/80 transition"
+                        className="absolute top-2 right-2 rounded-full bg-navy/80 text-white p-2 hover:bg-navy transition backdrop-blur-sm"
                         aria-label="Eliminar imagen"
                       >
                         ×
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+              
+              {filePreviews.length === 0 && (
+                <div className="rounded-2xl border-2 border-dashed border-navy/20 bg-navy/5 p-12 text-center">
+                  <p className="text-sm text-navy/60">Aún no has agregado ninguna imagen</p>
+                  <p className="text-xs text-navy/40 mt-2">La primera imagen será la portada</p>
                 </div>
               )}
             </div>
@@ -490,9 +527,9 @@ export function PublishPage() {
             <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-(--color-text)">Modo de contacto</span>
+                  <span className="block text-sm font-semibold text-navy">Modo de contacto</span>
                   <select
-                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
                     value={values.contactMode}
                     onChange={(event) => updateValue('contactMode', event.target.value as PublicationFormValues['contactMode'])}
                   >
@@ -529,69 +566,110 @@ export function PublishPage() {
                 )}
               </div>
 
-              <div className="rounded-2xl border border-dashed border-black/10 bg-white/50 p-4 space-y-3">
-                <h3 className="font-semibold text-(--color-text)">Vista previa</h3>
-                <dl className="grid gap-2 sm:grid-cols-2 text-sm">
-                  <dt className="text-(--color-muted)">Tipo</dt>
-                  <dd className="font-semibold text-(--color-text)">{TYPE_LABELS[values.type] ?? values.type}</dd>
-                  <dt className="text-(--color-muted)">Título</dt>
-                  <dd className="font-semibold text-(--color-text)">{values.title || '—'}</dd>
-                  <dt className="text-(--color-muted)">Especie</dt>
-                  <dd>{(SPECIES_LABELS[values.species] ?? values.species) || '—'}</dd>
-                  <dt className="text-(--color-muted)">Raza</dt>
-                  <dd>{values.breed || '—'}</dd>
-                  <dt className="text-(--color-muted)">Sexo</dt>
-                  <dd>{values.sex ? (SEX_LABELS[values.sex] ?? values.sex) : '—'}</dd>
-                  <dt className="text-(--color-muted)">Tamaño</dt>
-                  <dd>{values.size ? (SIZE_LABELS[values.size] ?? values.size) : '—'}</dd>
-                  <dt className="text-(--color-muted)">Edad</dt>
-                  <dd>{values.ageApprox || '—'}</dd>
-                  <dt className="text-(--color-muted)">Color</dt>
-                  <dd>{values.color || '—'}</dd>
-                  <dt className="text-(--color-muted)">Provincia / Municipio</dt>
-                  <dd>{values.province} / {values.municipality || '—'}</dd>
-                  <dt className="text-(--color-muted)">Zona</dt>
-                  <dd>{values.zone || '—'}</dd>
-                  <dt className="text-(--color-muted)">Contacto</dt>
-                  <dd>
-                    {values.contactMode === 'INTERNAL' && 'Chat interno'}
-                    {values.contactMode === 'PHONE' && values.contactPhone}
-                    {values.contactMode === 'WHATSAPP' && values.contactWhatsapp}
-                    {values.contactMode === 'EMAIL' && values.contactEmail}
-                  </dd>
-                  <dt className="text-(--color-muted)">Recompensa</dt>
-                  <dd>{values.reward || 'Sin especificar'}</dd>
-                  <dt className="text-(--color-muted)">Imágenes</dt>
-                  <dd>{files.length} de {MAX_IMAGES}</dd>
+              <div className="rounded-2xl border-2 border-turquoise/20 bg-turquoise/5 p-6 space-y-3 shadow-sm">
+                <h3 className="font-display text-xl font-extrabold text-navy flex items-center gap-2">
+                  👀 Vista previa
+                </h3>
+                <dl className="grid gap-3 sm:grid-cols-2 text-sm">
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Tipo</dt>
+                    <dd className="font-semibold text-navy">{TYPE_LABELS[values.type] ?? values.type}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Título</dt>
+                    <dd className="font-semibold text-navy">{values.title || '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Especie</dt>
+                    <dd>{(SPECIES_LABELS[values.species] ?? values.species) || '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Raza</dt>
+                    <dd>{values.breed || '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Sexo</dt>
+                    <dd>{values.sex ? (SEX_LABELS[values.sex] ?? values.sex) : '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Tamaño</dt>
+                    <dd>{values.size ? (SIZE_LABELS[values.size] ?? values.size) : '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Edad</dt>
+                    <dd>{values.ageApprox || '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Color</dt>
+                    <dd>{values.color || '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Provincia / Municipio</dt>
+                    <dd>{values.province} / {values.municipality || '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Zona</dt>
+                    <dd>{values.zone || '—'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Contacto</dt>
+                    <dd>
+                      {values.contactMode === 'INTERNAL' && 'Chat interno'}
+                      {values.contactMode === 'PHONE' && values.contactPhone}
+                      {values.contactMode === 'WHATSAPP' && values.contactWhatsapp}
+                      {values.contactMode === 'EMAIL' && values.contactEmail}
+                    </dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Recompensa</dt>
+                    <dd>{values.reward || 'Sin especificar'}</dd>
+                  </div>
+                  <div className="space-y-1">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-navy/60">Imágenes</dt>
+                    <dd className="font-semibold text-turquoise">{files.length} de {MAX_IMAGES}</dd>
+                  </div>
                 </dl>
               </div>
             </div>
           )}
 
           {errorMessage ? (
-            <p className="rounded-2xl bg-[rgba(181,76,69,0.12)] px-4 py-3 text-sm font-medium text-(--color-danger)">{errorMessage}</p>
+            <div className="rounded-2xl bg-lost/10 border-2 border-lost/20 px-4 py-3 text-sm font-medium text-lost-dark flex items-start gap-3">
+              <span className="text-lg">⚠️</span>
+              <p>{errorMessage}</p>
+            </div>
           ) : null}
           {successSlug ? (
-            <p className="rounded-2xl bg-[rgba(46,139,87,0.12)] px-4 py-3 text-sm font-medium text-(--color-success)">Publicación creada: {successSlug}</p>
+            <div className="rounded-2xl bg-found/10 border-2 border-found/20 px-4 py-3 text-sm font-medium text-found-dark flex items-start gap-3">
+              <span className="text-lg">✅</span>
+              <p>Publicación creada: {successSlug}</p>
+            </div>
           ) : null}
 
-          <div className="flex flex-col gap-3 border-t border-black/5 pt-4 sm:flex-row sm:justify-between">
+          <div className="flex flex-col gap-3 border-t-2 border-navy/10 pt-6 sm:flex-row sm:justify-between">
             <div className="flex gap-3">
-              <Button type="button" variant="ghost" onClick={previousStep} disabled={step === 1}>Atrás</Button>
-              {step < totalSteps ? <Button type="button" onClick={nextStep}>Continuar</Button> : null}
+              <Button type="button" variant="ghost" onClick={previousStep} disabled={step === 1}>← Atrás</Button>
+              {step < totalSteps ? <Button type="button" onClick={nextStep}>Continuar →</Button> : null}
             </div>
             {step === totalSteps ? (
-              <Button type="button" onClick={handleSubmit} disabled={submitting}>{submitting ? 'Publicando...' : 'Publicar caso'}</Button>
+              <Button type="button" onClick={handleSubmit} disabled={submitting} className="gap-2">
+                {submitting ? '⏳ Publicando...' : '🐾 Publicar caso'}
+              </Button>
             ) : null}
           </div>
         </div>
       ) : (
-        <div className="soft-panel rounded-4xl p-6">
-          <p className="font-semibold text-(--color-text)">Necesitas entrar para publicar</p>
-          <p className="mt-2 text-sm text-(--color-muted)">La publicación requiere una sesión autenticada para guardar tu autoría y aplicar RLS.</p>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <LinkButton href="/auth/login">Entrar</LinkButton>
-            <LinkButton href="/auth/register" variant="secondary">Crear cuenta</LinkButton>
+        <div className="rounded-3xl border-2 border-orange/20 bg-white p-8 shadow-md">
+          <div className="max-w-md mx-auto text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-orange/10 flex items-center justify-center mx-auto">
+              <span className="text-3xl">🔒</span>
+            </div>
+            <h2 className="font-display text-2xl font-extrabold text-navy">Necesitas iniciar sesión</h2>
+            <p className="text-sm text-navy/70">La publicación requiere una sesión autenticada para guardar tu autoría y aplicar RLS.</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <LinkButton href="/auth/login">Iniciar sesión</LinkButton>
+              <LinkButton href="/auth/register" variant="secondary">Crear cuenta</LinkButton>
+            </div>
           </div>
         </div>
       )}

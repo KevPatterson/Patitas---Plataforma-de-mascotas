@@ -6,7 +6,7 @@ type ResolvedCelebrationProps = {
 
 export function ResolvedCelebration({ petName }: ResolvedCelebrationProps) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border-2 border-[#CFEFE6] bg-gradient-to-br from-[#0E7C66]/10 via-white to-[#CFEFE6]/20 p-8 text-center shadow-sm">
+    <div className="relative overflow-hidden rounded-3xl border-2 border-[#CFEFE6] bg-linear-to-br from-[#0E7C66]/10 via-white to-[#CFEFE6]/20 p-8 text-center shadow-sm">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(14,124,102,0.12),transparent_50%)] blur-2xl" />
 
       <div className="space-y-4">

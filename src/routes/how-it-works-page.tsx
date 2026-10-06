@@ -76,7 +76,7 @@ export function HowItWorksPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 py-10">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
         <div className="blob-decoration absolute top-5 right-5 size-32 bg-purple/20" />
         <div className="blob-decoration absolute bottom-5 left-5 size-24 bg-orange/15" style={{ animationDelay: '2s' }} />
         
@@ -122,7 +122,7 @@ export function HowItWorksPage() {
       </div>
 
       {/* CTA final */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange to-orange-dark p-10 md:p-12 text-center shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-orange to-orange-dark p-10 md:p-12 text-center shadow-xl">
         <div className="blob-decoration absolute top-10 right-10 size-32 bg-white/10" />
         <div className="relative space-y-6">
           <div className="flex justify-center">

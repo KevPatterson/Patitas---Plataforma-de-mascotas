@@ -1,76 +1,245 @@
-import { useParams } from 'react-router-dom';
-import { User, PawPrint, MapPin } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { User, PawPrint, MapPin, CheckCircle, Eye, Calendar } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { PublicationCard } from '../components/publications/publication-card';
+import { PawLoader } from '../components/ui/paw-loader';
+import { EmptyState } from '../components/ui/empty-state';
+import { supabase } from '../lib/supabase/client';
+import type { PublicationSummary } from '../lib/supabase/publication-search';
+import { setPageMeta } from '../lib/seo/page-meta';
+
+type ProfileRow = {
+  id: string;
+  username: string;
+  full_name: string | null;
+  created_at: string;
+};
 
 export function ProfilePage() {
-  const { username } = useParams();
+  const { username } = useParams<{ username: string }>();
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [publications, setPublications] = useState<PublicationSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!username) {
+      setError('Usuario no especificado.');
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, created_at')
+          .eq('username', username)
+          .maybeSingle();
+
+        if (profileError) throw profileError;
+        if (!profileData) {
+          if (active) {
+            setError(`No encontramos el perfil @${username}.`);
+            setProfile(null);
+            setPublications([]);
+          }
+          return;
+        }
+
+        if (active) setProfile(profileData as ProfileRow);
+
+        // Publicaciones públicas del usuario (excluye DELETED/HIDDEN)
+        const { data: pubs, error: pubsError } = await supabase
+          .from('publications')
+          .select(`
+            id, slug, title, description, type, status, species, breed, color, sex, size, published_at,
+            publication_images(storage_path, is_cover),
+            locations!inner(province, municipality, zone, approximate_lat, approximate_lng)
+          `)
+          .eq('owner_profile_id', (profileData as ProfileRow).id)
+          .neq('status', 'DELETED')
+          .neq('status', 'HIDDEN')
+          .order('published_at', { ascending: false })
+          .limit(24);
+
+        if (pubsError) throw pubsError;
+
+        const mapped: PublicationSummary[] = (pubs as unknown as Array<{
+          id: string;
+          slug: string;
+          title: string;
+          description: string;
+          type: PublicationSummary['type'];
+          status: PublicationSummary['status'];
+          species: string;
+          breed: string | null;
+          color: string | null;
+          sex: string | null;
+          size: string | null;
+          published_at: string;
+          publication_images: Array<{ storage_path: string; is_cover: boolean | null }>;
+          locations: Array<{ province: string; municipality: string; zone: string | null; approximate_lat: number | null; approximate_lng: number | null }>;
+        }>).map((row) => {
+          const loc = row.locations?.[0] ?? null;
+          const cover = row.publication_images?.find((i) => i.is_cover) ?? row.publication_images?.[0] ?? null;
+          const coverUrl = cover?.storage_path
+            ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/pet-images/${cover.storage_path}`
+            : null;
+          return {
+            id: row.id,
+            slug: row.slug,
+            title: row.title,
+            description: row.description,
+            type: row.type,
+            status: row.status,
+            species: row.species,
+            breed: row.breed,
+            color: row.color,
+            sex: row.sex,
+            size: row.size,
+            publishedAt: row.published_at,
+            province: loc?.province ?? null,
+            municipality: loc?.municipality ?? null,
+            zone: loc?.zone ?? null,
+            approximateLat: loc?.approximate_lat ?? null,
+            approximateLng: loc?.approximate_lng ?? null,
+            coverImageUrl: coverUrl,
+          };
+        });
+
+        if (active) setPublications(mapped);
+
+        setPageMeta({
+          title: `@${(profileData as ProfileRow).username} · Perfil · Patitas`,
+          description: `Publicaciones de @${(profileData as ProfileRow).username} en Patitas.`,
+          canonicalPath: `/perfil/${(profileData as ProfileRow).username}`,
+        });
+      } catch (e) {
+        if (active) setError(e instanceof Error ? e.message : 'No pudimos cargar el perfil.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [username]);
+
+  if (loading) {
+    return (
+      <section className="flex flex-col items-center justify-center min-h-[60vh] gap-4 py-10">
+        <PawLoader size="lg" />
+        <p className="font-display text-lg font-semibold text-navy">Cargando perfil...</p>
+      </section>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <section className="py-10">
+        <div className="rounded-3xl border-2 border-navy/10 bg-white p-12 text-center shadow-md">
+          <div className="mx-auto max-w-md space-y-4">
+            <div className="size-16 rounded-2xl bg-lost/10 flex items-center justify-center mx-auto">
+              <User className="size-8 text-lost" />
+            </div>
+            <h1 className="font-display text-2xl font-extrabold text-navy">{error ?? 'Perfil no encontrado'}</h1>
+            <p className="text-navy/70">Verifica el nombre de usuario o vuelve al inicio.</p>
+            <Link to="/">
+              <Button variant="primary">Volver al inicio</Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const stats = {
+    total: publications.length,
+    active: publications.filter((p) => p.status === 'ACTIVE').length,
+    resolved: publications.filter((p) => p.status === 'RESOLVED').length,
+  };
 
   return (
     <section className="space-y-8 py-10">
       {/* Hero del perfil */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
-        <div className="blob-decoration absolute top-5 right-5 w-24 h-24 bg-orange/20" />
-        
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-purple/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
+        <div className="blob-decoration absolute top-5 right-5 size-24 bg-orange/20" />
         <div className="relative flex flex-col md:flex-row items-center gap-6">
-          {/* Avatar */}
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-orange to-turquoise flex items-center justify-center text-white text-4xl font-display font-extrabold shadow-lg">
-            {username?.[0]?.toUpperCase() || 'U'}
+          <div className="size-24 rounded-2xl bg-linear-to-br from-orange to-turquoise flex items-center justify-center text-white text-4xl font-display font-extrabold shadow-lg">
+            {profile.username?.[0]?.toUpperCase() || 'U'}
           </div>
-          
-          {/* Info */}
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
-              <User className="h-5 w-5 text-navy/60" />
+              <User className="size-5 text-navy/60" />
               <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Perfil público</span>
             </div>
-            <h1 className="font-display text-4xl font-extrabold text-navy mb-2">
-              @{username ?? 'usuario'}
-            </h1>
-            <p className="text-navy/70">
-              Miembro de la comunidad Patitas
+            <h1 className="font-display text-4xl font-extrabold text-navy mb-2">@{profile.username}</h1>
+            {profile.full_name && <p className="font-semibold text-navy">{profile.full_name}</p>}
+            <p className="text-sm text-navy/60 flex items-center gap-1 justify-center md:justify-start mt-1">
+              <Calendar className="size-4" />
+              Miembro desde {new Date(profile.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}
             </p>
           </div>
+          <Link to="/buscar">
+            <Button variant="ghost">Ver publicaciones</Button>
+          </Link>
         </div>
       </div>
 
       {/* Estadísticas */}
       <div className="grid gap-6 sm:grid-cols-3">
-        <div className="rounded-2xl border-2 border-orange/20 bg-orange/5 p-6 text-center">
-          <PawPrint className="h-8 w-8 text-orange mx-auto mb-2" />
-          <p className="font-display text-3xl font-extrabold text-navy">0</p>
+        <div className="group rounded-2xl border-2 border-orange/20 bg-orange/5 p-6 text-center transition-all hover:shadow-lg hover:-translate-y-1">
+          <PawPrint className="size-8 text-orange mx-auto mb-2" />
+          <p className="font-display text-3xl font-extrabold text-navy">{stats.total}</p>
           <p className="text-sm font-medium text-navy/70">Publicaciones</p>
         </div>
-        
-        <div className="rounded-2xl border-2 border-turquoise/20 bg-turquoise/5 p-6 text-center">
-          <MapPin className="h-8 w-8 text-turquoise mx-auto mb-2" />
-          <p className="font-display text-3xl font-extrabold text-navy">0</p>
+        <div className="group rounded-2xl border-2 border-turquoise/20 bg-turquoise/5 p-6 text-center transition-all hover:shadow-lg hover:-translate-y-1">
+          <MapPin className="size-8 text-turquoise mx-auto mb-2" />
+          <p className="font-display text-3xl font-extrabold text-navy">{stats.active}</p>
           <p className="text-sm font-medium text-navy/70">Casos activos</p>
         </div>
-        
-        <div className="rounded-2xl border-2 border-purple/20 bg-purple/5 p-6 text-center">
-          <PawPrint className="h-8 w-8 text-purple mx-auto mb-2" />
-          <p className="font-display text-3xl font-extrabold text-navy">0</p>
+        <div className="group rounded-2xl border-2 border-purple/20 bg-purple/5 p-6 text-center transition-all hover:shadow-lg hover:-translate-y-1">
+          <CheckCircle className="size-8 text-purple mx-auto mb-2" />
+          <p className="font-display text-3xl font-extrabold text-navy">{stats.resolved}</p>
           <p className="text-sm font-medium text-navy/70">Resueltos</p>
         </div>
       </div>
 
-      {/* Contenido próximamente */}
-      <div className="rounded-3xl border-2 border-navy/10 bg-white p-12 text-center shadow-md">
-        <div className="max-w-md mx-auto space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-navy/5 flex items-center justify-center mx-auto">
-            <User className="h-8 w-8 text-navy/40" />
-          </div>
-          <h2 className="font-display text-2xl font-extrabold text-navy">
-            Perfil en construcción
+      {/* Publicaciones */}
+      {publications.length === 0 ? (
+        <EmptyState
+          title={`@${profile.username} aún no ha publicado`}
+          description="Cuando publique un caso, aparecerá aquí."
+          illustration="cat"
+          action={
+            <Link to="/buscar">
+              <Button variant="primary">Explorar casos</Button>
+            </Link>
+          }
+        />
+      ) : (
+        <div className="space-y-4">
+          <h2 className="font-display text-2xl font-extrabold text-navy flex items-center gap-2">
+            <Eye className="size-6 text-orange" />
+            Publicaciones de @{profile.username}
           </h2>
-          <p className="text-navy/70">
-            Pronto podrás ver las publicaciones y la actividad de <strong>@{username}</strong> en la comunidad.
-          </p>
-          <Button variant="ghost">
-            Volver al inicio
-          </Button>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {publications.map((pub) => (
+              <PublicationCard key={pub.id} publication={pub} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
+
+export default ProfilePage;

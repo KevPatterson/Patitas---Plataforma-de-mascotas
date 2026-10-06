@@ -35,7 +35,7 @@ export function PublicationCard({ publication }: PublicationCardProps) {
       className="group block overflow-hidden rounded-2xl border-2 border-navy/10 bg-white shadow-md transition-all duration-base ease-smooth hover:-translate-y-2 hover:shadow-xl hover:border-orange/30"
     >
       {/* Imagen con overlay decorativo */}
-      <div className="relative aspect-4/3 overflow-hidden bg-gradient-to-br from-orange/10 to-turquoise/10">
+      <div className="relative aspect-4/3 overflow-hidden bg-linear-to-br from-orange/10 to-turquoise/10">
         {publication.coverImageUrl ? (
           <img
             src={publication.coverImageUrl}
@@ -69,7 +69,7 @@ export function PublicationCard({ publication }: PublicationCardProps) {
       <div className="space-y-3 p-5">
         {/* Título con emoji */}
         <div className="flex items-start gap-2">
-          <span className="text-lg flex-shrink-0 mt-0.5">{typeEmojis[publication.type]}</span>
+          <span className="text-lg shrink-0 mt-0.5">{typeEmojis[publication.type]}</span>
           <h2 className="font-display text-xl font-extrabold leading-tight text-navy group-hover:text-orange transition-colors">
             {publication.title}
           </h2>
@@ -114,7 +114,7 @@ export function PublicationCard({ publication }: PublicationCardProps) {
       </div>
 
       {/* Barra inferior decorativa en hover */}
-      <div className="h-1 bg-gradient-to-r from-orange via-turquoise to-purple transform scale-x-0 group-hover:scale-x-100 transition-transform duration-base origin-left" />
+      <div className="h-1 bg-linear-to-r from-orange via-turquoise to-purple transform scale-x-0 group-hover:scale-x-100 transition-transform duration-base origin-left" />
     </Link>
   );
 }

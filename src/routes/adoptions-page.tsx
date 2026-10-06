@@ -84,7 +84,7 @@ export function AdoptionsPage() {
   return (
     <section className="space-y-8 py-8">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple/10 via-cream to-orange/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-purple/10 via-cream to-orange/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
         <div className="blob-decoration absolute top-5 right-5 size-32 bg-purple/20" />
         <div className="blob-decoration absolute bottom-5 left-5 size-24 bg-orange/15" style={{ animationDelay: '2s' }} />
         
@@ -215,7 +215,7 @@ export function AdoptionsPage() {
           </div>
 
           {/* Info sobre adopción */}
-          <div className="rounded-2xl border-2 border-purple/20 bg-gradient-to-br from-purple/5 to-orange/5 p-8 text-center shadow-md">
+          <div className="rounded-2xl border-2 border-purple/20 bg-linear-to-br from-purple/5 to-orange/5 p-8 text-center shadow-md">
             <div className="mx-auto max-w-2xl space-y-4">
               <div className="flex justify-center">
                 <div className="size-14 rounded-2xl bg-purple/10 flex items-center justify-center">

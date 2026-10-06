@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Bell, Search, MapPin, PlusCircle, type LucideIcon } from 'lucide-react';
-import { Logo } from '../Logo';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Bell, Search, MapPin, PlusCircle, LogOut, User, type LucideIcon } from 'lucide-react';
+import { signOut } from '../../lib/supabase/auth';
 import { useAuth } from '../../app/auth-context';
 import { getUnreadNotificationsCount } from '../../lib/supabase/notifications';
+import { Logo } from '../Logo';
 
 type SiteShellProps = {
   children: React.ReactNode;
@@ -25,9 +26,9 @@ function NavItem({ href, label, Icon, badge }: { href: string; label: string; Ic
     >
       <Icon className="size-4" aria-hidden="true" />
       {label}
-      {badge && badge > 0 && (
-        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-size-4.5 rounded-full bg-lost text-white text-[10px] font-bold shadow-sm animate-paw-pulse">
-          {badge > 9 ? '9+' : badge}
+      {(badge ?? 0) > 0 && (
+        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-lost text-white text-[10px] font-bold shadow-sm animate-paw-pulse">
+          {(badge ?? 0) > 9 ? '9+' : badge}
         </span>
       )}
     </Link>
@@ -36,7 +37,24 @@ function NavItem({ href, label, Icon, badge }: { href: string; label: string; Ic
 
 export function SiteShell({ children }: SiteShellProps) {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+  const username = (user?.user_metadata?.username as string | undefined) ?? null;
+  const profileHref = username ? `/perfil/${username}` : '/dashboard';
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -73,24 +91,60 @@ export function SiteShell({ children }: SiteShellProps) {
             <Logo variant="full" size={36} animated />
           </Link>
           
-          <nav className="hidden items-center gap-2 md:flex" aria-label="Navegación principal">
-            <NavItem href="/buscar" label="Buscar" Icon={Search} />
-            <NavItem href="/mapa" label="Mapa" Icon={MapPin} />
-            
-            {/* CTA destacado */}
-            <Link
-              to="/publicar"
-              className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-orange px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:shadow-lg hover:scale-105 hover:bg-orange-dark active:scale-95"
-              style={{ fontFamily: '"Baloo 2", cursive' }}
-            >
-              <PlusCircle className="size-4 transition-transform duration-base group-hover:rotate-90" aria-hidden="true" />
-              Publicar
-            </Link>
-            
-            {user && (
-              <NavItem href="/notificaciones" label="Notificaciones" Icon={Bell} badge={unreadCount} />
+          <div className="flex items-center gap-2">
+            <nav className="hidden items-center gap-2 md:flex" aria-label="Navegación principal">
+              <NavItem href="/buscar" label="Buscar" Icon={Search} />
+              <NavItem href="/mapa" label="Mapa" Icon={MapPin} />
+              
+              {/* CTA destacado */}
+              <Link
+                to="/publicar"
+                className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-orange px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:shadow-lg hover:scale-105 hover:bg-orange-dark active:scale-95"
+                style={{ fontFamily: '"Baloo 2", cursive' }}
+              >
+                <PlusCircle className="size-4 transition-transform duration-base group-hover:rotate-90" aria-hidden="true" />
+                Publicar
+              </Link>
+              
+              {user && (
+                <NavItem href="/notificaciones" label="Notificaciones" Icon={Bell} badge={unreadCount} />
+              )}
+              {user && (
+                <NavItem href={profileHref} label="Perfil" Icon={User} />
+              )}
+            </nav>
+            {/* Acciones de autenticación - siempre visibles */}
+            {!authLoading && (
+              user ? (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to={profileHref}
+                    className="inline-flex items-center gap-2 rounded-xl border-2 border-navy/10 bg-white px-4 py-2.5 text-sm font-bold text-navy transition-all duration-base ease-smooth hover:bg-navy/5 hover:scale-105 active:scale-95"
+                    aria-label="Mi perfil"
+                  >
+                    <User className="size-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Perfil</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="inline-flex items-center gap-2 rounded-xl border-2 border-navy/10 bg-white px-4 py-2.5 text-sm font-bold text-navy transition-all duration-base ease-smooth hover:bg-navy/5 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Cerrar sesión"
+                  >
+                    <LogOut className="size-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">{loggingOut ? 'Saliendo...' : 'Salir'}</span>
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/auth/login"
+                  className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:bg-navy/90 hover:scale-105 active:scale-95"
+                >
+                  Entrar
+                </Link>
+              )
             )}
-          </nav>
+          </div>
         </div>
       </header>
 
@@ -165,7 +219,7 @@ export function SiteShell({ children }: SiteShellProps) {
         </div>
 
         {/* Barra decorativa inferior */}
-        <div className="h-2 bg-gradient-to-r from-orange via-turquoise to-purple" />
+        <div className="h-2 bg-linear-to-r from-orange via-turquoise to-purple" />
       </footer>
     </div>
   );

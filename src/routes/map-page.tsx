@@ -102,7 +102,7 @@ export function MapPage() {
   return (
     <section className="space-y-8 py-10">
       {/* Hero del mapa */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-turquoise/10 via-cream to-purple/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-turquoise/10 via-cream to-purple/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
         <div className="blob-decoration absolute top-5 right-5 size-32 bg-orange/20" />
         <div className="blob-decoration absolute bottom-5 left-5 size-24 bg-turquoise/15" style={{ animationDelay: '2s' }} />
         

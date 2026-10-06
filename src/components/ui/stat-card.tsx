@@ -34,7 +34,7 @@ export function StatCard({ value, label, tone = 'default', icon }: StatCardProps
           </p>
         </div>
         {icon && (
-          <div className={`flex-shrink-0 ${toneStyles[tone]} opacity-20 group-hover:opacity-30 transition-opacity`}>
+          <div className={`shrink-0 ${toneStyles[tone]} opacity-20 group-hover:opacity-30 transition-opacity`}>
             {icon}
           </div>
         )}

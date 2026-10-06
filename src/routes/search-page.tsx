@@ -106,7 +106,7 @@ export function SearchPage() {
   return (
     <section className="space-y-8 py-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-turquoise/10 via-cream to-purple/10 border-2 border-navy/10 p-8 shadow-md">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-turquoise/10 via-cream to-purple/10 border-2 border-navy/10 p-8 shadow-md">
         <div className="blob-decoration absolute top-5 right-5 size-24 bg-orange/20" />
         <div className="relative">
           <div className="flex items-center gap-2 mb-2">
@@ -140,7 +140,7 @@ export function SearchPage() {
             <Filter className="size-5 text-navy/60" />
             <h2 className="font-display text-lg font-bold text-navy">Filtros</h2>
             {activeFiltersCount > 0 && (
-              <span className="inline-flex items-center justify-center min-size-5 rounded-full bg-orange text-white text-xs font-bold">
+              <span className="inline-flex items-center justify-center min-w-5 h-5 rounded-full bg-orange text-white text-xs font-bold">
                 {activeFiltersCount}
               </span>
             )}
@@ -339,7 +339,7 @@ export function SearchPage() {
                 ← Anterior
               </Button>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center justify-center min-size-9 rounded-lg bg-navy text-white text-sm font-bold">
+                <span className="inline-flex items-center justify-center min-w-9 h-9 rounded-lg bg-navy text-white text-sm font-bold">
                   {page}
                 </span>
                 <span className="text-navy/40">/</span>

@@ -4,7 +4,6 @@ import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X, Heart, Eye, 
 import { Button } from '../components/ui/button';
 import { TextareaField } from '../components/ui/textarea-field';
 import { StatusBadge } from '../components/ui/status-badge';
-import { Logo } from '../components/Logo';
 import { PawLoader } from '../components/ui/paw-loader';
 import { createReport } from '../lib/supabase/reports';
 import { useAuth } from '../app/auth-context';
@@ -218,7 +217,10 @@ export function PublicationPage() {
   return (
     <section className="space-y-6 py-8">
       {loading ? (
-        <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 text-[#0B3B3C]">Cargando publicación...</div>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <PawLoader size="lg" />
+          <p className="font-display text-lg font-semibold text-navy">Cargando publicación...</p>
+        </div>
       ) : publication ? (
         <div className="space-y-6">
           {/* Celebración si está resuelta */}
@@ -230,7 +232,7 @@ export function PublicationPage() {
             {/* Columna principal */}
             <div className="space-y-6">
               {/* Galería */}
-              <div className="overflow-hidden rounded-3xl border-2 border-[#CFEFE6] bg-white">
+              <div className="overflow-hidden rounded-3xl border-2 border-navy/10 bg-white shadow-md transition-all hover:shadow-lg">
                 {coverImage?.storage_path ? (
                   <img
                     src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/pet-images/${coverImage.storage_path}`}
@@ -238,74 +240,74 @@ export function PublicationPage() {
                     className="h-96 w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-96 items-center justify-center bg-[#CFEFE6]/40 text-[#0B3B3C]/30">
+                  <div className="flex h-96 items-center justify-center bg-navy/5 text-navy/20">
                     <PawPrint size={64} strokeWidth={1.5} />
                   </div>
                 )}
               </div>
 
               {/* Información principal */}
-              <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-4">
+              <div className="rounded-3xl border-2 border-navy/10 bg-white p-6 space-y-4 shadow-md">
                 <div>
                   <StatusBadge status={publication.type} />
-                  <h1 className="mt-3 font-display text-4xl font-semibold text-[#0B3B3C]">{publication.title}</h1>
+                  <h1 className="mt-3 font-display text-4xl font-extrabold text-navy">{publication.title}</h1>
                 </div>
-                <p className="leading-7 text-[#0B3B3C]">{publication.description}</p>
+                <p className="leading-7 text-navy/80">{publication.description}</p>
 
                 {/* Características */}
                 <div className="grid gap-3 sm:grid-cols-2">
                   {publication.species ? (
-                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Especie</p>
-                      <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.species}</p>
+                    <div className="rounded-2xl border border-turquoise/20 bg-turquoise/5 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Especie</p>
+                      <p className="mt-1 font-semibold text-navy">{publication.species}</p>
                     </div>
                   ) : null}
                   {publication.breed ? (
-                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Raza</p>
-                      <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.breed}</p>
+                    <div className="rounded-2xl border border-orange/20 bg-orange/5 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Raza</p>
+                      <p className="mt-1 font-semibold text-navy">{publication.breed}</p>
                     </div>
                   ) : null}
                   {publication.color ? (
-                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Color</p>
-                      <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.color}</p>
+                    <div className="rounded-2xl border border-purple/20 bg-purple/5 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Color</p>
+                      <p className="mt-1 font-semibold text-navy">{publication.color}</p>
                     </div>
                   ) : null}
                   {publication.size ? (
-                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Tamaño</p>
-                      <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.size}</p>
+                    <div className="rounded-2xl border border-turquoise/20 bg-turquoise/5 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Tamaño</p>
+                      <p className="mt-1 font-semibold text-navy">{publication.size}</p>
                     </div>
                   ) : null}
                   {publication.sex ? (
-                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Sexo</p>
-                      <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.sex}</p>
+                    <div className="rounded-2xl border border-orange/20 bg-orange/5 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Sexo</p>
+                      <p className="mt-1 font-semibold text-navy">{publication.sex}</p>
                     </div>
                   ) : null}
                   {publication.age_approx ? (
-                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Edad aprox.</p>
-                      <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.age_approx}</p>
+                    <div className="rounded-2xl border border-purple/20 bg-purple/5 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Edad aprox.</p>
+                      <p className="mt-1 font-semibold text-navy">{publication.age_approx}</p>
                     </div>
                   ) : null}
                 </div>
 
                 {publication.characteristics ? (
-                  <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Características</p>
-                    <p className="mt-2 leading-7 text-[#0B3B3C]">{publication.characteristics}</p>
+                  <div className="rounded-2xl border border-orange/20 bg-orange/5 px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Características</p>
+                    <p className="mt-2 leading-7 text-navy/80">{publication.characteristics}</p>
                   </div>
                 ) : null}
               </div>
 
               {/* Coincidencias */}
               {matches.length > 0 ? (
-                <div className="space-y-4 rounded-3xl border-2 border-[#CFEFE6] bg-white p-6">
+                <div className="space-y-4 rounded-3xl border-2 border-orange/20 bg-orange/5 p-6 shadow-md">
                   <div>
-                    <h3 className="font-display text-2xl font-semibold text-[#0B3B3C]">Posibles coincidencias</h3>
-                    <p className="mt-2 text-sm text-[#0B3B3C]/60">
+                    <h3 className="font-display text-2xl font-extrabold text-navy">✨ Posibles coincidencias</h3>
+                    <p className="mt-2 text-sm text-navy/70">
                       Encontramos casos con características similares. Revísalos para verificar si coinciden.
                     </p>
                   </div>
@@ -314,28 +316,28 @@ export function PublicationPage() {
                       <Link
                         key={match.publicationId}
                         to={`/p/${match.publication.slug}`}
-                        className="block overflow-hidden rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] transition hover:-translate-y-0.5"
+                        className="block overflow-hidden rounded-2xl border-2 border-turquoise/20 bg-white transition-all hover:-translate-y-1 hover:shadow-lg"
                       >
                         <div className="flex gap-4 p-4">
-                          <div className="size-20 shrink-0 overflow-hidden rounded-2xl bg-[#CFEFE6]/40">
+                          <div className="size-20 shrink-0 overflow-hidden rounded-2xl bg-navy/5">
                             {match.publication.coverImageUrl ? (
                               <img src={match.publication.coverImageUrl} alt={match.publication.title} className="h-full w-full object-cover" />
                             ) : (
-                              <div className="flex h-full items-center justify-center text-[#0B3B3C]/30">
+                              <div className="flex h-full items-center justify-center text-navy/30">
                                 <PawPrint size={28} strokeWidth={1.5} />
                               </div>
                             )}
                           </div>
                           <div className="flex-1 space-y-2">
                             <div className="flex items-start justify-between gap-3">
-                              <p className="font-semibold text-[#0B3B3C]">{match.publication.title}</p>
-                              <div className="shrink-0 rounded-full bg-[#FF6B35] px-3 py-1 text-xs font-bold text-white">
+                              <p className="font-semibold text-navy">{match.publication.title}</p>
+                              <div className="shrink-0 rounded-full bg-orange px-3 py-1 text-xs font-bold text-white shadow-paw">
                                 {match.score}%
                               </div>
                             </div>
                             <div className="flex flex-wrap gap-2">
                               {match.reasons.slice(0, 3).map((reason, index) => (
-                                <span key={index} className="rounded-full bg-[#CFEFE6] px-2 py-1 text-xs font-medium text-[#0B3B3C]">
+                                <span key={index} className="rounded-full bg-turquoise/10 border border-turquoise/20 px-2 py-1 text-xs font-medium text-turquoise-dark">
                                   {reason}
                                 </span>
                               ))}
@@ -345,7 +347,7 @@ export function PublicationPage() {
                       </Link>
                     ))}
                   </div>
-                  <p className="text-xs italic text-[#0B3B3C]/60">
+                  <p className="text-xs italic text-navy/60">
                     Esta coincidencia es automática y puede no ser exacta. Verifica los detalles antes de contactar.
                   </p>
                 </div>
@@ -365,26 +367,26 @@ export function PublicationPage() {
             {/* Columna lateral */}
             <aside className="space-y-5">
               {/* Detalles */}
-              <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
-                <h2 className="font-display text-2xl font-semibold text-[#0B3B3C]">Ubicación</h2>
-                <p className="flex items-center gap-2 text-sm text-[#0B3B3C]/70">
-                  <MapPin size={16} className="shrink-0 text-[#0B3B3C]/50" />
+              <div className="rounded-3xl border-2 border-turquoise/20 bg-white p-6 space-y-3 shadow-md">
+                <h2 className="font-display text-2xl font-extrabold text-navy">📍 Ubicación</h2>
+                <p className="flex items-center gap-2 text-sm text-navy/70">
+                  <MapPin size={16} className="shrink-0 text-turquoise" />
                   {[publication.location?.[0]?.zone, publication.location?.[0]?.municipality, publication.location?.[0]?.province].filter(Boolean).join(', ')}
                 </p>
                 {publication.event_date ? (
-                  <p className="flex items-center gap-2 text-sm text-[#0B3B3C]/70">
-                    <Calendar size={16} className="shrink-0 text-[#0B3B3C]/50" />
+                  <p className="flex items-center gap-2 text-sm text-navy/70">
+                    <Calendar size={16} className="shrink-0 text-orange" />
                     {new Intl.DateTimeFormat('es-CU', { dateStyle: 'long' }).format(new Date(publication.event_date))}
                   </p>
                 ) : null}
-                <Link className="inline-block text-sm font-semibold text-[#0E7C66] hover:underline" to="/mapa">
-                  Ver en mapa
+                <Link className="inline-block text-sm font-semibold text-turquoise hover:underline" to="/mapa">
+                  Ver en mapa →
                 </Link>
               </div>
 
               {/* Acciones */}
-              <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
-                <h2 className="font-display text-2xl font-semibold text-[#0B3B3C]">Acciones</h2>
+              <div className="rounded-3xl border-2 border-orange/20 bg-white p-6 space-y-3 shadow-md">
+                <h2 className="font-display text-2xl font-extrabold text-navy">⚡ Acciones</h2>
                 <div className="flex flex-col gap-3">
                   {isOwner && publication.status === 'ACTIVE' ? (
                     <Button type="button" onClick={handleResolve} disabled={resolving} className="gap-2">
@@ -400,9 +402,9 @@ export function PublicationPage() {
                         Solicitar adopción
                       </Button>
                     ) : (
-                      <div className="space-y-3 p-4 bg-[#F5FBF9] rounded-2xl">
-                        <h3 className="font-semibold text-[#0B3B3C]">Solicitar adopción</h3>
-                        <p className="text-sm text-[#0B3B3C]/70">Cuéntale al por qué quieres adoptar a esta mascota.</p>
+                      <div className="space-y-3 p-4 bg-purple/5 border border-purple/20 rounded-2xl">
+                        <h3 className="font-semibold text-navy">Solicitar adopción</h3>
+                        <p className="text-sm text-navy/70">Cuéntale al por qué quieres adoptar a esta mascota.</p>
                         <TextareaField
                           label="Mensaje"
                           placeholder="Hola, me gustaría adoptar a esta mascota porque..."
@@ -410,10 +412,10 @@ export function PublicationPage() {
                           onChange={(event) => setAdoptMessage(event.target.value)}
                         />
                         {adoptError ? (
-                          <p className="rounded-2xl bg-[rgba(181,76,69,0.12)] px-4 py-3 text-sm font-medium text-[#C2332C]">{adoptError}</p>
+                          <p className="rounded-2xl bg-lost/10 border border-lost/20 px-4 py-3 text-sm font-medium text-lost-dark">{adoptError}</p>
                         ) : null}
                         {adoptSuccess ? (
-                          <p className="rounded-2xl bg-[rgba(46,139,87,0.12)] px-4 py-3 text-sm font-medium text-[#0E7C66]">Solicitud enviada. El propietario recibirá una notificación.</p>
+                          <p className="rounded-2xl bg-found/10 border border-found/20 px-4 py-3 text-sm font-medium text-found-dark">Solicitud enviada. El propietario recibirá una notificación.</p>
                         ) : null}
                         <div className="flex gap-3">
                           <Button type="button" onClick={handleAdoptRequest} disabled={adoptLoading}>{adoptLoading ? 'Enviando...' : 'Enviar solicitud'}</Button>
@@ -443,22 +445,25 @@ export function PublicationPage() {
 
               {/* Formulario de reporte */}
               {showReportForm ? (
-                <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-4">
+                <div className="rounded-3xl border-2 border-lost/20 bg-lost/5 p-6 space-y-4 shadow-md">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-display text-xl font-semibold text-[#0B3B3C]">Reportar</h2>
+                    <h2 className="font-display text-xl font-extrabold text-navy flex items-center gap-2">
+                      <Flag size={20} className="text-lost" />
+                      Reportar
+                    </h2>
                     <button
                       type="button"
                       onClick={() => setShowReportForm(false)}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-[#0B3B3C]/60 hover:text-[#0B3B3C]"
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-navy/60 hover:text-navy transition"
                     >
                       <X size={16} />
                       Cerrar
                     </button>
                   </div>
-                  <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
+                  <label className="space-y-2 text-sm font-semibold text-navy">
                     <span>Motivo</span>
                     <select
-                      className="h-12 w-full rounded-2xl border-2 border-[#CFEFE6] bg-white px-4"
+                      className="h-12 w-full rounded-2xl border-2 border-navy/10 bg-white px-4 text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
                       value={reportReason}
                       onChange={(event) => setReportReason(event.target.value as typeof reportReason)}
                     >
@@ -481,8 +486,8 @@ export function PublicationPage() {
                     <p
                       className={`rounded-2xl px-4 py-3 text-sm font-medium ${
                         reportMessage.includes('Gracias') || reportMessage.includes('enviado')
-                          ? 'bg-[#0E7C66]/10 text-[#0E7C66]'
-                          : 'bg-[#C2332C]/10 text-[#C2332C]'
+                          ? 'bg-found/10 border border-found/20 text-found-dark'
+                          : 'bg-lost/10 border border-lost/20 text-lost-dark'
                       }`}
                     >
                       {reportMessage}
@@ -493,12 +498,17 @@ export function PublicationPage() {
                   </Button>
                 </div>
               ) : null}
-
               {/* Información del publicador */}
-              <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
-                <h2 className="font-display text-xl font-semibold text-[#0B3B3C]">Publicado por</h2>
-                <p className="text-sm font-semibold text-[#0B3B3C]">@{publication.owner?.username ?? 'Usuario'}</p>
-                <p className="text-xs text-[#0B3B3C]/60">
+              <div className="rounded-3xl border-2 border-purple/20 bg-white p-6 space-y-3 shadow-md">
+                <h2 className="font-display text-xl font-extrabold text-navy">👤 Publicado por</h2>
+                {publication.owner?.username ? (
+                  <Link to={`/perfil/${publication.owner.username}`} className="text-sm font-semibold text-purple hover:text-purple-dark hover:underline transition-colors">
+                    @{publication.owner.username}
+                  </Link>
+                ) : (
+                  <p className="text-sm font-semibold text-purple">@{publication.owner?.username ?? 'Usuario'}</p>
+                )}
+                <p className="text-xs text-navy/60">
                   {new Intl.DateTimeFormat('es-CU', { dateStyle: 'long' }).format(new Date(publication.published_at))}
                 </p>
               </div>
@@ -506,12 +516,14 @@ export function PublicationPage() {
           </article>
         </div>
       ) : (
-        <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-8 text-center">
+        <div className="rounded-3xl border-2 border-navy/10 bg-white p-8 text-center shadow-md">
           <div className="flex flex-col items-center gap-4">
-            <Logo size={48} />
+            <div className="w-20 h-20 rounded-2xl bg-orange/10 flex items-center justify-center">
+              <PawPrint size={40} className="text-orange" />
+            </div>
             <div className="space-y-2">
-              <h2 className="font-display text-2xl font-semibold text-[#0B3B3C]">No encontramos esta publicación</h2>
-              <p className="text-sm text-[#0B3B3C]/60">Es posible que haya sido eliminada o que el enlace no sea correcto.</p>
+              <h2 className="font-display text-2xl font-extrabold text-navy">🐱 No encontramos esta patita</h2>
+              <p className="text-sm text-navy/60">Es posible que haya sido eliminada o que el enlace no sea correcto.</p>
             </div>
             <Link to="/">
               <Button>Volver al inicio</Button>

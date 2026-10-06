@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { MessageCircle, Trash2, PawPrint } from 'lucide-react';
 import { Button } from '../ui/button';
 import { TextareaField } from '../ui/textarea-field';
 import { createComment, deleteComment, getComments, type Comment } from '../../lib/supabase/comments';
@@ -84,84 +85,173 @@ export function CommentsSection({ publicationId, currentUserId }: CommentsSectio
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <h3 className="font-display text-2xl font-semibold text-(--color-text)">Comentarios</h3>
-        <span className="rounded-full bg-black/5 px-3 py-1 text-sm font-bold text-(--color-text)">
-          {comments.length}
-        </span>
+      {/* Header con personalidad */}
+      <div className="relative">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-turquoise/10 border-2 border-turquoise/20">
+            <MessageCircle className="h-5 w-5 text-turquoise" />
+          </div>
+          <h3 className="font-display text-2xl font-extrabold text-navy">Comentarios</h3>
+          {comments.length > 0 && (
+            <span className="rounded-pill bg-orange/10 border border-orange/20 px-3 py-1.5 text-sm font-bold text-orange shadow-sm">
+              {comments.length}
+            </span>
+          )}
+        </div>
+        {/* Decoración de huella */}
+        <div className="absolute -top-2 -right-2 text-orange/10 animate-float">
+          <PawPrint className="h-8 w-8" />
+        </div>
       </div>
 
+      {/* Formulario para comentar */}
       {currentUserId ? (
-        <div className="space-y-3 rounded-2xl border border-black/5 bg-white/80 p-5">
-          <TextareaField
-            label="Agregar comentario"
-            placeholder="Comparte información útil sobre este caso..."
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
-          />
+        <div className="group relative overflow-hidden rounded-2xl border-2 border-turquoise/30 bg-white p-6 shadow-md transition-all duration-300 hover:shadow-lg hover:border-turquoise/40">
+          {/* Blob decorativo */}
+          <div className="blob-decoration absolute -top-10 -right-10 w-32 h-32 bg-turquoise/10" />
+          
+          <div className="relative space-y-4">
+            <TextareaField
+              label="Agregar comentario"
+              placeholder="Comparte información útil sobre este caso... 🐾"
+              value={body}
+              onChange={(event) => setBody(event.target.value)}
+            />
 
-          {errorMessage ? (
-            <p className="rounded-xl bg-[rgba(181,76,69,0.12)] px-4 py-3 text-sm font-medium text-(--color-danger)">
-              {errorMessage}
-            </p>
-          ) : null}
+            {errorMessage && (
+              <div className="rounded-xl bg-lost/10 border-2 border-lost/20 px-4 py-3 flex items-start gap-2 animate-shake">
+                <span className="text-lost text-lg">⚠️</span>
+                <p className="text-sm font-medium text-lost-dark leading-relaxed">
+                  {errorMessage}
+                </p>
+              </div>
+            )}
 
-          <Button type="button" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? 'Enviando...' : '💬 Publicar comentario'}
-          </Button>
+            <Button 
+              type="button" 
+              onClick={handleSubmit} 
+              disabled={submitting}
+              variant="secondary"
+              className="w-full sm:w-auto"
+            >
+              {submitting ? (
+                <>
+                  <span className="inline-flex gap-1">
+                    <span className="animate-paw-pulse">•</span>
+                    <span className="animate-paw-pulse" style={{ animationDelay: '0.2s' }}>•</span>
+                    <span className="animate-paw-pulse" style={{ animationDelay: '0.4s' }}>•</span>
+                  </span>
+                  Enviando
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="h-4 w-4" />
+                  Publicar comentario
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-black/10 bg-black/5 p-5 text-center text-sm text-(--color-muted)">
-          Necesitas entrar para comentar
+        <div className="rounded-2xl border-2 border-navy/10 bg-navy/5 p-6 text-center space-y-2">
+          <div className="w-12 h-12 rounded-xl bg-navy/10 flex items-center justify-center mx-auto mb-3">
+            <MessageCircle className="h-6 w-6 text-navy/40" />
+          </div>
+          <p className="text-sm font-semibold text-navy/60">
+            🔒 Necesitas iniciar sesión para comentar
+          </p>
+          <p className="text-xs text-navy/40">
+            Únete a la comunidad y ayuda a reunir patitas
+          </p>
         </div>
       )}
 
-      {loading ? (
-        <div className="rounded-2xl border border-black/5 bg-white/80 p-5 text-center text-sm text-(--color-muted)">
-          Cargando comentarios...
+      {/* Loading state */}
+      {loading && (
+        <div className="rounded-2xl border-2 border-navy/10 bg-white p-8 text-center space-y-3">
+          <div className="flex justify-center gap-2">
+            <PawPrint className="h-6 w-6 text-orange animate-paw-pulse" />
+            <PawPrint className="h-6 w-6 text-turquoise animate-paw-pulse" style={{ animationDelay: '0.2s' }} />
+            <PawPrint className="h-6 w-6 text-purple animate-paw-pulse" style={{ animationDelay: '0.4s' }} />
+          </div>
+          <p className="text-sm font-medium text-navy/60">
+            Cargando comentarios...
+          </p>
         </div>
-      ) : null}
+      )}
 
-      {!loading && comments.length === 0 ? (
-        <div className="rounded-2xl border border-black/5 bg-white/80 p-5 text-center text-sm text-(--color-muted)">
-          Aún no hay comentarios. Sé el primero en compartir información útil.
+      {/* Empty state */}
+      {!loading && comments.length === 0 && (
+        <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-navy/20 bg-navy/5 p-10 text-center space-y-3">
+          {/* Decoración */}
+          <div className="absolute top-4 left-4 text-navy/5">
+            <PawPrint className="h-12 w-12 rotate-12" />
+          </div>
+          <div className="absolute bottom-4 right-4 text-navy/5">
+            <PawPrint className="h-12 w-12 -rotate-12" />
+          </div>
+          
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-navy/10 flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="h-8 w-8 text-navy/30" />
+            </div>
+            <p className="font-display text-lg font-bold text-navy/60 mb-1">
+              Aún no hay comentarios
+            </p>
+            <p className="text-sm text-navy/40">
+              Sé el primero en compartir información útil 🐾
+            </p>
+          </div>
         </div>
-      ) : null}
+      )}
 
-      <div className="space-y-3">
-        {comments.map((comment) => (
+      {/* Lista de comentarios */}
+      <div className="space-y-4">
+        {comments.map((comment, index) => (
           <div
             key={comment.id}
-            className="rounded-2xl border border-black/5 bg-white/80 p-5 shadow-[0_6px_16px_rgba(15,61,51,0.04)]"
+            className="group relative overflow-hidden rounded-2xl border-2 border-navy/10 bg-white p-5 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-turquoise/30"
+            style={{ animationDelay: `${index * 50}ms` }}
           >
+            {/* Barra lateral de color */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-turquoise to-purple opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
             <div className="flex items-start justify-between gap-4">
-              <div className="flex gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--color-primary-light) text-lg font-bold text-(--color-primary)">
+              <div className="flex gap-3 flex-1 min-w-0">
+                {/* Avatar mejorado */}
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-orange via-turquoise to-purple text-lg font-display font-extrabold text-white shadow-md transition-transform duration-300 group-hover:scale-110">
                   {comment.author?.username?.[0]?.toUpperCase() ?? '?'}
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-(--color-text)">
-                      {comment.author?.username ?? 'Usuario'}
+                {/* Contenido */}
+                <div className="space-y-2 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-display font-extrabold text-navy">
+                      @{comment.author?.username ?? 'Usuario'}
                     </p>
-                    <span className="text-xs text-(--color-muted)">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-navy/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-navy/50">
+                      <PawPrint className="h-2.5 w-2.5" />
                       {formatRelativeTime(comment.created_at)}
                     </span>
                   </div>
-                  <p className="leading-7 text-(--color-text)">{comment.body}</p>
+                  <p className="text-sm leading-relaxed text-navy/80">
+                    {comment.body}
+                  </p>
                 </div>
               </div>
 
-              {comment.author && currentUserId === comment.author.username ? (
+              {/* Botón eliminar mejorado */}
+              {comment.author && currentUserId === comment.author.username && (
                 <button
                   type="button"
                   onClick={() => handleDelete(comment.id)}
-                  className="text-xs font-semibold text-(--color-muted) hover:text-(--color-danger)"
+                  className="group/btn shrink-0 flex items-center gap-1.5 rounded-lg bg-lost/10 hover:bg-lost/20 border border-lost/20 hover:border-lost/30 px-3 py-1.5 text-xs font-semibold text-lost transition-all duration-200 hover:scale-105"
+                  aria-label="Eliminar comentario"
                 >
-                  Eliminar
+                  <Trash2 className="h-3.5 w-3.5 transition-transform group-hover/btn:scale-110" />
+                  <span className="hidden sm:inline">Eliminar</span>
                 </button>
-              ) : null}
+              )}
             </div>
           </div>
         ))}

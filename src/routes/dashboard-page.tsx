@@ -2,11 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/auth-context';
 import { getMyPublications, deleteMyPublication, resolveMyPublication, type MyPublication } from '../lib/supabase/my-publications';
+import { signOut } from '../lib/supabase/auth';
 import { PublicationCard } from '../components/publications/publication-card';
 import { Button } from '../components/ui/button';
 import { PawLoader } from '../components/ui/paw-loader';
 import { EmptyState } from '../components/ui/empty-state';
-import { Trash2, CheckCircle, Eye, PlusCircle, FileText, User as UserIcon, PawPrint, TrendingUp } from 'lucide-react';
+import { Trash2, CheckCircle, Eye, PlusCircle, FileText, User as UserIcon, PawPrint, TrendingUp, LogOut } from 'lucide-react';
 
 type Tab = 'resumen' | 'publicaciones' | 'perfil';
 
@@ -16,8 +17,9 @@ export function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('resumen');
   const [publications, setPublications] = useState<MyPublication[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [stats, setStats] = useState({ active: 0, resolved: 0, total: 0 });
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -84,6 +86,19 @@ export function DashboardPage() {
     }
   };
 
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <section className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -104,7 +119,7 @@ export function DashboardPage() {
   return (
     <section className="space-y-8 py-8">
       {/* Header del dashboard */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
         <div className="blob-decoration absolute top-5 right-5 size-24 bg-purple/20" />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -246,7 +261,7 @@ export function DashboardPage() {
         <div className="max-w-2xl">
           <div className="rounded-2xl border-2 border-navy/10 bg-white p-8 shadow-md">
             <div className="flex items-center gap-4 mb-6 pb-6 border-b-2 border-navy/10">
-              <div className="size-16 rounded-2xl bg-gradient-to-br from-orange to-turquoise flex items-center justify-center text-white text-2xl font-display font-extrabold">
+              <div className="size-16 rounded-2xl bg-linear-to-br from-orange to-turquoise flex items-center justify-center text-white text-2xl font-display font-extrabold">
                 {user.user_metadata?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
               </div>
               <div>
@@ -276,7 +291,6 @@ export function DashboardPage() {
                   <p className="font-semibold text-navy">{user.email}</p>
                 </div>
               </div>
-              
               <div className="flex items-start justify-between py-3">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-navy/60 mb-1">Miembro desde</p>
@@ -289,6 +303,31 @@ export function DashboardPage() {
                   </p>
                 </div>
               </div>
+            </div>
+            {/* Ver perfil público - acceso con botón */}
+            {user.user_metadata?.username && (
+              <div className="mt-6">
+                <Link to={`/perfil/${user.user_metadata.username}`}>
+                  <Button variant="secondary" className="w-full gap-2">
+                    <Eye className="size-4" aria-hidden="true" />
+                    Ver mi perfil público
+                  </Button>
+                </Link>
+                <p className="mt-2 text-center text-xs text-navy/50">Así te ven otros usuarios de la comunidad.</p>
+              </div>
+            )}
+            {/* Cerrar sesión */}
+            <div className="mt-8 pt-6 border-t-2 border-navy/10">
+              <Button
+                variant="danger"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="w-full gap-2"
+              >
+                <LogOut className="size-4" aria-hidden="true" />
+                {loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
+              </Button>
+              <p className="mt-2 text-center text-xs text-navy/50">Se cerrará tu sesión en este dispositivo.</p>
             </div>
           </div>
         </div>

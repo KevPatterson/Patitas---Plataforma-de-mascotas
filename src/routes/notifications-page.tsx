@@ -106,7 +106,7 @@ export function NotificationsPage() {
   return (
     <section className="space-y-8 py-10">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
         <div className="blob-decoration absolute top-5 right-5 w-24 h-24 bg-purple/20" />
         
         <div className="relative space-y-3">

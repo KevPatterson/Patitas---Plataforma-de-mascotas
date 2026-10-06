@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PawPrint } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
+import { PawLoader } from '../../components/ui/paw-loader';
 
 export function CallbackPage() {
   const navigate = useNavigate();
@@ -33,8 +35,32 @@ export function CallbackPage() {
 
   return (
     <section className="grid min-h-[calc(100vh-8rem)] place-items-center py-10">
-      <div className="soft-panel rounded-4xl p-8 text-center max-w-md w-full">
-        {error ? <p className="text-sm font-semibold text-(--color-danger)">{error}</p> : <p className="text-sm text-(--color-muted)">Completando inicio de sesión...</p>}
+      <div className="rounded-3xl border-2 border-navy/10 bg-white p-12 text-center max-w-md w-full shadow-md space-y-6">
+        {error ? (
+          <>
+            <div className="size-16 rounded-2xl bg-lost/10 flex items-center justify-center mx-auto animate-shake">
+              <PawPrint className="size-8 text-lost" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="font-display text-xl font-extrabold text-navy">
+                Error en la autenticación
+              </h2>
+              <p className="text-sm text-navy/70">{error}</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <PawLoader size="lg" />
+            <div className="space-y-2">
+              <h2 className="font-display text-xl font-extrabold text-navy">
+                Completando inicio de sesión...
+              </h2>
+              <p className="text-sm text-navy/70">
+                Serás redirigido en un momento
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

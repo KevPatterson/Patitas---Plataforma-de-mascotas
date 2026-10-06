@@ -297,6 +297,108 @@
   animation: fade-up 0.6s var(--ease-smooth) forwards;
 }
 
+/* Fade in desde la izquierda */
+@keyframes fade-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-left {
+  animation: fade-in-left 0.7s var(--ease-smooth) forwards;
+}
+
+/* Fade in desde la derecha */
+@keyframes fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-right {
+  animation: fade-in-right 0.7s var(--ease-smooth) forwards;
+}
+
+/* Scale in */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s var(--ease-bounce) forwards;
+}
+
+/* Slide up */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s var(--ease-smooth) forwards;
+}
+
+/* Utilidad para scroll animations */
+.scroll-animation {
+  opacity: 0;
+}
+
+.scroll-animation.visible {
+  opacity: 1;
+}
+
+/* Stagger delays para listas */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+.stagger-7 { animation-delay: 0.7s; }
+.stagger-8 { animation-delay: 0.8s; }
+
+/* Parallax suave */
+.parallax {
+  transition: transform 0.3s ease-out;
+}
+
+/* Glow effect */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 140, 66, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 140, 66, 0.5);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
 /* Reducción de movimiento */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -314,4 +416,150 @@
   .blob-decoration {
     animation: none !important;
   }
+}
+
+/* ==================== RESPONSIVE OPTIMIZATIONS ==================== */
+
+/* Mejoras para dispositivos móviles pequeños (320px-375px) */
+@media (max-width: 375px) {
+  html {
+    font-size: 14px; /* Reducir tamaño base de fuente */
+  }
+
+  h1, .font-display {
+    letter-spacing: -0.03em; /* Compactar títulos */
+  }
+
+  /* Reducir padding en contenedores */
+  .soft-panel {
+    padding: 1rem;
+  }
+}
+
+/* Optimización táctil para móviles */
+@media (max-width: 768px) {
+  /* Targets táctiles mínimos de 44x44px (WCAG) */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  /* Evitar zoom en inputs en iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    font-size: 16px; /* Mínimo para evitar auto-zoom */
+  }
+
+  /* Scroll suave en móvil */
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mejorar tap highlights */
+  a, button {
+    -webkit-tap-highlight-color: rgba(255, 140, 66, 0.2);
+  }
+}
+
+/* Optimización para tablets (768px-1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Ajustar espaciado en tablets */
+  .space-y-8 > * + * {
+    margin-top: 2.5rem;
+  }
+
+  /* Grid responsivo para tablets */
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Optimización para pantallas grandes (1920px+) */
+@media (min-width: 1920px) {
+  /* Limitar ancho máximo del contenido */
+  body {
+    font-size: 18px;
+  }
+
+  .max-w-7xl {
+    max-width: 1440px;
+  }
+}
+
+/* Orientación landscape en móvil */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Reducir altura del hero */
+  .hero-gradient {
+    min-height: auto;
+  }
+
+  /* Compactar spacing vertical */
+  .space-y-16 > * + * {
+    margin-top: 2rem;
+  }
+}
+
+/* Safe area para dispositivos con notch */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+}
+
+/* Prevenir overflow horizontal */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Imágenes responsive por defecto */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Videos responsive */
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tablas responsive con scroll horizontal */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Mejoras de contraste para accesibilidad */
+@media (prefers-contrast: high) {
+  :root {
+    --color-navy: #000000;
+    --color-cream: #ffffff;
+  }
+
+  .soft-panel {
+    border: 3px solid var(--color-navy);
+  }
+}
+
+/* Tema oscuro (preparación futura) */
+@media (prefers-color-scheme: dark) {
+  /* Los estilos dark ya están definidos en la sección base */
 }

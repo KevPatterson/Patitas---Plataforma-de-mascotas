@@ -4,4 +4,4 @@ Disallow: /api/
 Disallow: /admin
 Disallow: /auth/
 
-Sitemap: https://patitas.cu/sitemap.xml
+Sitemap: https://patitass.vercel.app/sitemap.xml

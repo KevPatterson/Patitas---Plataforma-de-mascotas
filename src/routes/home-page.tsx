@@ -5,25 +5,28 @@ import { StatCard } from '../components/ui/stat-card';
 import { PublicationCard } from '../components/publications/publication-card';
 import { PawLoader, PawTrail } from '../components/ui/paw-loader';
 import { EmptyState } from '../components/ui/empty-state';
+import { ScrollReveal } from '../components/ui/scroll-reveal';
 import { setPageMeta } from '../lib/seo/page-meta';
 import { generateWebsiteStructuredData, injectStructuredData, removeStructuredData } from '../lib/seo/structured-data';
-import { searchPublications, countPublications } from '../lib/supabase/publication-search';
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from '../lib/config/site';
+import { searchPublications, countPublications, type PublicationSummary } from '../lib/supabase/publication-search';
 
 export function HomePage() {
-  const [recentCases, setRecentCases] = useState<Awaited<ReturnType<typeof searchPublications>>>([]);
+  const [recentCases, setRecentCases] = useState<PublicationSummary[]>([]);
   const [stats, setStats] = useState({ LOST: 0, FOUND: 0, ADOPTION: 0, total: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setPageMeta({
-      title: 'Patitas — Cada patita merece volver a casa',
-      description: 'Plataforma comunitaria para mascotas perdidas, encontradas y en adopción en Cuba. Ayuda a reunir familias con sus mejores amigos.',
+      title: `${SITE_NAME} · Que ninguna patita se quede sin casa`,
+      description: SITE_DESCRIPTION,
+      canonicalPath: '/',
     });
 
     const structuredData = generateWebsiteStructuredData({
-      name: 'Patitas',
-      description: 'Plataforma comunitaria para casos de mascotas perdidas, encontradas y en adopción en Cuba.',
-      url: 'https://patitas.cu',
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      url: SITE_URL,
     });
     injectStructuredData(structuredData, 'website-structured-data');
 
@@ -71,7 +74,7 @@ export function HomePage() {
   return (
     <div className="space-y-16 pb-16 pt-6 md:pt-10">
       {/* 🎨 HERO ANIME - Sección principal */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/5 via-cream to-turquoise/5 border-2 border-navy/10 shadow-xl">
+      <section className="relative overflow-hidden rounded-3xl bg-linear-to-br from-orange/5 via-cream to-turquoise/5 border-2 border-navy/10 shadow-xl">
         {/* Decoraciones de fondo */}
         <div className="absolute inset-0 hero-gradient" />
         <div className="blob-decoration absolute top-10 right-10 size-32 bg-orange/20" />
@@ -83,7 +86,7 @@ export function HomePage() {
           <div className="flex flex-col justify-center space-y-6 z-10">
             <div className="inline-flex items-center gap-2 rounded-pill bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-bold text-navy shadow-sm border border-navy/10 self-start">
               <PawPrint className="size-4 text-orange animate-paw-bounce" aria-hidden="true" />
-              Plataforma comunitaria en Cuba
+              Plataforma comunitaria cubana
             </div>
             
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-navy animate-fade-up">
@@ -128,7 +131,7 @@ export function HomePage() {
               {/* Placeholder para ilustraciones anime de mascotas */}
               <div className="relative aspect-square flex items-center justify-center">
                 {/* Círculo decorativo de fondo */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange/20 to-turquoise/20 animate-float" />
+                <div className="absolute inset-0 rounded-full bg-linear-to-br from-orange/20 to-turquoise/20 animate-float" />
                 
                 {/* Iconos de huellas decorativas */}
                 <div className="absolute top-10 left-10 animate-paw-bounce" style={{ animationDelay: '0s' }}>
@@ -160,160 +163,176 @@ export function HomePage() {
       </section>
 
       {/* 🐾 CASOS CERCA DE TI */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="size-5 text-turquoise" />
-              <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Casos activos</span>
+      <ScrollReveal animation="fade-up">
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="size-5 text-turquoise" />
+                <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Casos activos</span>
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
+                🐾 Casos cerca de ti
+              </h2>
+              <p className="text-navy/60 mt-1">Últimos casos publicados en tu zona</p>
             </div>
-            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
-              🐾 Casos cerca de ti
-            </h2>
-            <p className="text-navy/60 mt-1">Últimos casos publicados en tu zona</p>
-          </div>
-          <LinkButton href="/buscar" variant="ghost" className="hidden sm:flex">
-            Ver todos →
-          </LinkButton>
-        </div>
-
-        {loading ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-16">
-            <PawTrail />
-            <p className="text-sm text-navy/60">Cargando casos recientes...</p>
-          </div>
-        ) : recentCases.length === 0 ? (
-          <EmptyState
-            title="No hay casos recientes"
-            description="Sé el primero en publicar un caso y ayudar a una patita."
-            illustration="cat"
-            action={<LinkButton href="/publicar" variant="primary">Publicar caso</LinkButton>}
-          />
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {recentCases.map((pub) => (
-              <PublicationCard key={pub.id} publication={pub} />
-            ))}
-          </div>
-        )}
-
-        <div className="text-center pt-4">
-          <LinkButton href="/buscar" variant="ghost" className="sm:hidden">
-            Ver todos los casos →
-          </LinkButton>
-        </div>
-      </section>
-
-      {/* 🗺️ EXPLORA EN EL MAPA */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-turquoise/10 to-purple/10 border-2 border-navy/10 p-8 md:p-12">
-        <div className="relative z-10 grid gap-8 lg:grid-cols-2 items-center">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <MapIcon className="size-5 text-turquoise" />
-              <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Geolocalización</span>
-            </div>
-            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy mb-4">
-              🗺️ Explora en el mapa
-            </h2>
-            <p className="text-lg text-navy/70 mb-6 leading-relaxed">
-              Visualiza todos los casos cerca de ti. Cada marcador es una historia esperando un final feliz.
-            </p>
-            <LinkButton href="/mapa" variant="secondary">
-              Abrir mapa →
+            <LinkButton href="/buscar" variant="ghost" className="hidden sm:flex">
+              Ver todos →
             </LinkButton>
           </div>
-          <div className="relative aspect-video rounded-2xl bg-navy/5 border-2 border-dashed border-navy/20 flex items-center justify-center">
-            <MapIcon className="size-16 text-navy/20" />
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center gap-4 py-16">
+              <PawTrail />
+              <p className="text-sm text-navy/60">Cargando casos recientes...</p>
+            </div>
+          ) : recentCases.length === 0 ? (
+            <EmptyState
+              title="No hay casos recientes"
+              description="Sé el primero en publicar un caso y ayudar a una patita."
+              illustration="cat"
+              action={<LinkButton href="/publicar" variant="primary">Publicar caso</LinkButton>}
+            />
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {recentCases.map((pub, index) => (
+                <ScrollReveal key={pub.id} animation="scale-in" delay={index * 100}>
+                  <PublicationCard publication={pub} />
+                </ScrollReveal>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center pt-4">
+            <LinkButton href="/buscar" variant="ghost" className="sm:hidden">
+              Ver todos los casos →
+            </LinkButton>
           </div>
-        </div>
-      </section>
+        </section>
+      </ScrollReveal>
+
+      {/* 🗺️ EXPLORA EN EL MAPA */}
+      <ScrollReveal animation="fade-in-left">
+        <section className="relative overflow-hidden rounded-3xl bg-linear-to-br from-turquoise/10 to-purple/10 border-2 border-navy/10 p-8 md:p-12">
+          <div className="relative z-10 grid gap-8 lg:grid-cols-2 items-center">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <MapIcon className="size-5 text-turquoise" />
+                <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Geolocalización</span>
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy mb-4">
+                🗺️ Explora en el mapa
+              </h2>
+              <p className="text-lg text-navy/70 mb-6 leading-relaxed">
+                Visualiza todos los casos cerca de ti. Cada marcador es una historia esperando un final feliz.
+              </p>
+              <LinkButton href="/mapa" variant="secondary">
+                Abrir mapa →
+              </LinkButton>
+            </div>
+            <div className="relative aspect-video rounded-2xl bg-navy/5 border-2 border-dashed border-navy/20 flex items-center justify-center">
+              <MapIcon className="size-16 text-navy/20" />
+            </div>
+          </div>
+        </section>
+      </ScrollReveal>
 
       {/* 🐾 MODO RESCATE - Cómo funciona */}
-      <section className="space-y-8">
-        <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Heart className="size-5 text-orange" />
-            <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Modo rescate</span>
-          </div>
-          <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
-            Es más fácil de lo que piensas
-          </h2>
-          <p className="text-navy/60 max-w-2xl mx-auto">
-            Tres pasos simples para hacer la diferencia
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Paso 1 */}
-          <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
-            <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-orange/10">01</div>
-            <div className="relative space-y-4">
-              <div className="size-12 rounded-xl bg-orange/10 flex items-center justify-center">
-                <PawPrint className="size-6 text-orange" />
-              </div>
-              <h3 className="font-display text-2xl font-extrabold text-navy">PUBLICA</h3>
-              <p className="text-navy/70 leading-relaxed">
-                Describe la mascota y comparte su ubicación. Todo es seguro y privado.
-              </p>
+      <ScrollReveal animation="fade-up">
+        <section className="space-y-8">
+          <div className="text-center space-y-3">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Heart className="size-5 text-orange" />
+              <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Modo rescate</span>
             </div>
+            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
+              Es más fácil de lo que piensas
+            </h2>
+            <p className="text-navy/60 max-w-2xl mx-auto">
+              Tres pasos simples para hacer la diferencia
+            </p>
           </div>
 
-          {/* Paso 2 */}
-          <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
-            <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-turquoise/10">02</div>
-            <div className="relative space-y-4">
-              <div className="size-12 rounded-xl bg-turquoise/10 flex items-center justify-center">
-                <Users className="size-6 text-turquoise" />
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Paso 1 */}
+            <ScrollReveal animation="scale-in" delay={0}>
+              <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
+                <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-orange/10">01</div>
+                <div className="relative space-y-4">
+                  <div className="size-12 rounded-xl bg-orange/10 flex items-center justify-center">
+                    <PawPrint className="size-6 text-orange" />
+                  </div>
+                  <h3 className="font-display text-2xl font-extrabold text-navy">PUBLICA</h3>
+                  <p className="text-navy/70 leading-relaxed">
+                    Describe la mascota y comparte su ubicación. Todo es seguro y privado.
+                  </p>
+                </div>
               </div>
-              <h3 className="font-display text-2xl font-extrabold text-navy">CONECTA</h3>
-              <p className="text-navy/70 leading-relaxed">
-                La comunidad ayuda a difundir el caso. Miles de ojos buscando.
-              </p>
-            </div>
-          </div>
+            </ScrollReveal>
 
-          {/* Paso 3 */}
-          <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
-            <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-purple/10">03</div>
-            <div className="relative space-y-4">
-              <div className="size-12 rounded-xl bg-purple/10 flex items-center justify-center">
-                <BadgeCheck className="size-6 text-purple" />
+            {/* Paso 2 */}
+            <ScrollReveal animation="scale-in" delay={150}>
+              <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
+                <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-turquoise/10">02</div>
+                <div className="relative space-y-4">
+                  <div className="size-12 rounded-xl bg-turquoise/10 flex items-center justify-center">
+                    <Users className="size-6 text-turquoise" />
+                  </div>
+                  <h3 className="font-display text-2xl font-extrabold text-navy">CONECTA</h3>
+                  <p className="text-navy/70 leading-relaxed">
+                    La comunidad ayuda a difundir el caso. Miles de ojos buscando.
+                  </p>
+                </div>
               </div>
-              <h3 className="font-display text-2xl font-extrabold text-navy">REENCUENTRA</h3>
-              <p className="text-navy/70 leading-relaxed">
-                La historia termina con una mascota de vuelta en casa. ❤️
-              </p>
-            </div>
+            </ScrollReveal>
+
+            {/* Paso 3 */}
+            <ScrollReveal animation="scale-in" delay={300}>
+              <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
+                <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-purple/10">03</div>
+                <div className="relative space-y-4">
+                  <div className="size-12 rounded-xl bg-purple/10 flex items-center justify-center">
+                    <BadgeCheck className="size-6 text-purple" />
+                  </div>
+                  <h3 className="font-display text-2xl font-extrabold text-navy">REENCUENTRA</h3>
+                  <p className="text-navy/70 leading-relaxed">
+                    La historia termina con una mascota de vuelta en casa. ❤️
+                  </p>
+                </div>
+              </div>
+            </ScrollReveal>
           </div>
-        </div>
-      </section>
+        </section>
+      </ScrollReveal>
 
       {/* 📊 ESTADÍSTICAS DE LA COMUNIDAD */}
-      <section className="grid gap-6 md:grid-cols-4">
-        <StatCard 
-          value={stats.total.toLocaleString()} 
-          label="Casos activos" 
-          icon={<TrendingUp className="size-8" />}
-        />
-        <StatCard 
-          value={stats.LOST.toLocaleString()} 
-          label="Perdidos" 
-          tone="warning"
-          icon={<PawPrint className="size-8" />}
-        />
-        <StatCard 
-          value={stats.FOUND.toLocaleString()} 
-          label="Encontrados" 
-          tone="success"
-          icon={<BadgeCheck className="size-8" />}
-        />
-        <StatCard 
-          value={stats.ADOPTION.toLocaleString()} 
-          label="En adopción" 
-          tone="adoption"
-          icon={<Heart className="size-8" />}
-        />
-      </section>
+      <ScrollReveal animation="fade-up">
+        <section className="grid gap-6 md:grid-cols-4">
+          <StatCard 
+            value={stats.total.toLocaleString()} 
+            label="Casos activos" 
+            icon={<TrendingUp className="size-8" />}
+          />
+          <StatCard 
+            value={stats.LOST.toLocaleString()} 
+            label="Perdidos" 
+            tone="warning"
+            icon={<PawPrint className="size-8" />}
+          />
+          <StatCard 
+            value={stats.FOUND.toLocaleString()} 
+            label="Encontrados" 
+            tone="success"
+            icon={<BadgeCheck className="size-8" />}
+          />
+          <StatCard 
+            value={stats.ADOPTION.toLocaleString()} 
+            label="En adopción" 
+            tone="adoption"
+            icon={<Heart className="size-8" />}
+          />
+        </section>
+      </ScrollReveal>
     </div>
   );
 }
