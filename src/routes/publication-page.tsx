@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X, Heart } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X, Heart, Eye, Flag } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { TextareaField } from '../components/ui/textarea-field';
 import { StatusBadge } from '../components/ui/status-badge';
 import { Logo } from '../components/Logo';
+import { PawLoader } from '../components/ui/paw-loader';
 import { createReport } from '../lib/supabase/reports';
 import { useAuth } from '../app/auth-context';
 import { getPublicationBySlug, searchPublications } from '../lib/supabase/publication-search';
