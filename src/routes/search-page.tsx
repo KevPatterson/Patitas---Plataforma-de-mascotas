@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PawPrint, Loader2, ChevronDown } from 'lucide-react';
+import { Search, Filter, X, ChevronDown } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { TextField } from '../components/ui/text-field';
-import { Logo } from '../components/Logo';
 import { PublicationCard } from '../components/publications/publication-card';
+import { PawLoader, PawTrail } from '../components/ui/paw-loader';
+import { EmptyState } from '../components/ui/empty-state';
 import { searchPublications, countPublications, type PublicationSummary } from '../lib/supabase/publication-search';
 import { TYPE_LABELS, SPECIES_LABELS, SEX_LABELS, SIZE_LABELS, STATUS_LABELS } from '../lib/constants/labels';
 import { CUBA, PROVINCES } from '../lib/constants/cuba';
@@ -98,36 +99,65 @@ export function SearchPage() {
   }
 
   const totalPages = Math.ceil(totalCount / LIMIT);
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => 
+    value && value !== 'ALL' && value !== 'ACTIVE' && key !== 'query'
+  ).length;
 
   return (
-    <section className="space-y-6 py-8">
-      <div className="max-w-3xl space-y-4">
-        <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#0B3B3C]/60">Buscar</p>
-        <h1
-          className="text-4xl font-extrabold tracking-tight text-[#0B3B3C]"
-          style={{ fontFamily: '"Baloo 2", cursive' }}
-        >
-          Encuentra casos por nombre, zona o tipo
-        </h1>
-        <p className="text-[#0B3B3C]/70" style={{ fontFamily: 'Figtree, sans-serif' }}>
-          La búsqueda combina texto y filtros para encontrar mascotas perdidas, encontradas y en adopción.
-        </p>
+    <section className="space-y-8 py-8">
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-turquoise/10 via-cream to-purple/10 border-2 border-navy/10 p-8 shadow-md">
+        <div className="blob-decoration absolute top-5 right-5 w-24 h-24 bg-orange/20" />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-2">
+            <Search className="h-5 w-5 text-turquoise" />
+            <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Buscador</span>
+          </div>
+          <h1 className="font-display text-4xl font-extrabold text-navy mb-2">
+            Encuentra una patita
+          </h1>
+          <p className="text-navy/70 max-w-2xl">
+            Busca por nombre, zona, especie o características. Combina filtros para resultados más precisos.
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-[24px] border-2 border-[#CFEFE6] bg-white p-5 shadow-sm space-y-4">
+      {/* Barra de búsqueda principal */}
+      <div className="relative">
         <TextField
-          label="Buscar"
-          placeholder="Toby, gato negro, Playa..."
+          label=""
+          placeholder="🔎 Toby, gato negro, La Habana..."
           value={filters.query}
           onChange={(event) => updateParam('q', event.target.value || null)}
+          className="h-14 text-lg"
         />
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-            <span style={{ fontFamily: 'Figtree, sans-serif' }}>Tipo</span>
+      {/* Filtros */}
+      <div className="rounded-2xl border-2 border-navy/10 bg-white p-6 shadow-md space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-navy/60" />
+            <h2 className="font-display text-lg font-bold text-navy">Filtros</h2>
+            {activeFiltersCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] rounded-full bg-orange text-white text-xs font-bold">
+                {activeFiltersCount}
+              </span>
+            )}
+          </div>
+          {activeFiltersCount > 0 && (
+            <Button variant="ghost" onClick={clearFilters} className="text-sm gap-1">
+              <X className="h-4 w-4" />
+              Limpiar
+            </Button>
+          )}
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-navy">Tipo</span>
             <select
-              className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-              style={{ fontFamily: 'Figtree, sans-serif' }}
+              className="h-11 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20"
               value={filters.type}
               onChange={(event) => updateParam('type', event.target.value === 'ALL' ? null : event.target.value)}
             >
@@ -138,11 +168,10 @@ export function SearchPage() {
             </select>
           </label>
 
-          <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-            <span style={{ fontFamily: 'Figtree, sans-serif' }}>Especie</span>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-navy">Especie</span>
             <select
-              className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-              style={{ fontFamily: 'Figtree, sans-serif' }}
+              className="h-11 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20"
               value={filters.species}
               onChange={(event) => updateParam('species', event.target.value || null)}
             >
@@ -153,11 +182,10 @@ export function SearchPage() {
             </select>
           </label>
 
-          <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-            <span style={{ fontFamily: 'Figtree, sans-serif' }}>Sexo</span>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-navy">Sexo</span>
             <select
-              className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-              style={{ fontFamily: 'Figtree, sans-serif' }}
+              className="h-11 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20"
               value={filters.sex}
               onChange={(event) => updateParam('sex', event.target.value || null)}
             >
@@ -168,11 +196,10 @@ export function SearchPage() {
             </select>
           </label>
 
-          <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-            <span style={{ fontFamily: 'Figtree, sans-serif' }}>Tamaño</span>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-navy">Tamaño</span>
             <select
-              className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-              style={{ fontFamily: 'Figtree, sans-serif' }}
+              className="h-11 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20"
               value={filters.size}
               onChange={(event) => updateParam('size', event.target.value || null)}
             >
@@ -184,17 +211,22 @@ export function SearchPage() {
           </label>
         </div>
 
-        <Button type="button" variant="ghost" className="w-full md:w-auto" onClick={() => setShowAdvanced(!showAdvanced)}>
-          {showAdvanced ? 'Ocultar filtros avanzados' : 'Filtros avanzados'} <ChevronDown className={`h-4 w-4 transition ${showAdvanced ? 'rotate-180' : ''}`} />
+        <Button 
+          type="button" 
+          variant="ghost" 
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="w-full sm:w-auto gap-2"
+        >
+          {showAdvanced ? 'Ocultar' : 'Mostrar'} filtros avanzados
+          <ChevronDown className={`h-4 w-4 transition-transform duration-base ${showAdvanced ? 'rotate-180' : ''}`} />
         </Button>
 
         {showAdvanced && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 animate-in slide-in-from-top-2">
-            <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-              <span style={{ fontFamily: 'Figtree, sans-serif' }}>Provincia</span>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 animate-fade-up">
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-navy">Provincia</span>
               <select
-                className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-                style={{ fontFamily: 'Figtree, sans-serif' }}
+                className="h-11 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20"
                 value={filters.province}
                 onChange={(event) => {
                   updateParam('province', event.target.value || null);
@@ -208,11 +240,10 @@ export function SearchPage() {
               </select>
             </label>
 
-            <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-              <span style={{ fontFamily: 'Figtree, sans-serif' }}>Municipio</span>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-navy">Municipio</span>
               <select
-                className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-                style={{ fontFamily: 'Figtree, sans-serif' }}
+                className="h-11 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 value={filters.municipality}
                 onChange={(event) => updateParam('municipality', event.target.value || null)}
                 disabled={municipalities.length === 0}
@@ -224,11 +255,10 @@ export function SearchPage() {
               </select>
             </label>
 
-            <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-              <span style={{ fontFamily: 'Figtree, sans-serif' }}>Estado</span>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-navy">Estado</span>
               <select
-                className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-                style={{ fontFamily: 'Figtree, sans-serif' }}
+                className="h-11 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20"
                 value={filters.status}
                 onChange={(event) => updateParam('status', event.target.value === 'ALL' ? null : event.target.value)}
               >
@@ -239,82 +269,89 @@ export function SearchPage() {
               </select>
             </label>
 
-            <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-              <span style={{ fontFamily: 'Figtree, sans-serif' }}>Desde</span>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-navy">Desde</span>
               <input
                 type="date"
-                className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-                style={{ fontFamily: 'Figtree, sans-serif' }}
+                className="h-11 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20"
                 value={filters.since}
                 onChange={(event) => updateParam('since', event.target.value || null)}
               />
             </label>
-
-            <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
-              <span style={{ fontFamily: 'Figtree, sans-serif' }}>Hasta</span>
-              <input
-                type="date"
-                className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
-                style={{ fontFamily: 'Figtree, sans-serif' }}
-                value={filters.until}
-                onChange={(event) => updateParam('until', event.target.value || null)}
-              />
-            </label>
           </div>
         )}
-
-        <Button type="button" variant="ghost" onClick={clearFilters}>
-          Limpiar filtros
-        </Button>
       </div>
 
-      {errorMessage ? (
-        <p className="rounded-[16px] bg-[#C2332C]/10 px-4 py-3 text-sm font-medium text-[#C2332C]" style={{ fontFamily: 'Figtree, sans-serif' }}>
+      {/* Error */}
+      {errorMessage && (
+        <div className="rounded-xl bg-lost/10 border-2 border-lost/20 px-4 py-3 text-sm font-medium text-lost animate-shake">
           {errorMessage}
-        </p>
-      ) : null}
-
-      {loading ? (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-[24px] border-2 border-[#CFEFE6] bg-white p-8 text-center shadow-sm">
-          <Logo variant="mark" size={48} />
-          <div className="flex items-center gap-2 text-sm font-semibold text-[#0B3B3C]/70" style={{ fontFamily: 'Figtree, sans-serif' }}>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Buscando...
-          </div>
         </div>
-      ) : null}
+      )}
 
-      {!loading && results.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-[24px] border-2 border-[#CFEFE6] bg-white p-8 text-center shadow-sm">
-          <PawPrint className="h-16 w-16 text-[#0B3B3C]/30" />
-          <p className="text-[#0B3B3C]/70" style={{ fontFamily: 'Figtree, sans-serif' }}>
-            No se encontraron casos con los filtros actuales.
-          </p>
-          <Button variant="ghost" onClick={clearFilters}>
-            Limpiar filtros
-          </Button>
+      {/* Loading */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center gap-4 py-16">
+          <PawTrail />
+          <p className="text-sm text-navy/60">Buscando patitas...</p>
         </div>
-      ) : null}
+      )}
 
+      {/* Empty */}
+      {!loading && results.length === 0 && (
+        <EmptyState
+          title="No encontramos ninguna patita"
+          description="Intenta con otros filtros o términos de búsqueda."
+          illustration="cat"
+          action={activeFiltersCount > 0 && <Button variant="primary" onClick={clearFilters}>Limpiar filtros</Button>}
+        />
+      )}
+
+      {/* Results */}
       {!loading && results.length > 0 && (
         <>
-          <p className="text-sm text-[#0B3B3C]/60" style={{ fontFamily: 'Figtree, sans-serif' }}>
-            {totalCount} resultado{totalCount !== 1 ? 's' : ''} · Página {page} de {totalPages || 1}
-          </p>
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-navy/60">
+              {totalCount} resultado{totalCount !== 1 ? 's' : ''} encontrado{totalCount !== 1 ? 's' : ''}
+            </p>
+            {totalPages > 1 && (
+              <p className="text-sm font-semibold text-navy/60">
+                Página {page} de {totalPages}
+              </p>
+            )}
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((pub) => (
               <PublicationCard key={pub.id} publication={pub} />
             ))}
           </div>
 
+          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
-              <Button variant="ghost" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-                Anterior
+            <div className="flex items-center justify-center gap-3 pt-4">
+              <Button 
+                variant="ghost" 
+                onClick={() => setPage((p) => Math.max(1, p - 1))} 
+                disabled={page === 1}
+                className="min-w-[100px]"
+              >
+                ← Anterior
               </Button>
-              <span className="px-4 text-sm font-semibold text-[#0B3B3C]">{page} / {totalPages}</span>
-              <Button variant="ghost" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                Siguiente
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center min-w-[36px] h-[36px] rounded-lg bg-navy text-white text-sm font-bold">
+                  {page}
+                </span>
+                <span className="text-navy/40">/</span>
+                <span className="text-sm font-semibold text-navy/60">{totalPages}</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
+                disabled={page === totalPages}
+                className="min-w-[100px]"
+              >
+                Siguiente →
               </Button>
             </div>
           )}

@@ -31,9 +31,6 @@ plain
 Las Vercel Functions solo se usan para operaciones con privilegios/secretos
 (moderación, auditoría, webhooks, futuras integraciones IA/OCR).
 
-**Prohibido por diseño:** Railway, Hono, tRPC, Drizzle, MySQL, Node persistente,
-Express, Prisma. No hay capa backend innecesaria.
-
 ---
 
 ## 🚀 Setup local
@@ -200,6 +197,7 @@ Fase	Estado
 11. Testing	⚠️ estructura lista (vitest/playwright en devDeps); añadir specs
 12. Security hardening	✅ (headers, RLS, rate limit, column grants)
 13. Producción	📝 ver despliegue abajo
+
 🌐 Despliegue (Vercel + Supabase)
 Push a GitHub → importar repo en Vercel (framework: Vite, auto-detectado).
 En Vercel → Settings → Environment Variables: añade SUPABASE_URL,
@@ -209,20 +207,14 @@ En Supabase cloud: aplica las 3 migraciones y configura Auth
 (Site URL = tu dominio Vercel, redirect URLs).
 Habilita Realtime para notifications en Supabase → Database → Replication.
 Preview deployments automáticos por PR.
+
 📜 Convenciones
 Commits semánticos: feat(auth): …, fix(rls): restrict publication updates to owners.
 TypeScript estricto, sin any, ESLint + Prettier, HTML semántico, focus visible,
 aria-* en interactivos, contraste AA.
+
 ❤️ Producto
 Patitas no es "otro sitio de anuncios": es el lugar donde buscas cuando una
 mascota desaparece. Perdí → busco → filtro por zona → reviso el mapa →
 encuentro coincidencias → contacto → recupero → marco resuelto.
 plain
-
----
-
-## ⚠️ Nota de verificación y cierre
-
-No pude ejecutar `npm install` ni `npm run build` en este entorno (sin red ni Node), así que **te pido verificar localmente**: `npm install && npm run dev` con Supabase local, y `npm run build` antes del deploy. Lo entregado está escrito contra las APIs reales (`@supabase/supabase-js` v2, TanStack Query v5, RHF v7, Leaflet 1.9, Vite 5); el flujo de datos críticos (RLS, difuminado de coordenadas, coincidencias, notificaciones) vive en SQL y se valida con `supabase db reset`.
-
-El proyecto completo quedó en **`/mnt/agents/output/patitas/`** con el **README.md incluido y actualizado en la raíz**, tal como pediste. 🐾
