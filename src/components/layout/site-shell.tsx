@@ -4,6 +4,7 @@ import { Bell, Search, MapPin, PlusCircle, LogOut, User, type LucideIcon } from 
 import { signOut } from '../../lib/supabase/auth';
 import { useAuth } from '../../app/auth-context';
 import { getUnreadNotificationsCount } from '../../lib/supabase/notifications';
+import { supabase } from '../../lib/supabase/client';
 import { Logo } from '../Logo';
 
 type SiteShellProps = {
@@ -40,6 +41,7 @@ export function SiteShell({ children }: SiteShellProps) {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -69,7 +71,24 @@ export function SiteShell({ children }: SiteShellProps) {
       }
     };
 
+    const fetchProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', user.id)
+          .single();
+        
+        if (!error && data && active) {
+          setAvatarUrl(data.avatar_url);
+        }
+      } catch {
+        if (active) setAvatarUrl(null);
+      }
+    };
+
     fetchCount();
+    fetchProfile();
     const interval = setInterval(fetchCount, 30_000);
 
     return () => {
@@ -109,9 +128,6 @@ export function SiteShell({ children }: SiteShellProps) {
               {user && (
                 <NavItem href="/notificaciones" label="Notificaciones" Icon={Bell} badge={unreadCount} />
               )}
-              {user && (
-                <NavItem href={profileHref} label="Perfil" Icon={User} />
-              )}
             </nav>
             {/* Acciones de autenticación - siempre visibles */}
             {!authLoading && (
@@ -122,7 +138,15 @@ export function SiteShell({ children }: SiteShellProps) {
                     className="inline-flex items-center gap-2 rounded-xl border-2 border-navy/10 bg-white px-4 py-2.5 text-sm font-bold text-navy transition-all duration-base ease-smooth hover:bg-navy/5 hover:scale-105 active:scale-95"
                     aria-label="Mi perfil"
                   >
-                    <User className="size-4" aria-hidden="true" />
+                    {avatarUrl ? (
+                      <img 
+                        src={avatarUrl} 
+                        alt="Avatar" 
+                        className="size-6 rounded-lg object-cover border border-navy/10"
+                      />
+                    ) : (
+                      <User className="size-4" aria-hidden="true" />
+                    )}
                     <span className="hidden sm:inline">Perfil</span>
                   </Link>
                   <button

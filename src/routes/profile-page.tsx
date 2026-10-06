@@ -14,6 +14,7 @@ type ProfileRow = {
   username: string;
   full_name: string | null;
   created_at: string;
+  avatar_url: string | null;
 };
 
 export function ProfilePage() {
@@ -38,7 +39,7 @@ export function ProfilePage() {
       try {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, full_name, created_at')
+          .select('id, username, full_name, created_at, avatar_url')
           .eq('username', username)
           .maybeSingle();
 
@@ -173,8 +174,16 @@ export function ProfilePage() {
       <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-purple/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
         <div className="blob-decoration absolute top-5 right-5 size-24 bg-orange/20" />
         <div className="relative flex flex-col md:flex-row items-center gap-6">
-          <div className="size-24 rounded-2xl bg-linear-to-br from-orange to-turquoise flex items-center justify-center text-white text-4xl font-display font-extrabold shadow-lg">
-            {profile.username?.[0]?.toUpperCase() || 'U'}
+          <div className="size-24 rounded-2xl overflow-hidden border-4 border-navy/10 shadow-lg bg-linear-to-br from-orange to-turquoise flex items-center justify-center text-white text-4xl font-display font-extrabold">
+            {profile.avatar_url ? (
+              <img 
+                src={profile.avatar_url} 
+                alt={`Avatar de ${profile.username}`} 
+                className="size-full object-cover"
+              />
+            ) : (
+              profile.username?.[0]?.toUpperCase() || 'U'
+            )}
           </div>
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center gap-2 justify-center md:justify-start mb-2">

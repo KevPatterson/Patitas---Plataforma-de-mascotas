@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/auth-context';
 import { getMyPublications, deleteMyPublication, resolveMyPublication, type MyPublication } from '../lib/supabase/my-publications';
 import { signOut } from '../lib/supabase/auth';
+import { getProfile, uploadAvatar, deleteAvatar } from '../lib/supabase/profiles';
 import { PublicationCard } from '../components/publications/publication-card';
 import { Button } from '../components/ui/button';
 import { PawLoader } from '../components/ui/paw-loader';
 import { EmptyState } from '../components/ui/empty-state';
+import { AvatarUpload } from '../components/ui/avatar-upload';
 import { Trash2, CheckCircle, Eye, PlusCircle, FileText, User as UserIcon, PawPrint, TrendingUp, LogOut } from 'lucide-react';
 
 type Tab = 'resumen' | 'publicaciones' | 'perfil';
@@ -20,6 +22,7 @@ export function DashboardPage() {
   const [stats, setStats] = useState({ active: 0, resolved: 0, total: 0 });
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -48,8 +51,39 @@ export function DashboardPage() {
   useEffect(() => {
     if (user) {
       loadData();
+      loadProfileData();
     }
   }, [user, activeTab, loadData]);
+
+  const loadProfileData = async () => {
+    if (!user) return;
+    try {
+      const profile = await getProfile(user.id);
+      setAvatarUrl(profile.avatar_url);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!user) return;
+    try {
+      const newAvatarUrl = await uploadAvatar(user.id, file);
+      setAvatarUrl(newAvatarUrl);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    if (!user) return;
+    try {
+      await deleteAvatar(user.id);
+      setAvatarUrl(null);
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const handleResolve = async (id: string) => {
     if (!user) return;
@@ -260,11 +294,14 @@ export function DashboardPage() {
       {activeTab === 'perfil' && (
         <div className="max-w-2xl">
           <div className="rounded-2xl border-2 border-navy/10 bg-white p-8 shadow-md">
-            <div className="flex items-center gap-4 mb-6 pb-6 border-b-2 border-navy/10">
-              <div className="size-16 rounded-2xl bg-linear-to-br from-orange to-turquoise flex items-center justify-center text-white text-2xl font-display font-extrabold">
-                {user.user_metadata?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
-              </div>
-              <div>
+            <div className="flex flex-col items-center gap-6 mb-6 pb-6 border-b-2 border-navy/10">
+              <AvatarUpload
+                currentAvatarUrl={avatarUrl}
+                userName={user.user_metadata?.username || user.email}
+                onUpload={handleAvatarUpload}
+                onDelete={handleAvatarDelete}
+              />
+              <div className="text-center">
                 <h2 className="font-display text-2xl font-extrabold text-navy">Tu perfil</h2>
                 <p className="text-sm text-navy/60">Información de tu cuenta</p>
               </div>
