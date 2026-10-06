@@ -25,9 +25,9 @@ const variantClasses: Record<ButtonVariant, string> = {
 function LoadingDots() {
   return (
     <span className="flex gap-1">
-      <span className="w-1.5 h-1.5 bg-current rounded-full animate-paw-pulse" style={{ animationDelay: '0ms' }} />
-      <span className="w-1.5 h-1.5 bg-current rounded-full animate-paw-pulse" style={{ animationDelay: '150ms' }} />
-      <span className="w-1.5 h-1.5 bg-current rounded-full animate-paw-pulse" style={{ animationDelay: '300ms' }} />
+      <span className="size-1.5 bg-current rounded-full animate-paw-pulse" style={{ animationDelay: '0ms' }} />
+      <span className="size-1.5 bg-current rounded-full animate-paw-pulse" style={{ animationDelay: '150ms' }} />
+      <span className="size-1.5 bg-current rounded-full animate-paw-pulse" style={{ animationDelay: '300ms' }} />
     </span>
   );
 }

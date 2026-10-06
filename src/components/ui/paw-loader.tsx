@@ -4,9 +4,9 @@ type PawLoaderProps = {
 };
 
 const sizeClasses = {
-  sm: 'w-6 h-6',
-  md: 'w-10 h-10',
-  lg: 'w-16 h-16',
+  sm: 'size-6',
+  md: 'size-10',
+  lg: 'size-16',
 };
 
 export function PawLoader({ size = 'md', className = '' }: PawLoaderProps) {
@@ -38,21 +38,21 @@ export function PawLoader({ size = 'md', className = '' }: PawLoaderProps) {
 export function PawTrail({ className = '' }: { className?: string }) {
   return (
     <div className={`flex items-center gap-2 ${className}`} role="status" aria-label="Cargando">
-      <svg className="w-4 h-4 animate-paw-pulse text-orange" style={{ animationDelay: '0ms' }} viewBox="0 0 120 120" fill="none">
+      <svg className="size-4 animate-paw-pulse text-orange" style={{ animationDelay: '0ms' }} viewBox="0 0 120 120" fill="none">
         <ellipse cx="24" cy="48" rx="9" ry="12" transform="rotate(-22 24 48)" fill="currentColor" opacity="0.8" />
         <ellipse cx="45" cy="28" rx="9" ry="13" transform="rotate(-8 45 28)" fill="currentColor" opacity="0.9" />
         <ellipse cx="75" cy="28" rx="9" ry="13" transform="rotate(8 75 28)" fill="currentColor" opacity="0.9" />
         <ellipse cx="96" cy="48" rx="9" ry="12" transform="rotate(22 96 48)" fill="currentColor" opacity="0.8" />
         <path d="M60 110 C60 110 33 91 33 74 C33 62 44 54 60 54 C76 54 87 62 87 74 C87 91 60 110 60 110Z" fill="currentColor" />
       </svg>
-      <svg className="w-4 h-4 animate-paw-pulse text-orange" style={{ animationDelay: '200ms' }} viewBox="0 0 120 120" fill="none">
+      <svg className="size-4 animate-paw-pulse text-orange" style={{ animationDelay: '200ms' }} viewBox="0 0 120 120" fill="none">
         <ellipse cx="24" cy="48" rx="9" ry="12" transform="rotate(-22 24 48)" fill="currentColor" opacity="0.8" />
         <ellipse cx="45" cy="28" rx="9" ry="13" transform="rotate(-8 45 28)" fill="currentColor" opacity="0.9" />
         <ellipse cx="75" cy="28" rx="9" ry="13" transform="rotate(8 75 28)" fill="currentColor" opacity="0.9" />
         <ellipse cx="96" cy="48" rx="9" ry="12" transform="rotate(22 96 48)" fill="currentColor" opacity="0.8" />
         <path d="M60 110 C60 110 33 91 33 74 C33 62 44 54 60 54 C76 54 87 62 87 74 C87 91 60 110 60 110Z" fill="currentColor" />
       </svg>
-      <svg className="w-4 h-4 animate-paw-pulse text-orange" style={{ animationDelay: '400ms' }} viewBox="0 0 120 120" fill="none">
+      <svg className="size-4 animate-paw-pulse text-orange" style={{ animationDelay: '400ms' }} viewBox="0 0 120 120" fill="none">
         <ellipse cx="24" cy="48" rx="9" ry="12" transform="rotate(-22 24 48)" fill="currentColor" opacity="0.8" />
         <ellipse cx="45" cy="28" rx="9" ry="13" transform="rotate(-8 45 28)" fill="currentColor" opacity="0.9" />
         <ellipse cx="75" cy="28" rx="9" ry="13" transform="rotate(8 75 28)" fill="currentColor" opacity="0.9" />

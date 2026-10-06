@@ -26,8 +26,8 @@ function NotFound() {
       <div className="max-w-lg w-full">
         <div className="relative overflow-hidden rounded-3xl border-2 border-navy/10 bg-white p-10 text-center shadow-xl">
           {/* Decoraciones de fondo */}
-          <div className="blob-decoration absolute top-5 right-5 w-20 h-20 bg-orange/10" />
-          <div className="blob-decoration absolute bottom-5 left-5 w-16 h-16 bg-turquoise/10" style={{ animationDelay: '2s' }} />
+          <div className="blob-decoration absolute top-5 right-5 size-20 bg-orange/10" />
+          <div className="blob-decoration absolute bottom-5 left-5 size-16 bg-turquoise/10" style={{ animationDelay: '2s' }} />
           
           <div className="relative z-10 space-y-6">
             {/* Mascota perdida animada */}
@@ -46,11 +46,11 @@ function NotFound() {
             
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
               <LinkButton href="/" variant="primary">
-                <Home className="h-4 w-4" aria-hidden="true" />
+                <Home className="size-4" aria-hidden="true" />
                 Volver al inicio
               </LinkButton>
               <LinkButton href="/buscar" variant="secondary">
-                <PawPrint className="h-4 w-4" aria-hidden="true" />
+                <PawPrint className="size-4" aria-hidden="true" />
                 Buscar mascota
               </LinkButton>
             </div>

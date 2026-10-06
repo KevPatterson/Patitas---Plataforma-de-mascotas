@@ -40,7 +40,7 @@ export function SightingsTimeline({ sightings }: SightingsTimelineProps) {
       <div className="space-y-3">
         {sightings.map((sighting, index) => (
           <div key={sighting.id} className="relative rounded-2xl border-2 border-[#CFEFE6] bg-white p-5 shadow-sm">
-            <div className="absolute -left-3 top-6 flex h-6 w-6 items-center justify-center rounded-full bg-[#FF6B35] text-xs font-bold text-[#0B3B3C] shadow-md">
+            <div className="absolute -left-3 top-6 flex size-6 items-center justify-center rounded-full bg-[#FF6B35] text-xs font-bold text-[#0B3B3C] shadow-md">
               {sightings.length - index}
             </div>
 
@@ -49,7 +49,7 @@ export function SightingsTimeline({ sightings }: SightingsTimelineProps) {
 
               {sighting.location ? (
                 <p className="flex items-center gap-1.5 text-sm font-semibold text-[#0B3B3C]">
-                  <MapPin className="h-4 w-4 text-[#FF6B35]" aria-hidden="true" />
+                  <MapPin className="size-4 text-[#FF6B35]" aria-hidden="true" />
                   {[sighting.location.zone, sighting.location.municipality, sighting.location.province].filter(Boolean).join(', ')}
                 </p>
               ) : null}

@@ -96,20 +96,20 @@ export function DashboardPage() {
   if (!user) return null;
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'resumen', label: 'Resumen', icon: <TrendingUp className="h-4 w-4" /> },
-    { id: 'publicaciones', label: 'Mis publicaciones', icon: <FileText className="h-4 w-4" /> },
-    { id: 'perfil', label: 'Perfil', icon: <UserIcon className="h-4 w-4" /> },
+    { id: 'resumen', label: 'Resumen', icon: <TrendingUp className="size-4" /> },
+    { id: 'publicaciones', label: 'Mis publicaciones', icon: <FileText className="size-4" /> },
+    { id: 'perfil', label: 'Perfil', icon: <UserIcon className="size-4" /> },
   ];
 
   return (
     <section className="space-y-8 py-8">
       {/* Header del dashboard */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 shadow-md">
-        <div className="blob-decoration absolute top-5 right-5 w-24 h-24 bg-purple/20" />
+        <div className="blob-decoration absolute top-5 right-5 size-24 bg-purple/20" />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <PawPrint className="h-5 w-5 text-orange animate-paw-bounce" />
+              <PawPrint className="size-5 text-orange animate-paw-bounce" />
               <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Tu espacio</span>
             </div>
             <h1 className="font-display text-4xl font-extrabold text-navy">Panel de control</h1>
@@ -117,7 +117,7 @@ export function DashboardPage() {
           </div>
           <Link to="/publicar">
             <Button variant="primary" className="gap-2 shadow-lg">
-              <PlusCircle className="h-5 w-5" />
+              <PlusCircle className="size-5" />
               Publicar caso
             </Button>
           </Link>
@@ -148,7 +148,7 @@ export function DashboardPage() {
           <div className="group rounded-2xl border-2 border-turquoise/20 bg-white p-6 shadow-md hover:shadow-lg transition-all duration-base hover:-translate-y-1">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-navy/70">Publicaciones activas</p>
-              <Eye className="h-5 w-5 text-turquoise/40 group-hover:text-turquoise transition-colors" />
+              <Eye className="size-5 text-turquoise/40 group-hover:text-turquoise transition-colors" />
             </div>
             <p className="font-display text-4xl font-extrabold text-turquoise">{stats.active}</p>
           </div>
@@ -156,7 +156,7 @@ export function DashboardPage() {
           <div className="group rounded-2xl border-2 border-found/20 bg-white p-6 shadow-md hover:shadow-lg transition-all duration-base hover:-translate-y-1">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-navy/70">Casos resueltos</p>
-              <CheckCircle className="h-5 w-5 text-found/40 group-hover:text-found transition-colors" />
+              <CheckCircle className="size-5 text-found/40 group-hover:text-found transition-colors" />
             </div>
             <p className="font-display text-4xl font-extrabold text-found">{stats.resolved}</p>
           </div>
@@ -164,7 +164,7 @@ export function DashboardPage() {
           <div className="group rounded-2xl border-2 border-purple/20 bg-white p-6 shadow-md hover:shadow-lg transition-all duration-base hover:-translate-y-1">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-navy/70">Total publicaciones</p>
-              <FileText className="h-5 w-5 text-purple/40 group-hover:text-purple transition-colors" />
+              <FileText className="size-5 text-purple/40 group-hover:text-purple transition-colors" />
             </div>
             <p className="font-display text-4xl font-extrabold text-purple">{stats.total}</p>
           </div>
@@ -181,7 +181,7 @@ export function DashboardPage() {
               action={
                 <Link to="/publicar">
                   <Button variant="primary">
-                    <PlusCircle className="h-5 w-5" />
+                    <PlusCircle className="size-5" />
                     Crear mi primera publicación
                   </Button>
                 </Link>
@@ -222,7 +222,7 @@ export function DashboardPage() {
                         aria-label="Marcar como resuelto"
                         className="p-2 min-h-9 px-3 bg-white/90 hover:bg-found/10 border border-navy/10"
                       >
-                        <CheckCircle className="h-4 w-4 text-found" />
+                        <CheckCircle className="size-4 text-found" />
                       </Button>
                     )}
                     <Button
@@ -232,7 +232,7 @@ export function DashboardPage() {
                       className="p-2 min-h-9 px-3 bg-white/90 hover:bg-lost/10 border border-navy/10"
                       aria-label="Eliminar"
                     >
-                      <Trash2 className="h-4 w-4 text-lost" />
+                      <Trash2 className="size-4 text-lost" />
                     </Button>
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export function DashboardPage() {
         <div className="max-w-2xl">
           <div className="rounded-2xl border-2 border-navy/10 bg-white p-8 shadow-md">
             <div className="flex items-center gap-4 mb-6 pb-6 border-b-2 border-navy/10">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange to-turquoise flex items-center justify-center text-white text-2xl font-display font-extrabold">
+              <div className="size-16 rounded-2xl bg-gradient-to-br from-orange to-turquoise flex items-center justify-center text-white text-2xl font-display font-extrabold">
                 {user.user_metadata?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
               </div>
               <div>

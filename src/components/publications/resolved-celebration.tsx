@@ -10,8 +10,8 @@ export function ResolvedCelebration({ petName }: ResolvedCelebrationProps) {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(14,124,102,0.12),transparent_50%)] blur-2xl" />
 
       <div className="space-y-4">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#0E7C66] text-white">
-          <PartyPopper className="h-8 w-8" aria-hidden="true" />
+        <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-[#0E7C66] text-white">
+          <PartyPopper className="size-8" aria-hidden="true" />
         </div>
 
         <h2 className="font-display text-3xl font-extrabold text-[#0E7C66]" style={{ fontFamily: '"Baloo 2", cursive' }}>
@@ -23,9 +23,9 @@ export function ResolvedCelebration({ petName }: ResolvedCelebrationProps) {
         </p>
 
         <div className="flex items-center justify-center gap-3 text-[#FF6B35]">
-          <Heart className="h-6 w-6 animate-pulse" aria-hidden="true" />
-          <PawPrint className="h-6 w-6 animate-pulse [animation-delay:100ms]" aria-hidden="true" />
-          <Home className="h-6 w-6 animate-pulse [animation-delay:200ms]" aria-hidden="true" />
+          <Heart className="size-6 animate-pulse" aria-hidden="true" />
+          <PawPrint className="size-6 animate-pulse [animation-delay:100ms]" aria-hidden="true" />
+          <Home className="size-6 animate-pulse [animation-delay:200ms]" aria-hidden="true" />
         </div>
       </div>
     </div>

@@ -136,7 +136,7 @@ export function CommentsSection({ publicationId, currentUserId }: CommentsSectio
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--color-primary-light) text-lg font-bold text-(--color-primary)">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--color-primary-light) text-lg font-bold text-(--color-primary)">
                   {comment.author?.username?.[0]?.toUpperCase() ?? '?'}
                 </div>
 

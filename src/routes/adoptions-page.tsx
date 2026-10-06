@@ -85,12 +85,12 @@ export function AdoptionsPage() {
     <section className="space-y-8 py-8">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple/10 via-cream to-orange/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
-        <div className="blob-decoration absolute top-5 right-5 w-32 h-32 bg-purple/20" />
-        <div className="blob-decoration absolute bottom-5 left-5 w-24 h-24 bg-orange/15" style={{ animationDelay: '2s' }} />
+        <div className="blob-decoration absolute top-5 right-5 size-32 bg-purple/20" />
+        <div className="blob-decoration absolute bottom-5 left-5 size-24 bg-orange/15" style={{ animationDelay: '2s' }} />
         
         <div className="relative max-w-3xl">
           <div className="flex items-center gap-2 mb-3">
-            <Heart className="h-6 w-6 text-purple animate-paw-bounce" />
+            <Heart className="size-6 text-purple animate-paw-bounce" />
             <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Adopción responsable</span>
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-extrabold text-navy mb-4">
@@ -218,8 +218,8 @@ export function AdoptionsPage() {
           <div className="rounded-2xl border-2 border-purple/20 bg-gradient-to-br from-purple/5 to-orange/5 p-8 text-center shadow-md">
             <div className="mx-auto max-w-2xl space-y-4">
               <div className="flex justify-center">
-                <div className="w-14 h-14 rounded-2xl bg-purple/10 flex items-center justify-center">
-                  <Heart className="h-7 w-7 text-purple" />
+                <div className="size-14 rounded-2xl bg-purple/10 flex items-center justify-center">
+                  <Heart className="size-7 text-purple" />
                 </div>
               </div>
               <h3 className="font-display text-2xl font-extrabold text-navy">
@@ -230,11 +230,11 @@ export function AdoptionsPage() {
               </p>
               <div className="flex flex-wrap gap-3 justify-center pt-2">
                 <span className="inline-flex items-center gap-2 rounded-pill bg-white px-4 py-2 text-sm font-semibold text-navy shadow-sm">
-                  <PawPrint className="h-4 w-4 text-purple" />
+                  <PawPrint className="size-4 text-purple" />
                   Compromiso a largo plazo
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-pill bg-white px-4 py-2 text-sm font-semibold text-navy shadow-sm">
-                  <Heart className="h-4 w-4 text-purple" />
+                  <Heart className="size-4 text-purple" />
                   Amor incondicional
                 </span>
               </div>

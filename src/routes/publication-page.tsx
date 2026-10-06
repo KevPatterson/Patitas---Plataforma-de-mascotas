@@ -317,7 +317,7 @@ export function PublicationPage() {
                         className="block overflow-hidden rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] transition hover:-translate-y-0.5"
                       >
                         <div className="flex gap-4 p-4">
-                          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#CFEFE6]/40">
+                          <div className="size-20 shrink-0 overflow-hidden rounded-2xl bg-[#CFEFE6]/40">
                             {match.publication.coverImageUrl ? (
                               <img src={match.publication.coverImageUrl} alt={match.publication.title} className="h-full w-full object-cover" />
                             ) : (

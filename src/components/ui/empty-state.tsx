@@ -20,8 +20,8 @@ export function EmptyState({
     <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
       <div className="mb-6 relative">
         {illustration === 'paw' && (
-          <div className="w-20 h-20 flex items-center justify-center text-navy/20">
-            <PawPrint className="w-16 h-16" strokeWidth={1.5} />
+          <div className="size-20 flex items-center justify-center text-navy/20">
+            <PawPrint className="size-16" strokeWidth={1.5} />
           </div>
         )}
         {illustration === 'cat' && (
@@ -31,7 +31,7 @@ export function EmptyState({
           <div className="text-6xl animate-float">🐶</div>
         )}
         {icon && (
-          <div className="w-20 h-20 flex items-center justify-center text-navy/20">
+          <div className="size-20 flex items-center justify-center text-navy/20">
             {icon}
           </div>
         )}

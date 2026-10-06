@@ -70,7 +70,7 @@ export function ForgotPasswordPage() {
           
           {successMessage ? (
             <div className="rounded-xl bg-found/10 border-2 border-found/20 px-4 py-3 text-sm font-medium text-found flex items-start gap-3">
-              <Mail className="h-5 w-5 shrink-0 mt-0.5" />
+              <Mail className="size-5 shrink-0 mt-0.5" />
               <span>{successMessage}</span>
             </div>
           ) : null}
@@ -81,7 +81,7 @@ export function ForgotPasswordPage() {
             className="w-full gap-2" 
             disabled={isSubmitting}
           >
-            <PawPrint className="h-4 w-4" />
+            <PawPrint className="size-4" />
             {isSubmitting ? 'Enviando...' : 'Enviar enlace'}
           </Button>
         </form>

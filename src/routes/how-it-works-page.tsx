@@ -77,12 +77,12 @@ export function HowItWorksPage() {
     <div className="max-w-4xl mx-auto space-y-12 py-10">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/10 via-cream to-turquoise/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
-        <div className="blob-decoration absolute top-5 right-5 w-32 h-32 bg-purple/20" />
-        <div className="blob-decoration absolute bottom-5 left-5 w-24 h-24 bg-orange/15" style={{ animationDelay: '2s' }} />
+        <div className="blob-decoration absolute top-5 right-5 size-32 bg-purple/20" />
+        <div className="blob-decoration absolute bottom-5 left-5 size-24 bg-orange/15" style={{ animationDelay: '2s' }} />
         
         <div className="relative space-y-4">
           <div className="flex items-center gap-2">
-            <PawPrint className="h-6 w-6 text-orange animate-paw-bounce" />
+            <PawPrint className="size-6 text-orange animate-paw-bounce" />
             <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Guía completa</span>
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-extrabold text-navy">
@@ -103,8 +103,8 @@ export function HowItWorksPage() {
           >
             <div className="flex gap-5">
               <div className="shrink-0">
-                <div className={`w-14 h-14 rounded-2xl ${colorClasses[section.color]} flex items-center justify-center transition-transform duration-base group-hover:scale-110`}>
-                  <section.icon className="w-7 h-7" aria-hidden="true" />
+                <div className={`size-14 rounded-2xl ${colorClasses[section.color]} flex items-center justify-center transition-transform duration-base group-hover:scale-110`}>
+                  <section.icon className="size-7" aria-hidden="true" />
                 </div>
               </div>
               <div className="flex-1 space-y-2">
@@ -123,11 +123,11 @@ export function HowItWorksPage() {
 
       {/* CTA final */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange to-orange-dark p-10 md:p-12 text-center shadow-xl">
-        <div className="blob-decoration absolute top-10 right-10 w-32 h-32 bg-white/10" />
+        <div className="blob-decoration absolute top-10 right-10 size-32 bg-white/10" />
         <div className="relative space-y-6">
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center animate-paw-bounce">
-              <PawPrint className="h-8 w-8 text-white" />
+            <div className="size-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center animate-paw-bounce">
+              <PawPrint className="size-8 text-white" />
             </div>
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-extrabold text-white">
@@ -141,7 +141,7 @@ export function HowItWorksPage() {
             variant="ghost"
             className="bg-white hover:bg-white/90 text-orange font-extrabold shadow-lg"
           >
-            <PawPrint className="h-5 w-5" />
+            <PawPrint className="size-5" />
             Publicar un caso
           </LinkButton>
         </div>
@@ -150,24 +150,24 @@ export function HowItWorksPage() {
       {/* Info adicional */}
       <div className="grid gap-6 md:grid-cols-3">
         <div className="rounded-2xl border-2 border-turquoise/20 bg-turquoise/5 p-6 text-center">
-          <div className="w-12 h-12 rounded-xl bg-turquoise/10 flex items-center justify-center mx-auto mb-3">
-            <MapPin className="h-6 w-6 text-turquoise" />
+          <div className="size-12 rounded-xl bg-turquoise/10 flex items-center justify-center mx-auto mb-3">
+            <MapPin className="size-6 text-turquoise" />
           </div>
           <h3 className="font-display text-lg font-bold text-navy mb-2">Geolocalizado</h3>
           <p className="text-sm text-navy/70">Encuentra casos cerca de ti con el mapa interactivo</p>
         </div>
 
         <div className="rounded-2xl border-2 border-purple/20 bg-purple/5 p-6 text-center">
-          <div className="w-12 h-12 rounded-xl bg-purple/10 flex items-center justify-center mx-auto mb-3">
-            <Bell className="h-6 w-6 text-purple" />
+          <div className="size-12 rounded-xl bg-purple/10 flex items-center justify-center mx-auto mb-3">
+            <Bell className="size-6 text-purple" />
           </div>
           <h3 className="font-display text-lg font-bold text-navy mb-2">Notificaciones</h3>
           <p className="text-sm text-navy/70">Recibe alertas cuando hay coincidencias con tu caso</p>
         </div>
 
         <div className="rounded-2xl border-2 border-found/20 bg-found/5 p-6 text-center">
-          <div className="w-12 h-12 rounded-xl bg-found/10 flex items-center justify-center mx-auto mb-3">
-            <CheckCircle className="h-6 w-6 text-found" />
+          <div className="size-12 rounded-xl bg-found/10 flex items-center justify-center mx-auto mb-3">
+            <CheckCircle className="size-6 text-found" />
           </div>
           <h3 className="font-display text-lg font-bold text-navy mb-2">Historias felices</h3>
           <p className="text-sm text-navy/70">Celebramos cada reencuentro en la comunidad</p>

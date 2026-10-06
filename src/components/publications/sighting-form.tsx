@@ -65,7 +65,7 @@ export function SightingForm({ publicationId, userId, onSuccess }: SightingFormP
       ) : null}
 
       <Button type="button" onClick={handleSubmit} disabled={submitting}>
-        <MapPin className="h-4 w-4" aria-hidden="true" />
+        <MapPin className="size-4" aria-hidden="true" />
         {submitting ? 'Enviando...' : 'Reportar avistamiento'}
       </Button>
     </div>

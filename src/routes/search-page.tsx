@@ -107,10 +107,10 @@ export function SearchPage() {
     <section className="space-y-8 py-8">
       {/* Header */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-turquoise/10 via-cream to-purple/10 border-2 border-navy/10 p-8 shadow-md">
-        <div className="blob-decoration absolute top-5 right-5 w-24 h-24 bg-orange/20" />
+        <div className="blob-decoration absolute top-5 right-5 size-24 bg-orange/20" />
         <div className="relative">
           <div className="flex items-center gap-2 mb-2">
-            <Search className="h-5 w-5 text-turquoise" />
+            <Search className="size-5 text-turquoise" />
             <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Buscador</span>
           </div>
           <h1 className="font-display text-4xl font-extrabold text-navy mb-2">
@@ -137,17 +137,17 @@ export function SearchPage() {
       <div className="rounded-2xl border-2 border-navy/10 bg-white p-6 shadow-md space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-navy/60" />
+            <Filter className="size-5 text-navy/60" />
             <h2 className="font-display text-lg font-bold text-navy">Filtros</h2>
             {activeFiltersCount > 0 && (
-              <span className="inline-flex items-center justify-center min-w-5 h-5 rounded-full bg-orange text-white text-xs font-bold">
+              <span className="inline-flex items-center justify-center min-size-5 rounded-full bg-orange text-white text-xs font-bold">
                 {activeFiltersCount}
               </span>
             )}
           </div>
           {activeFiltersCount > 0 && (
             <Button variant="ghost" onClick={clearFilters} className="text-sm gap-1">
-              <X className="h-4 w-4" />
+              <X className="size-4" />
               Limpiar
             </Button>
           )}
@@ -218,7 +218,7 @@ export function SearchPage() {
           className="w-full sm:w-auto gap-2"
         >
           {showAdvanced ? 'Ocultar' : 'Mostrar'} filtros avanzados
-          <ChevronDown className={`h-4 w-4 transition-transform duration-base ${showAdvanced ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`size-4 transition-transform duration-base ${showAdvanced ? 'rotate-180' : ''}`} />
         </Button>
 
         {showAdvanced && (
@@ -339,7 +339,7 @@ export function SearchPage() {
                 ← Anterior
               </Button>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center justify-center min-w-9 h-9 rounded-lg bg-navy text-white text-sm font-bold">
+                <span className="inline-flex items-center justify-center min-size-9 rounded-lg bg-navy text-white text-sm font-bold">
                   {page}
                 </span>
                 <span className="text-navy/40">/</span>

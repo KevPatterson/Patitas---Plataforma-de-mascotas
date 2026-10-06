@@ -23,10 +23,10 @@ function NavItem({ href, label, Icon, badge }: { href: string; label: string; Ic
       ].join(' ')}
       aria-current={isActive ? 'page' : undefined}
     >
-      <Icon className="h-4 w-4" aria-hidden="true" />
+      <Icon className="size-4" aria-hidden="true" />
       {label}
       {badge && badge > 0 && (
-        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-lost text-white text-[10px] font-bold shadow-sm animate-paw-pulse">
+        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-size-4.5 rounded-full bg-lost text-white text-[10px] font-bold shadow-sm animate-paw-pulse">
           {badge > 9 ? '9+' : badge}
         </span>
       )}
@@ -83,7 +83,7 @@ export function SiteShell({ children }: SiteShellProps) {
               className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-orange px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:shadow-lg hover:scale-105 hover:bg-orange-dark active:scale-95"
               style={{ fontFamily: '"Baloo 2", cursive' }}
             >
-              <PlusCircle className="h-4 w-4 transition-transform duration-base group-hover:rotate-90" aria-hidden="true" />
+              <PlusCircle className="size-4 transition-transform duration-base group-hover:rotate-90" aria-hidden="true" />
               Publicar
             </Link>
             
@@ -103,7 +103,7 @@ export function SiteShell({ children }: SiteShellProps) {
       <footer className="relative border-t-2 border-navy/10 bg-navy text-cream overflow-hidden">
         {/* Decoración de fondo */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-10 left-10 w-20 h-20">
+          <div className="absolute top-10 left-10 size-20">
             <svg viewBox="0 0 120 120" fill="currentColor">
               <ellipse cx="24" cy="48" rx="9" ry="12" transform="rotate(-22 24 48)" />
               <ellipse cx="45" cy="28" rx="9" ry="13" transform="rotate(-8 45 28)" />
@@ -112,7 +112,7 @@ export function SiteShell({ children }: SiteShellProps) {
               <path d="M60 110 C60 110 33 91 33 74 C33 62 44 54 60 54 C76 54 87 62 87 74 C87 91 60 110 60 110Z" />
             </svg>
           </div>
-          <div className="absolute bottom-10 right-20 w-16 h-16 transform rotate-12">
+          <div className="absolute bottom-10 right-20 size-16 transform rotate-12">
             <svg viewBox="0 0 120 120" fill="currentColor">
               <ellipse cx="24" cy="48" rx="9" ry="12" transform="rotate(-22 24 48)" />
               <ellipse cx="45" cy="28" rx="9" ry="13" transform="rotate(-8 45 28)" />

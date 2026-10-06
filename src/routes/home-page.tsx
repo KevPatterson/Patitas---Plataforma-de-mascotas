@@ -74,15 +74,15 @@ export function HomePage() {
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/5 via-cream to-turquoise/5 border-2 border-navy/10 shadow-xl">
         {/* Decoraciones de fondo */}
         <div className="absolute inset-0 hero-gradient" />
-        <div className="blob-decoration absolute top-10 right-10 w-32 h-32 bg-orange/20" />
-        <div className="blob-decoration absolute bottom-10 left-10 w-40 h-40 bg-turquoise/15" style={{ animationDelay: '2s' }} />
+        <div className="blob-decoration absolute top-10 right-10 size-32 bg-orange/20" />
+        <div className="blob-decoration absolute bottom-10 left-10 size-40 bg-turquoise/15" style={{ animationDelay: '2s' }} />
         
         {/* Contenido del hero */}
         <div className="relative grid gap-8 lg:grid-cols-2 lg:gap-12 p-8 md:p-12 lg:p-16">
           {/* Lado izquierdo: Texto y CTAs */}
           <div className="flex flex-col justify-center space-y-6 z-10">
             <div className="inline-flex items-center gap-2 rounded-pill bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-bold text-navy shadow-sm border border-navy/10 self-start">
-              <PawPrint className="h-4 w-4 text-orange animate-paw-bounce" aria-hidden="true" />
+              <PawPrint className="size-4 text-orange animate-paw-bounce" aria-hidden="true" />
               Plataforma comunitaria en Cuba
             </div>
             
@@ -96,11 +96,11 @@ export function HomePage() {
             
             <div className="flex flex-col sm:flex-row gap-4 animate-fade-up" style={{ animationDelay: '200ms' }}>
               <LinkButton href="/buscar" variant="primary" className="group">
-                <Search className="h-5 w-5 transition-transform duration-base group-hover:scale-110" />
+                <Search className="size-5 transition-transform duration-base group-hover:scale-110" />
                 Buscar una patita
               </LinkButton>
               <LinkButton href="/publicar" variant="secondary" className="group">
-                <PawPrint className="h-5 w-5 transition-transform duration-base group-hover:rotate-12" />
+                <PawPrint className="size-5 transition-transform duration-base group-hover:rotate-12" />
                 Publicar un caso
               </LinkButton>
             </div>
@@ -132,16 +132,16 @@ export function HomePage() {
                 
                 {/* Iconos de huellas decorativas */}
                 <div className="absolute top-10 left-10 animate-paw-bounce" style={{ animationDelay: '0s' }}>
-                  <PawPrint className="h-8 w-8 text-orange/40" />
+                  <PawPrint className="size-8 text-orange/40" />
                 </div>
                 <div className="absolute top-20 right-16 animate-paw-bounce" style={{ animationDelay: '400ms' }}>
-                  <PawPrint className="h-6 w-6 text-turquoise/40" />
+                  <PawPrint className="size-6 text-turquoise/40" />
                 </div>
                 <div className="absolute bottom-16 left-16 animate-paw-bounce" style={{ animationDelay: '800ms' }}>
-                  <PawPrint className="h-10 w-10 text-purple/40" />
+                  <PawPrint className="size-10 text-purple/40" />
                 </div>
                 <div className="absolute bottom-10 right-10 animate-paw-bounce" style={{ animationDelay: '1200ms' }}>
-                  <PawPrint className="h-7 w-7 text-orange/40" />
+                  <PawPrint className="size-7 text-orange/40" />
                 </div>
                 
                 {/* Texto placeholder para ilustraciones */}
@@ -164,7 +164,7 @@ export function HomePage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-5 w-5 text-turquoise" />
+              <MapPin className="size-5 text-turquoise" />
               <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Casos activos</span>
             </div>
             <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
@@ -209,7 +209,7 @@ export function HomePage() {
         <div className="relative z-10 grid gap-8 lg:grid-cols-2 items-center">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <MapIcon className="h-5 w-5 text-turquoise" />
+              <MapIcon className="size-5 text-turquoise" />
               <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Geolocalización</span>
             </div>
             <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy mb-4">
@@ -223,7 +223,7 @@ export function HomePage() {
             </LinkButton>
           </div>
           <div className="relative aspect-video rounded-2xl bg-navy/5 border-2 border-dashed border-navy/20 flex items-center justify-center">
-            <MapIcon className="h-16 w-16 text-navy/20" />
+            <MapIcon className="size-16 text-navy/20" />
           </div>
         </div>
       </section>
@@ -232,7 +232,7 @@ export function HomePage() {
       <section className="space-y-8">
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Heart className="h-5 w-5 text-orange" />
+            <Heart className="size-5 text-orange" />
             <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Modo rescate</span>
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
@@ -248,8 +248,8 @@ export function HomePage() {
           <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
             <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-orange/10">01</div>
             <div className="relative space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-orange/10 flex items-center justify-center">
-                <PawPrint className="h-6 w-6 text-orange" />
+              <div className="size-12 rounded-xl bg-orange/10 flex items-center justify-center">
+                <PawPrint className="size-6 text-orange" />
               </div>
               <h3 className="font-display text-2xl font-extrabold text-navy">PUBLICA</h3>
               <p className="text-navy/70 leading-relaxed">
@@ -262,8 +262,8 @@ export function HomePage() {
           <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
             <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-turquoise/10">02</div>
             <div className="relative space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-turquoise/10 flex items-center justify-center">
-                <Users className="h-6 w-6 text-turquoise" />
+              <div className="size-12 rounded-xl bg-turquoise/10 flex items-center justify-center">
+                <Users className="size-6 text-turquoise" />
               </div>
               <h3 className="font-display text-2xl font-extrabold text-navy">CONECTA</h3>
               <p className="text-navy/70 leading-relaxed">
@@ -276,8 +276,8 @@ export function HomePage() {
           <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
             <div className="absolute top-4 right-4 text-6xl font-display font-extrabold text-purple/10">03</div>
             <div className="relative space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-purple/10 flex items-center justify-center">
-                <BadgeCheck className="h-6 w-6 text-purple" />
+              <div className="size-12 rounded-xl bg-purple/10 flex items-center justify-center">
+                <BadgeCheck className="size-6 text-purple" />
               </div>
               <h3 className="font-display text-2xl font-extrabold text-navy">REENCUENTRA</h3>
               <p className="text-navy/70 leading-relaxed">
@@ -293,25 +293,25 @@ export function HomePage() {
         <StatCard 
           value={stats.total.toLocaleString()} 
           label="Casos activos" 
-          icon={<TrendingUp className="h-8 w-8" />}
+          icon={<TrendingUp className="size-8" />}
         />
         <StatCard 
           value={stats.LOST.toLocaleString()} 
           label="Perdidos" 
           tone="warning"
-          icon={<PawPrint className="h-8 w-8" />}
+          icon={<PawPrint className="size-8" />}
         />
         <StatCard 
           value={stats.FOUND.toLocaleString()} 
           label="Encontrados" 
           tone="success"
-          icon={<BadgeCheck className="h-8 w-8" />}
+          icon={<BadgeCheck className="size-8" />}
         />
         <StatCard 
           value={stats.ADOPTION.toLocaleString()} 
           label="En adopción" 
           tone="adoption"
-          icon={<Heart className="h-8 w-8" />}
+          icon={<Heart className="size-8" />}
         />
       </section>
     </div>

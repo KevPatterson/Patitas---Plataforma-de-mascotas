@@ -59,12 +59,12 @@ export function BottomNav() {
                 className="flex flex-col items-center justify-center relative -mt-6"
               >
                 <div className={[
-                  'flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-all duration-base ease-smooth',
+                  'flex size-14 items-center justify-center rounded-2xl shadow-lg transition-all duration-base ease-smooth',
                   isActive
                     ? 'bg-orange-dark scale-110'
                     : 'bg-orange hover:bg-orange-dark hover:scale-105'
                 ].join(' ')}>
-                  <Icon className="h-6 w-6 text-white" aria-hidden="true" />
+                  <Icon className="size-6 text-white" aria-hidden="true" />
                 </div>
                 <span className="mt-1 text-[10px] font-bold text-navy">
                   {item.label}
@@ -84,10 +84,10 @@ export function BottomNav() {
                   : 'text-navy/60 hover:bg-navy/5 hover:text-navy',
               ].join(' ')}
             >
-              <Icon className="h-5 w-5" aria-hidden="true" />
+              <Icon className="size-5" aria-hidden="true" />
               {item.label}
               {showBadge && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 rounded-full bg-lost text-white text-[8px] font-bold flex items-center justify-center shadow-sm animate-paw-pulse">
+                <span className="absolute -top-0.5 -right-0.5 min-size-4 rounded-full bg-lost text-white text-[8px] font-bold flex items-center justify-center shadow-sm animate-paw-pulse">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}

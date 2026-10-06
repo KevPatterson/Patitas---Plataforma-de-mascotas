@@ -110,7 +110,7 @@ export function RegisterPage() {
             disabled={isSubmitting} 
             className="w-full gap-2"
           >
-            <PawPrint className="h-4 w-4" />
+            <PawPrint className="size-4" />
             {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
           </Button>
           

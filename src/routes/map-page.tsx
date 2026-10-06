@@ -103,12 +103,12 @@ export function MapPage() {
     <section className="space-y-8 py-10">
       {/* Hero del mapa */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-turquoise/10 via-cream to-purple/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
-        <div className="blob-decoration absolute top-5 right-5 w-32 h-32 bg-orange/20" />
-        <div className="blob-decoration absolute bottom-5 left-5 w-24 h-24 bg-turquoise/15" style={{ animationDelay: '2s' }} />
+        <div className="blob-decoration absolute top-5 right-5 size-32 bg-orange/20" />
+        <div className="blob-decoration absolute bottom-5 left-5 size-24 bg-turquoise/15" style={{ animationDelay: '2s' }} />
         
         <div className="relative space-y-4">
           <div className="flex items-center gap-2">
-            <MapPin className="h-6 w-6 text-turquoise animate-paw-bounce" />
+            <MapPin className="size-6 text-turquoise animate-paw-bounce" />
             <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Explorar</span>
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-extrabold text-navy">
@@ -118,7 +118,7 @@ export function MapPage() {
             Cada marcador representa un caso activo. Las ubicaciones están difuminadas para proteger la privacidad.
           </p>
           <div className="flex items-center gap-3 text-sm text-navy/60">
-            <Layers className="h-4 w-4" />
+            <Layers className="size-4" />
             <span className="font-semibold">{results.length} {results.length === 1 ? 'caso' : 'casos'} en el mapa</span>
           </div>
         </div>
@@ -127,7 +127,7 @@ export function MapPage() {
       {/* Filtros */}
       <div className="rounded-2xl border-2 border-navy/10 bg-white p-6 shadow-md space-y-6">
         <div className="flex items-center gap-2">
-          <Layers className="h-5 w-5 text-navy/60" />
+          <Layers className="size-5 text-navy/60" />
           <h2 className="font-display text-xl font-extrabold text-navy">Filtros</h2>
         </div>
         
@@ -185,7 +185,7 @@ export function MapPage() {
                   color: TYPE_COLORS[type] 
                 }}
               >
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS[type] }} />
+                <span className="size-3 rounded-full" style={{ backgroundColor: TYPE_COLORS[type] }} />
                 {label}
               </span>
             ))}
@@ -213,14 +213,14 @@ export function MapPage() {
                   <div className="space-y-3 py-2 min-w-50">
                     <div className="flex items-center gap-2">
                       <span 
-                        className="w-4 h-4 rounded-full shrink-0" 
+                        className="size-4 rounded-full shrink-0" 
                         style={{ backgroundColor: TYPE_COLORS[publication.type] ?? '#ff8c42' }} 
                       />
                       <span className="font-bold text-navy text-sm">{TYPE_LABELS[publication.type] ?? publication.type}</span>
                     </div>
                     <p className="font-display text-lg font-extrabold text-navy">{publication.title}</p>
                     <p className="text-sm text-navy/70 flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
+                      <MapPin className="size-3" />
                       {publication.zone ?? publication.municipality ?? publication.province}
                     </p>
                     {publication.species ? (
@@ -246,8 +246,8 @@ export function MapPage() {
       <div className="rounded-2xl border-2 border-turquoise/20 bg-turquoise/5 p-6">
         <div className="flex gap-4">
           <div className="shrink-0">
-            <div className="w-12 h-12 rounded-xl bg-turquoise/10 flex items-center justify-center">
-              <PawPrint className="h-6 w-6 text-turquoise" />
+            <div className="size-12 rounded-xl bg-turquoise/10 flex items-center justify-center">
+              <PawPrint className="size-6 text-turquoise" />
             </div>
           </div>
           <div className="flex-1 space-y-1">

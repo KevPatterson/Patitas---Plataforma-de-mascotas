@@ -175,10 +175,10 @@ export function AdminPage() {
   }
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Resumen', icon: <Shield className="h-5 w-5" /> },
-    { id: 'reports', label: 'Reportes', icon: <Shield className="h-5 w-5" /> },
-    { id: 'publications', label: 'Publicaciones', icon: <UserPlus className="h-5 w-5" /> },
-    { id: 'users', label: 'Usuarios', icon: <UserPlus className="h-5 w-5" /> },
+    { id: 'dashboard', label: 'Resumen', icon: <Shield className="size-5" /> },
+    { id: 'reports', label: 'Reportes', icon: <Shield className="size-5" /> },
+    { id: 'publications', label: 'Publicaciones', icon: <UserPlus className="size-5" /> },
+    { id: 'users', label: 'Usuarios', icon: <UserPlus className="size-5" /> },
   ];
 
   return (
@@ -189,7 +189,7 @@ export function AdminPage() {
           <p className="text-(--color-muted)">Resumen operativo para revisar actividad, reportes y casos resueltos.</p>
         </div>
         <Button type="button" variant="ghost" onClick={refreshDashboard}>
-          <span className="h-5 w-5 animate-spin" style={{ display: loading ? 'block' : 'none' }}>🔄</span>
+          <span className="size-5 animate-spin" style={{ display: loading ? 'block' : 'none' }}>🔄</span>
           Actualizar
         </Button>
       </div>
@@ -364,7 +364,7 @@ export function AdminPage() {
                           <option value="MODERATOR">Moderador</option>
                           <option value="ADMIN">Admin</option>
                         </select>
-                        {actionLoadingId === u.id && <span className="h-5 w-5 animate-spin text-(--color-primary)">⏳</span>}
+                        {actionLoadingId === u.id && <span className="size-5 animate-spin text-(--color-primary)">⏳</span>}
                       </div>
                     </td>
                   </tr>

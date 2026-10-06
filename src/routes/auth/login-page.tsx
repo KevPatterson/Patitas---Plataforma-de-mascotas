@@ -87,7 +87,7 @@ export function LoginPage() {
               Olvidé mi contraseña
             </Link>
             <Button type="submit" variant="primary" disabled={isSubmitting} className="gap-2">
-              <PawPrint className="h-4 w-4" />
+              <PawPrint className="size-4" />
               {isSubmitting ? 'Entrando...' : 'Entrar'}
             </Button>
           </div>

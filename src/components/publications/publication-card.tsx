@@ -35,7 +35,7 @@ export function PublicationCard({ publication }: PublicationCardProps) {
       className="group block overflow-hidden rounded-2xl border-2 border-navy/10 bg-white shadow-md transition-all duration-base ease-smooth hover:-translate-y-2 hover:shadow-xl hover:border-orange/30"
     >
       {/* Imagen con overlay decorativo */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-orange/10 to-turquoise/10">
+      <div className="relative aspect-4/3 overflow-hidden bg-gradient-to-br from-orange/10 to-turquoise/10">
         {publication.coverImageUrl ? (
           <img
             src={publication.coverImageUrl}
@@ -45,7 +45,7 @@ export function PublicationCard({ publication }: PublicationCardProps) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-navy/20">
-            <PawPrint className="h-16 w-16 animate-paw-bounce" aria-hidden="true" strokeWidth={1.5} />
+            <PawPrint className="size-16 animate-paw-bounce" aria-hidden="true" strokeWidth={1.5} />
           </div>
         )}
         
@@ -61,7 +61,7 @@ export function PublicationCard({ publication }: PublicationCardProps) {
 
         {/* Decoración de huella en hover */}
         <div className="absolute bottom-3 right-3 opacity-0 transition-opacity duration-base group-hover:opacity-30">
-          <PawPrint className="h-8 w-8 text-white" strokeWidth={2} />
+          <PawPrint className="size-8 text-white" strokeWidth={2} />
         </div>
       </div>
 
@@ -84,14 +84,14 @@ export function PublicationCard({ publication }: PublicationCardProps) {
         <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-navy/60">
           {(publication.municipality || publication.province) && (
             <div className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+              <MapPin className="size-3.5" aria-hidden="true" />
               <span>
                 {[publication.municipality, publication.province].filter(Boolean).join(', ')}
               </span>
             </div>
           )}
           <div className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+            <Calendar className="size-3.5" aria-hidden="true" />
             <span>{formattedDate}</span>
           </div>
         </div>

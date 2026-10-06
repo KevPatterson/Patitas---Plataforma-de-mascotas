@@ -223,7 +223,7 @@ export function PublishPage() {
               <div
                 key={s}
                 className={[
-                  'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition',
+                  'flex-shrink-0 size-8 rounded-full flex items-center justify-center text-sm font-bold transition',
                   s === step
                     ? 'bg-[#FF6B35] text-white'
                     : s < step

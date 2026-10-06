@@ -14,15 +14,15 @@ export function AuthCard({ eyebrow, title, description, children, footer }: Auth
   return (
     <div className="relative mx-auto w-full max-w-lg">
       {/* Decoraciones */}
-      <div className="blob-decoration absolute -top-10 -right-10 w-32 h-32 bg-orange/10" style={{ animationDelay: '1s' }} />
-      <div className="blob-decoration absolute -bottom-10 -left-10 w-24 h-24 bg-turquoise/10" style={{ animationDelay: '3s' }} />
+      <div className="blob-decoration absolute -top-10 -right-10 size-32 bg-orange/10" style={{ animationDelay: '1s' }} />
+      <div className="blob-decoration absolute -bottom-10 -left-10 size-24 bg-turquoise/10" style={{ animationDelay: '3s' }} />
       
       {/* Card principal */}
       <div className="relative rounded-3xl border-2 border-navy/10 bg-white p-6 shadow-lg sm:p-10">
         {/* Logo con huella */}
         <div className="mb-6 flex flex-col items-center gap-3">
           <Logo variant="mark" size={56} className="animate-float" />
-          <PawPrint className="h-5 w-5 text-orange/40 animate-paw-bounce" />
+          <PawPrint className="size-5 text-orange/40 animate-paw-bounce" />
         </div>
         
         {/* Header */}

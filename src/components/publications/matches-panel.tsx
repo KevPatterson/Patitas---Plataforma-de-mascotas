@@ -38,12 +38,12 @@ export function MatchesPanel({ matches }: MatchesPanelProps) {
             className="block overflow-hidden rounded-2xl border-2 border-[#CFEFE6] bg-white shadow-sm transition hover:-translate-y-0.5"
           >
             <div className="flex gap-4 p-4">
-              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#F5FBF9]">
+              <div className="size-20 shrink-0 overflow-hidden rounded-2xl bg-[#F5FBF9]">
                 {match.publication.coverImageUrl ? (
                   <img src={match.publication.coverImageUrl} alt={match.publication.title} className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full items-center justify-center text-[#0B3B3C]/30">
-                    <PawPrint className="h-7 w-7" aria-hidden="true" />
+                    <PawPrint className="size-7" aria-hidden="true" />
                   </div>
                 )}
               </div>
