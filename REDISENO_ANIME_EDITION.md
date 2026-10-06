@@ -249,11 +249,12 @@ Found (Encontrados) → #10b981  /* Verde */
 ## 🚀 Próximos Pasos (Pendientes)
 
 ### FASE 5 — RESTO DE PÁGINAS
-- [ ] SearchPage - Buscador con filtros
+- [x] SearchPage - Buscador con filtros ✅
+- [x] AdoptionsPage - Galería de adopciones ✅
+- [x] HowItWorksPage - Cómo funciona ✅
 - [ ] MapPage - Mapa interactivo
 - [ ] PublishPage - Formulario de publicación
 - [ ] PublicationPage - Vista de detalle
-- [ ] AdoptionsPage - Galería de adopciones
 - [ ] Auth Pages (Login/Register) - Autenticación
 
 ### FASE 6 — MOTION AVANZADO
