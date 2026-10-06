@@ -7,6 +7,8 @@ Facebook: información estructurada, buscable, geolocalizada y orientada a resul
 **Contexto inicial:** Cuba (provincias y municipios). La arquitectura permite expandirse
 a otros países.
 
+> 🎨 **Nuevo:** Rediseño visual completo **Anime Edition** implementado. Ver [REDISENO_ANIME_EDITION.md](./REDISENO_ANIME_EDITION.md) para detalles.
+
 ---
 
 ## 🏗️ Arquitectura
@@ -138,11 +140,50 @@ locations	coordenadas fuzzy	insert/update propio	—	—
 reports	—	crear + ver las suyas	gestionar	gestionar
 notifications	—	solo las suyas	—	—
 audit_logs	—	—	SELECT	SELECT
-🎨 Design System
-Tokens en src/styles/index.css (--color-primary…--type-sighting), tipografías
-Nunito (display) + Inter (body), radios/sombras propios, patrón de huellas, logo SVG
-propio (huella-corazón-casa, variantes color/mono/claro/oscuro), microinteracciones
-(fade-up, pop, hover lift), skeletons y toasts. Ningún color arbitrario en componentes.
+🎨 Design System — Anime Edition
+
+**Sistema de diseño completamente rediseñado** con identidad visual única inspirada en anime moderno.
+
+### Paleta de Colores
+- **Navy** (#1a2332) — Color principal estructural
+- **Cream** (#fef8f0) — Fondo cálido que reemplaza el blanco
+- **Orange** (#ff8c42) — Acento principal vibrante
+- **Turquoise** (#4ecdc4) — Acento secundario fresco
+- **Purple** (#a78bfa) — Adopción y elementos emocionales
+- **Lost** (#ef4444) — Casos perdidos
+- **Found** (#10b981) — Casos encontrados
+
+### Componentes Clave
+- **PawLoader** — Loader personalizado con huella animada
+- **EmptyState / ErrorState** — Estados con personalidad y mascotas
+- **PublicationCard** — Rediseñada con hover effects, emojis y gradientes
+- **Button** — 5 variantes (primary, secondary, adoption, ghost, danger) con microinteracciones
+- **StatCard** — Cards con iconos y efectos hover
+- **Logo** — Animado con gradientes y transformaciones
+
+### Animaciones
+- **paw-bounce** — Huellas rebotando (identidad de marca)
+- **float** — Flotación suave para elementos decorativos
+- **paw-pulse** — Pulso de loader
+- **shake** — Feedback de error
+- **fade-up** — Entrada de secciones
+- **blob-morph** — Decoraciones orgánicas animadas
+
+### Hero Principal
+Hero completamente rediseñado con el mensaje:
+> **"Cada patita merece volver a casa"**
+
+Incluye: gradientes anime, decoraciones con huellas, blobs animados, mini estadísticas y CTAs destacados.
+
+### Características
+✅ **Accesibilidad** — Focus visible, ARIA labels, soporte `prefers-reduced-motion`  
+✅ **Responsive** — Mobile first, optimizado de 320px a 1920px  
+✅ **Performance** — Animaciones CSS optimizadas, lazy loading  
+✅ **Microinteracciones** — Feedback visual en cada acción  
+
+Ver documentación completa en [REDISENO_ANIME_EDITION.md](./REDISENO_ANIME_EDITION.md)
+
+---
 ✅ Estado por fases
 Table
 Fase	Estado
