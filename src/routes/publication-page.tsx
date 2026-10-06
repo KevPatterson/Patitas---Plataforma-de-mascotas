@@ -217,7 +217,7 @@ export function PublicationPage() {
   return (
     <section className="space-y-6 py-8">
       {loading ? (
-        <div className="rounded-[24px] border-2 border-[#CFEFE6] bg-white p-6 text-[#0B3B3C]">Cargando publicación...</div>
+        <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 text-[#0B3B3C]">Cargando publicación...</div>
       ) : publication ? (
         <div className="space-y-6">
           {/* Celebración si está resuelta */}
@@ -229,7 +229,7 @@ export function PublicationPage() {
             {/* Columna principal */}
             <div className="space-y-6">
               {/* Galería */}
-              <div className="overflow-hidden rounded-[24px] border-2 border-[#CFEFE6] bg-white">
+              <div className="overflow-hidden rounded-3xl border-2 border-[#CFEFE6] bg-white">
                 {coverImage?.storage_path ? (
                   <img
                     src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/pet-images/${coverImage.storage_path}`}
@@ -244,7 +244,7 @@ export function PublicationPage() {
               </div>
 
               {/* Información principal */}
-              <div className="rounded-[24px] border-2 border-[#CFEFE6] bg-white p-6 space-y-4">
+              <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-4">
                 <div>
                   <StatusBadge status={publication.type} />
                   <h1 className="mt-3 font-display text-4xl font-semibold text-[#0B3B3C]">{publication.title}</h1>
@@ -254,37 +254,37 @@ export function PublicationPage() {
                 {/* Características */}
                 <div className="grid gap-3 sm:grid-cols-2">
                   {publication.species ? (
-                    <div className="rounded-[16px] border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
+                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Especie</p>
                       <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.species}</p>
                     </div>
                   ) : null}
                   {publication.breed ? (
-                    <div className="rounded-[16px] border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
+                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Raza</p>
                       <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.breed}</p>
                     </div>
                   ) : null}
                   {publication.color ? (
-                    <div className="rounded-[16px] border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
+                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Color</p>
                       <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.color}</p>
                     </div>
                   ) : null}
                   {publication.size ? (
-                    <div className="rounded-[16px] border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
+                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Tamaño</p>
                       <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.size}</p>
                     </div>
                   ) : null}
                   {publication.sex ? (
-                    <div className="rounded-[16px] border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
+                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Sexo</p>
                       <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.sex}</p>
                     </div>
                   ) : null}
                   {publication.age_approx ? (
-                    <div className="rounded-[16px] border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
+                    <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Edad aprox.</p>
                       <p className="mt-1 font-semibold text-[#0B3B3C]">{publication.age_approx}</p>
                     </div>
@@ -292,7 +292,7 @@ export function PublicationPage() {
                 </div>
 
                 {publication.characteristics ? (
-                  <div className="rounded-[16px] border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
+                  <div className="rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] px-4 py-3">
                     <p className="text-xs font-semibold uppercase tracking-wider text-[#0B3B3C]/60">Características</p>
                     <p className="mt-2 leading-7 text-[#0B3B3C]">{publication.characteristics}</p>
                   </div>
@@ -301,7 +301,7 @@ export function PublicationPage() {
 
               {/* Coincidencias */}
               {matches.length > 0 ? (
-                <div className="space-y-4 rounded-[24px] border-2 border-[#CFEFE6] bg-white p-6">
+                <div className="space-y-4 rounded-3xl border-2 border-[#CFEFE6] bg-white p-6">
                   <div>
                     <h3 className="font-display text-2xl font-semibold text-[#0B3B3C]">Posibles coincidencias</h3>
                     <p className="mt-2 text-sm text-[#0B3B3C]/60">
@@ -313,10 +313,10 @@ export function PublicationPage() {
                       <Link
                         key={match.publicationId}
                         to={`/p/${match.publication.slug}`}
-                        className="block overflow-hidden rounded-[16px] border border-[#CFEFE6] bg-[#F5FBF9] transition hover:-translate-y-0.5"
+                        className="block overflow-hidden rounded-2xl border border-[#CFEFE6] bg-[#F5FBF9] transition hover:-translate-y-0.5"
                       >
                         <div className="flex gap-4 p-4">
-                          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-[16px] bg-[#CFEFE6]/40">
+                          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#CFEFE6]/40">
                             {match.publication.coverImageUrl ? (
                               <img src={match.publication.coverImageUrl} alt={match.publication.title} className="h-full w-full object-cover" />
                             ) : (
@@ -364,7 +364,7 @@ export function PublicationPage() {
             {/* Columna lateral */}
             <aside className="space-y-5">
               {/* Detalles */}
-              <div className="rounded-[24px] border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
+              <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
                 <h2 className="font-display text-2xl font-semibold text-[#0B3B3C]">Ubicación</h2>
                 <p className="flex items-center gap-2 text-sm text-[#0B3B3C]/70">
                   <MapPin size={16} className="shrink-0 text-[#0B3B3C]/50" />
@@ -382,7 +382,7 @@ export function PublicationPage() {
               </div>
 
               {/* Acciones */}
-              <div className="rounded-[24px] border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
+              <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
                 <h2 className="font-display text-2xl font-semibold text-[#0B3B3C]">Acciones</h2>
                 <div className="flex flex-col gap-3">
                   {isOwner && publication.status === 'ACTIVE' ? (
@@ -399,7 +399,7 @@ export function PublicationPage() {
                         Solicitar adopción
                       </Button>
                     ) : (
-                      <div className="space-y-3 p-4 bg-[#F5FBF9] rounded-[16px]">
+                      <div className="space-y-3 p-4 bg-[#F5FBF9] rounded-2xl">
                         <h3 className="font-semibold text-[#0B3B3C]">Solicitar adopción</h3>
                         <p className="text-sm text-[#0B3B3C]/70">Cuéntale al por qué quieres adoptar a esta mascota.</p>
                         <TextareaField
@@ -409,10 +409,10 @@ export function PublicationPage() {
                           onChange={(event) => setAdoptMessage(event.target.value)}
                         />
                         {adoptError ? (
-                          <p className="rounded-[16px] bg-[rgba(181,76,69,0.12)] px-4 py-3 text-sm font-medium text-[#C2332C]">{adoptError}</p>
+                          <p className="rounded-2xl bg-[rgba(181,76,69,0.12)] px-4 py-3 text-sm font-medium text-[#C2332C]">{adoptError}</p>
                         ) : null}
                         {adoptSuccess ? (
-                          <p className="rounded-[16px] bg-[rgba(46,139,87,0.12)] px-4 py-3 text-sm font-medium text-[#0E7C66]">Solicitud enviada. El propietario recibirá una notificación.</p>
+                          <p className="rounded-2xl bg-[rgba(46,139,87,0.12)] px-4 py-3 text-sm font-medium text-[#0E7C66]">Solicitud enviada. El propietario recibirá una notificación.</p>
                         ) : null}
                         <div className="flex gap-3">
                           <Button type="button" onClick={handleAdoptRequest} disabled={adoptLoading}>{adoptLoading ? 'Enviando...' : 'Enviar solicitud'}</Button>
@@ -442,7 +442,7 @@ export function PublicationPage() {
 
               {/* Formulario de reporte */}
               {showReportForm ? (
-                <div className="rounded-[24px] border-2 border-[#CFEFE6] bg-white p-6 space-y-4">
+                <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="font-display text-xl font-semibold text-[#0B3B3C]">Reportar</h2>
                     <button
@@ -457,7 +457,7 @@ export function PublicationPage() {
                   <label className="space-y-2 text-sm font-semibold text-[#0B3B3C]">
                     <span>Motivo</span>
                     <select
-                      className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4"
+                      className="h-12 w-full rounded-2xl border-2 border-[#CFEFE6] bg-white px-4"
                       value={reportReason}
                       onChange={(event) => setReportReason(event.target.value as typeof reportReason)}
                     >
@@ -478,7 +478,7 @@ export function PublicationPage() {
                   />
                   {reportMessage ? (
                     <p
-                      className={`rounded-[16px] px-4 py-3 text-sm font-medium ${
+                      className={`rounded-2xl px-4 py-3 text-sm font-medium ${
                         reportMessage.includes('Gracias') || reportMessage.includes('enviado')
                           ? 'bg-[#0E7C66]/10 text-[#0E7C66]'
                           : 'bg-[#C2332C]/10 text-[#C2332C]'
@@ -494,7 +494,7 @@ export function PublicationPage() {
               ) : null}
 
               {/* Información del publicador */}
-              <div className="rounded-[24px] border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
+              <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-6 space-y-3">
                 <h2 className="font-display text-xl font-semibold text-[#0B3B3C]">Publicado por</h2>
                 <p className="text-sm font-semibold text-[#0B3B3C]">@{publication.owner?.username ?? 'Usuario'}</p>
                 <p className="text-xs text-[#0B3B3C]/60">
@@ -505,7 +505,7 @@ export function PublicationPage() {
           </article>
         </div>
       ) : (
-        <div className="rounded-[24px] border-2 border-[#CFEFE6] bg-white p-8 text-center">
+        <div className="rounded-3xl border-2 border-[#CFEFE6] bg-white p-8 text-center">
           <div className="flex flex-col items-center gap-4">
             <Logo size={48} />
             <div className="space-y-2">

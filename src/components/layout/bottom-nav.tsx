@@ -87,7 +87,7 @@ export function BottomNav() {
               <Icon className="h-5 w-5" aria-hidden="true" />
               {item.label}
               {showBadge && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] rounded-full bg-lost text-white text-[8px] font-bold flex items-center justify-center shadow-sm animate-paw-pulse">
+                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 rounded-full bg-lost text-white text-[8px] font-bold flex items-center justify-center shadow-sm animate-paw-pulse">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}

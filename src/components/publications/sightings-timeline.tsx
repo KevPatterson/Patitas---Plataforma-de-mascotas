@@ -39,7 +39,7 @@ export function SightingsTimeline({ sightings }: SightingsTimelineProps) {
 
       <div className="space-y-3">
         {sightings.map((sighting, index) => (
-          <div key={sighting.id} className="relative rounded-[16px] border-2 border-[#CFEFE6] bg-white p-5 shadow-sm">
+          <div key={sighting.id} className="relative rounded-2xl border-2 border-[#CFEFE6] bg-white p-5 shadow-sm">
             <div className="absolute -left-3 top-6 flex h-6 w-6 items-center justify-center rounded-full bg-[#FF6B35] text-xs font-bold text-[#0B3B3C] shadow-md">
               {sightings.length - index}
             </div>

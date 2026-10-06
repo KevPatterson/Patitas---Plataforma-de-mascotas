@@ -19,7 +19,7 @@ export function TextareaField({ label, hint, error, id, className = '', ...props
         id={fieldId}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined}
-        className={`min-h-32 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 py-3 text-base text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20 dark:border-white/15 dark:bg-white/95 ${className}`}
+        className={`min-h-32 w-full rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 py-3 text-base text-[#0B3B3C] shadow-sm outline-none transition placeholder:text-[#0B3B3C]/50 focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20 dark:border-white/15 dark:bg-white/95 ${className}`}
         style={{ fontFamily: 'Figtree, sans-serif' }}
         {...props}
       />

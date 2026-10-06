@@ -281,7 +281,7 @@ export function PublishPage() {
                 <label className="space-y-2">
                   <span className="block text-sm font-semibold text-(--color-text)">Especie</span>
                   <select
-                    className="w-full h-12 rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
                     value={values.species}
                     onChange={(event) => updateValue('species', event.target.value)}
                   >
@@ -300,7 +300,7 @@ export function PublishPage() {
                 <label className="space-y-2">
                   <span className="block text-sm font-semibold text-(--color-text)">Sexo</span>
                   <select
-                    className="w-full h-12 rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
                     value={values.sex}
                     onChange={(event) => updateValue('sex', event.target.value)}
                   >
@@ -313,7 +313,7 @@ export function PublishPage() {
                 <label className="space-y-2">
                   <span className="block text-sm font-semibold text-(--color-text)">Tamaño</span>
                   <select
-                    className="w-full h-12 rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
                     value={values.size}
                     onChange={(event) => updateValue('size', event.target.value)}
                   >
@@ -370,7 +370,7 @@ export function PublishPage() {
                 <label className="space-y-2">
                   <span className="block text-sm font-semibold text-(--color-text)">Provincia</span>
                   <select
-                    className="w-full h-12 rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
                     value={values.province}
                     onChange={(event) => updateValue('province', event.target.value)}
                   >
@@ -383,7 +383,7 @@ export function PublishPage() {
                 <label className="space-y-2">
                   <span className="block text-sm font-semibold text-(--color-text)">Municipio</span>
                   <select
-                    className="w-full h-12 rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
                     value={values.municipality}
                     onChange={(event) => updateValue('municipality', event.target.value)}
                     disabled={municipalities.length === 0}
@@ -492,7 +492,7 @@ export function PublishPage() {
                 <label className="space-y-2">
                   <span className="block text-sm font-semibold text-(--color-text)">Modo de contacto</span>
                   <select
-                    className="w-full h-12 rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+                    className="w-full h-12 rounded-2xl border-2 border-[#CFEFE6] bg-white px-4 text-base text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
                     value={values.contactMode}
                     onChange={(event) => updateValue('contactMode', event.target.value as PublicationFormValues['contactMode'])}
                   >

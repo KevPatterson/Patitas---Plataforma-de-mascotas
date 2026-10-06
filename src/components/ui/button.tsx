@@ -15,11 +15,11 @@ const baseClasses =
   'inline-flex items-center justify-center gap-2 rounded-xl px-6 text-sm font-extrabold transition-all duration-base ease-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden';
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'min-h-[44px] bg-orange text-white shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-orange-dark active:scale-[0.98]',
-  secondary: 'min-h-[44px] bg-turquoise text-white shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-turquoise-dark active:scale-[0.98]',
-  adoption: 'min-h-[44px] bg-purple text-white shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-purple-dark active:scale-[0.98]',
-  ghost: 'min-h-[44px] bg-transparent text-navy hover:bg-navy/5 dark:text-cream dark:hover:bg-white/10',
-  danger: 'min-h-[44px] bg-lost text-white shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-lost-dark active:scale-[0.98]',
+  primary: 'min-h-11 bg-orange text-white shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-orange-dark active:scale-[0.98]',
+  secondary: 'min-h-11 bg-turquoise text-white shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-turquoise-dark active:scale-[0.98]',
+  adoption: 'min-h-11 bg-purple text-white shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-purple-dark active:scale-[0.98]',
+  ghost: 'min-h-11 bg-transparent text-navy hover:bg-navy/5 dark:text-cream dark:hover:bg-white/10',
+  danger: 'min-h-11 bg-lost text-white shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-lost-dark active:scale-[0.98]',
 };
 
 function LoadingDots() {

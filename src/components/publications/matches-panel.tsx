@@ -22,7 +22,7 @@ export function MatchesPanel({ matches }: MatchesPanelProps) {
   }
 
   return (
-    <div className="space-y-4 rounded-[24px] border-2 border-[#CFEFE6] bg-[#CFEFE6]/20 p-6">
+    <div className="space-y-4 rounded-3xl border-2 border-[#CFEFE6] bg-[#CFEFE6]/20 p-6">
       <div>
         <h3 className="font-display text-2xl font-extrabold text-[#0B3B3C]" style={{ fontFamily: '"Baloo 2", cursive' }}>
           Posibles coincidencias
@@ -35,10 +35,10 @@ export function MatchesPanel({ matches }: MatchesPanelProps) {
           <Link
             key={match.publicationId}
             to={`/p/${match.publication.slug}`}
-            className="block overflow-hidden rounded-[16px] border-2 border-[#CFEFE6] bg-white shadow-sm transition hover:-translate-y-0.5"
+            className="block overflow-hidden rounded-2xl border-2 border-[#CFEFE6] bg-white shadow-sm transition hover:-translate-y-0.5"
           >
             <div className="flex gap-4 p-4">
-              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-[16px] bg-[#F5FBF9]">
+              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#F5FBF9]">
                 {match.publication.coverImageUrl ? (
                   <img src={match.publication.coverImageUrl} alt={match.publication.title} className="h-full w-full object-cover" />
                 ) : (

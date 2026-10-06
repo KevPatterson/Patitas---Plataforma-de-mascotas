@@ -58,12 +58,12 @@ export function ShareMenu({ publication }: ShareMenuProps) {
       </Button>
 
       {showMenu ? (
-        <div className="absolute right-0 top-full z-10 mt-3 w-64 space-y-2 rounded-[16px] border-2 border-[#CFEFE6] bg-white p-4 shadow-[0_18px_50px_rgba(11,59,60,0.08)]">
+        <div className="absolute right-0 top-full z-10 mt-3 w-64 space-y-2 rounded-2xl border-2 border-[#CFEFE6] bg-white p-4 shadow-[0_18px_50px_rgba(11,59,60,0.08)]">
           {canUseWebShare() ? (
             <button
               type="button"
               onClick={handleWebShare}
-              className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
             >
               <Share2 className="h-4 w-4" aria-hidden="true" />
               <span>Compartir</span>
@@ -72,7 +72,7 @@ export function ShareMenu({ publication }: ShareMenuProps) {
           <button
             type="button"
             onClick={() => shareViaWhatsApp(shareData.text, shareData.url)}
-            className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
           >
             <MessageCircle className="h-4 w-4" aria-hidden="true" />
             <span>WhatsApp</span>
@@ -80,7 +80,7 @@ export function ShareMenu({ publication }: ShareMenuProps) {
           <button
             type="button"
             onClick={() => shareViaTelegram(shareData.text, shareData.url)}
-            className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
           >
             <Send className="h-4 w-4" aria-hidden="true" />
             <span>Telegram</span>
@@ -88,7 +88,7 @@ export function ShareMenu({ publication }: ShareMenuProps) {
           <button
             type="button"
             onClick={() => shareViaFacebook(shareData.url)}
-            className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
           >
             <Share2 className="h-4 w-4" aria-hidden="true" />
             <span>Facebook</span>
@@ -96,7 +96,7 @@ export function ShareMenu({ publication }: ShareMenuProps) {
           <button
             type="button"
             onClick={handleCopy}
-            className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-[#0B3B3C] hover:bg-[#F5FBF9]"
           >
             {copied ? <Check className="h-4 w-4 text-[#0E7C66]" aria-hidden="true" /> : <Link2 className="h-4 w-4" aria-hidden="true" />}
             <span>{copied ? 'Copiado' : 'Copiar enlace'}</span>

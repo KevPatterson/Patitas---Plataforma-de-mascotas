@@ -1,16 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PawPrint } from 'lucide-react';
 import { AuthCard } from '../../components/ui/auth-card';
 import { Button, LinkButton } from '../../components/ui/button';
 import { TextField } from '../../components/ui/text-field';
 import { registerSchema, type RegisterInput } from '../../lib/validations/auth';
 import { signUpWithPassword, signInWithGoogle } from '../../lib/supabase/auth';
+import { setPageMeta } from '../../lib/seo/page-meta';
 
 export function RegisterPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
+
+  useEffect(() => {
+    setPageMeta({
+      title: 'Crear cuenta — Patitas',
+      description: 'Únete a la comunidad de Patitas y ayuda a que más mascotas encuentren el camino a casa.',
+      canonicalPath: '/auth/register',
+    });
+  }, []);
 
   const onSubmit = async (values: RegisterInput) => {
     setServerError(null);
@@ -20,7 +30,7 @@ export function RegisterPage() {
         fullName: values.fullName,
         username: values.username.toLowerCase(),
       });
-      setSuccessMessage('Cuenta creada. Revisa tu correo para verificar tu sesión.');
+      setSuccessMessage('🎉 Cuenta creada. Revisa tu correo para verificar tu sesión.');
     } catch (error) {
       setServerError(error instanceof Error ? error.message : 'No pudimos crear tu cuenta.');
     }
@@ -39,26 +49,92 @@ export function RegisterPage() {
     <section className="grid min-h-[calc(100vh-8rem)] place-items-center py-10">
       <AuthCard
         eyebrow="Registro"
-        title="Crear cuenta"
-        description="Usa un perfil público limpio para seguir casos, publicar mascotas y recibir notificaciones relevantes."
+        title="🐾 Únete a Patitas"
+        description="Sé parte de la comunidad que ayuda a que las mascotas vuelvan a casa."
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-(--color-muted)">
+          <div className="flex flex-wrap items-center justify-center sm:justify-between gap-3 text-sm text-navy/70">
             <span>¿Ya tienes cuenta?</span>
-            <LinkButton href="/auth/login" variant="ghost">Entrar</LinkButton>
+            <LinkButton href="/auth/login" variant="ghost">
+              Entrar
+            </LinkButton>
           </div>
         }
       >
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-          <TextField label="Nombre" autoComplete="name" placeholder="Tu nombre" error={errors.fullName?.message} {...register('fullName')} />
-          <TextField label="Usuario" autoComplete="username" placeholder="tu_usuario" error={errors.username?.message} {...register('username')} />
-          <TextField label="Correo" type="email" autoComplete="email" placeholder="tu@correo.com" error={errors.email?.message} {...register('email')} />
-          <TextField label="Contraseña" type="password" autoComplete="new-password" placeholder="Mínimo 8 caracteres" error={errors.password?.message} {...register('password')} />
-          {serverError ? <p className="rounded-2xl bg-[rgba(181,76,69,0.12)] px-4 py-3 text-sm font-medium text-(--color-danger)">{serverError}</p> : null}
-          {successMessage ? <p className="rounded-2xl bg-[rgba(46,139,87,0.12)] px-4 py-3 text-sm font-medium text-(--color-success)">{successMessage}</p> : null}
-          <Button type="submit" disabled={isSubmitting} className="w-full">{isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}</Button>
-          <div className="relative py-2 text-center text-xs font-semibold uppercase tracking-widest text-(--color-muted)"><span className="relative bg-white px-3 dark:bg-[#0B3B3C]">o</span></div>
-          <Button type="button" variant="secondary" className="w-full justify-center" onClick={handleGoogle}>Continuar con Google</Button>
-          <p className="text-center text-xs leading-6 text-(--color-muted)">Al registrarte aceptas que Patitas use tu perfil para publicaciones y seguimiento de casos.</p>
+          <TextField 
+            label="Nombre" 
+            autoComplete="name" 
+            placeholder="Tu nombre" 
+            error={errors.fullName?.message} 
+            {...register('fullName')} 
+          />
+          <TextField 
+            label="Usuario" 
+            autoComplete="username" 
+            placeholder="tu_usuario" 
+            error={errors.username?.message} 
+            {...register('username')} 
+          />
+          <TextField 
+            label="Correo" 
+            type="email" 
+            autoComplete="email" 
+            placeholder="tu@correo.com" 
+            error={errors.email?.message} 
+            {...register('email')} 
+          />
+          <TextField 
+            label="Contraseña" 
+            type="password" 
+            autoComplete="new-password" 
+            placeholder="Mínimo 8 caracteres" 
+            error={errors.password?.message} 
+            {...register('password')} 
+          />
+          
+          {serverError ? (
+            <div className="rounded-xl bg-lost/10 border-2 border-lost/20 px-4 py-3 text-sm font-medium text-lost">
+              {serverError}
+            </div>
+          ) : null}
+          
+          {successMessage ? (
+            <div className="rounded-xl bg-found/10 border-2 border-found/20 px-4 py-3 text-sm font-medium text-found">
+              {successMessage}
+            </div>
+          ) : null}
+          
+          <Button 
+            type="submit" 
+            variant="primary" 
+            disabled={isSubmitting} 
+            className="w-full gap-2"
+          >
+            <PawPrint className="h-4 w-4" />
+            {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
+          </Button>
+          
+          <div className="relative py-4 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t-2 border-navy/10"></div>
+            </div>
+            <span className="relative bg-white px-4 text-xs font-bold uppercase tracking-wider text-navy/40">
+              o
+            </span>
+          </div>
+          
+          <Button 
+            type="button" 
+            variant="ghost" 
+            className="w-full justify-center border-2" 
+            onClick={handleGoogle}
+          >
+            Continuar con Google
+          </Button>
+          
+          <p className="text-center text-xs leading-relaxed text-navy/60 pt-2">
+            Al registrarte aceptas que Patitas use tu perfil para publicaciones y seguimiento de casos.
+          </p>
         </form>
       </AuthCard>
     </section>

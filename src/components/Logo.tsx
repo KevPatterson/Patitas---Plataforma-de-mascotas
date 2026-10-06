@@ -24,7 +24,7 @@ export function Logo({ variant = 'full', size = 40, className = '', animated = f
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
-        className={`shrink-0 ${animated ? 'transition-transform duration-base group-hover:scale-110 group-hover:rotate-[-5deg]' : ''}`}
+        className={`shrink-0 ${animated ? 'transition-transform duration-base group-hover:scale-110 group-hover:-rotate-5' : ''}`}
       >
         {/* 4 dedos - naranja #ff8c42 */}
         <ellipse 
@@ -34,7 +34,7 @@ export function Logo({ variant = 'full', size = 40, className = '', animated = f
           ry="12" 
           transform="rotate(-22 24 48)" 
           fill="#ff8c42"
-          className={animated ? 'origin-center transition-transform duration-base group-hover:translate-y-[-2px]' : ''}
+          className={animated ? 'origin-center transition-transform duration-base group-hover:-translate-y-0.5' : ''}
         />
         <ellipse 
           cx="45" 
@@ -43,7 +43,7 @@ export function Logo({ variant = 'full', size = 40, className = '', animated = f
           ry="13" 
           transform="rotate(-8 45 28)" 
           fill="#ff8c42"
-          className={animated ? 'origin-center transition-transform duration-base group-hover:translate-y-[-3px]' : ''}
+          className={animated ? 'origin-center transition-transform duration-base group-hover:-translate-y-0.75' : ''}
           style={{ transitionDelay: animated ? '50ms' : undefined }}
         />
         <ellipse 
@@ -53,7 +53,7 @@ export function Logo({ variant = 'full', size = 40, className = '', animated = f
           ry="13" 
           transform="rotate(8 75 28)" 
           fill="#ff8c42"
-          className={animated ? 'origin-center transition-transform duration-base group-hover:translate-y-[-3px]' : ''}
+          className={animated ? 'origin-center transition-transform duration-base group-hover:-translate-y-0.75' : ''}
           style={{ transitionDelay: animated ? '100ms' : undefined }}
         />
         <ellipse 
@@ -63,7 +63,7 @@ export function Logo({ variant = 'full', size = 40, className = '', animated = f
           ry="12" 
           transform="rotate(22 96 48)" 
           fill="#ff8c42"
-          className={animated ? 'origin-center transition-transform duration-base group-hover:translate-y-[-2px]' : ''}
+          className={animated ? 'origin-center transition-transform duration-base group-hover:-translate-y-0.5' : ''}
           style={{ transitionDelay: animated ? '150ms' : undefined }}
         />
         

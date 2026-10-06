@@ -358,7 +358,7 @@ export function AdminPage() {
                           value={u.role}
                           onChange={(e) => setUserRole(u.id, e.target.value as 'USER' | 'MODERATOR' | 'ADMIN')}
                           disabled={actionLoadingId === u.id || !isAdmin}
-                          className="h-10 rounded-[16px] border-2 border-[#CFEFE6] bg-white px-3 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20 cursor-pointer"
+                          className="h-10 rounded-2xl border-2 border-[#CFEFE6] bg-white px-3 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20 cursor-pointer"
                         >
                           <option value="USER">Usuario</option>
                           <option value="MODERATOR">Moderador</option>

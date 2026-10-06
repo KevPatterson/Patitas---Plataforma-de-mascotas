@@ -140,7 +140,7 @@ export function SearchPage() {
             <Filter className="h-5 w-5 text-navy/60" />
             <h2 className="font-display text-lg font-bold text-navy">Filtros</h2>
             {activeFiltersCount > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] rounded-full bg-orange text-white text-xs font-bold">
+              <span className="inline-flex items-center justify-center min-w-5 h-5 rounded-full bg-orange text-white text-xs font-bold">
                 {activeFiltersCount}
               </span>
             )}
@@ -334,12 +334,12 @@ export function SearchPage() {
                 variant="ghost" 
                 onClick={() => setPage((p) => Math.max(1, p - 1))} 
                 disabled={page === 1}
-                className="min-w-[100px]"
+                className="min-w-25"
               >
                 ← Anterior
               </Button>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center justify-center min-w-[36px] h-[36px] rounded-lg bg-navy text-white text-sm font-bold">
+                <span className="inline-flex items-center justify-center min-w-9 h-9 rounded-lg bg-navy text-white text-sm font-bold">
                   {page}
                 </span>
                 <span className="text-navy/40">/</span>
@@ -349,7 +349,7 @@ export function SearchPage() {
                 variant="ghost" 
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
                 disabled={page === totalPages}
-                className="min-w-[100px]"
+                className="min-w-25"
               >
                 Siguiente →
               </Button>

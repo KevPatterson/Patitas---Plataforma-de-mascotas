@@ -220,7 +220,7 @@ export function DashboardPage() {
                         onClick={() => handleResolve(pub.id)}
                         disabled={actionLoading === pub.id}
                         aria-label="Marcar como resuelto"
-                        className="p-2 min-h-[36px] px-3 bg-white/90 hover:bg-found/10 border border-navy/10"
+                        className="p-2 min-h-9 px-3 bg-white/90 hover:bg-found/10 border border-navy/10"
                       >
                         <CheckCircle className="h-4 w-4 text-found" />
                       </Button>
@@ -229,7 +229,7 @@ export function DashboardPage() {
                       variant="ghost"
                       onClick={() => handleDelete(pub.id)}
                       disabled={actionLoading === pub.id}
-                      className="p-2 min-h-[36px] px-3 bg-white/90 hover:bg-lost/10 border border-navy/10"
+                      className="p-2 min-h-9 px-3 bg-white/90 hover:bg-lost/10 border border-navy/10"
                       aria-label="Eliminar"
                     >
                       <Trash2 className="h-4 w-4 text-lost" />

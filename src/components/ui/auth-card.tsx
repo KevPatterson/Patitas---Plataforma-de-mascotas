@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Logo } from '../Logo';
+import { PawPrint } from 'lucide-react';
 
 type AuthCardProps = {
   eyebrow: string;
@@ -11,19 +12,40 @@ type AuthCardProps = {
 
 export function AuthCard({ eyebrow, title, description, children, footer }: AuthCardProps) {
   return (
-    <div className="mx-auto w-full max-w-lg rounded-[24px] border-2 border-[#CFEFE6] bg-white p-6 shadow-[0_18px_50px_rgba(11,59,60,0.08)] sm:p-8">
-      <div className="mb-4 flex justify-center">
-        <Logo variant="mark" size={48} />
+    <div className="relative mx-auto w-full max-w-lg">
+      {/* Decoraciones */}
+      <div className="blob-decoration absolute -top-10 -right-10 w-32 h-32 bg-orange/10" style={{ animationDelay: '1s' }} />
+      <div className="blob-decoration absolute -bottom-10 -left-10 w-24 h-24 bg-turquoise/10" style={{ animationDelay: '3s' }} />
+      
+      {/* Card principal */}
+      <div className="relative rounded-3xl border-2 border-navy/10 bg-white p-6 shadow-lg sm:p-10">
+        {/* Logo con huella */}
+        <div className="mb-6 flex flex-col items-center gap-3">
+          <Logo variant="mark" size={56} className="animate-float" />
+          <PawPrint className="h-5 w-5 text-orange/40 animate-paw-bounce" />
+        </div>
+        
+        {/* Header */}
+        <div className="space-y-2 mb-8">
+          <p className="text-center text-xs font-bold uppercase tracking-wider text-navy/60">{eyebrow}</p>
+          <h1 className="text-center font-display text-3xl md:text-4xl font-extrabold text-navy">
+            {title}
+          </h1>
+          <p className="text-center text-sm leading-relaxed text-navy/70 max-w-md mx-auto">
+            {description}
+          </p>
+        </div>
+        
+        {/* Contenido del formulario */}
+        <div className="mt-6">{children}</div>
+        
+        {/* Footer */}
+        {footer ? (
+          <div className="mt-8 pt-6 border-t-2 border-navy/10">
+            {footer}
+          </div>
+        ) : null}
       </div>
-      <p className="text-center text-xs font-bold uppercase tracking-[0.22em] text-[#0B3B3C]/60">{eyebrow}</p>
-      <h1 className="mt-2 text-center font-display text-[28px] font-extrabold tracking-tight text-[#0B3B3C]" style={{ fontFamily: '"Baloo 2", cursive' }}>
-        {title}
-      </h1>
-      <p className="mt-2 text-center text-sm leading-6 text-[#0B3B3C]/70" style={{ fontFamily: 'Figtree, sans-serif' }}>
-        {description}
-      </p>
-      <div className="mt-6">{children}</div>
-      {footer ? <div className="mt-6 border-t-2 border-[#CFEFE6] pt-5">{footer}</div> : null}
     </div>
   );
 }

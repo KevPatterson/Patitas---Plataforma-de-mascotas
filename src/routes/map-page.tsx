@@ -3,8 +3,11 @@ import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Link } from 'react-router-dom';
+import { MapPin, PawPrint, Layers } from 'lucide-react';
 import { searchPublications, type PublicationSummary } from '../lib/supabase/publication-search';
 import { TYPE_LABELS, TYPE_COLORS } from '../lib/constants/labels';
+import { PawLoader } from '../components/ui/paw-loader';
+import { setPageMeta } from '../lib/seo/page-meta';
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -16,10 +19,10 @@ L.Icon.Default.mergeOptions({
 function ColoredMarker({ position, color, children }: { position: [number, number]; color: string; children: React.ReactNode }) {
   const icon = useMemo(() => L.divIcon({
     className: 'custom-marker',
-    html: `<div style="width: 24px; height: 24px; border-radius: 50%; background: ${color}; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -12],
+    html: `<div style="width: 28px; height: 28px; border-radius: 50%; background: ${color}; border: 3px solid white; box-shadow: 0 4px 12px rgba(26, 35, 50, 0.25);"></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14],
   }), [color]);
 
   return <Marker position={position} icon={icon}>{children}</Marker>;
@@ -33,6 +36,14 @@ export function MapPage() {
     species: '',
     province: '',
   });
+
+  useEffect(() => {
+    setPageMeta({
+      title: 'Mapa de casos — Patitas',
+      description: 'Explora en el mapa los casos de mascotas perdidas, encontradas, abandonadas y en adopción. Ubicaciones aproximadas para proteger privacidad.',
+      canonicalPath: '/mapa',
+    });
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -89,19 +100,42 @@ export function MapPage() {
   ];
 
   return (
-    <section className="space-y-6 py-8">
-      <div className="max-w-3xl space-y-4">
-        <p className="text-xs font-bold uppercase tracking-[0.28em] text-(--color-muted)">Mapa</p>
-        <h1 className="font-display text-4xl font-semibold text-(--color-text)">Casos aproximados en el mapa</h1>
-        <p className="text-(--color-muted)">Mostramos ubicaciones difuminadas para proteger privacidad y aun así ayudar a encontrar contexto geográfico.</p>
+    <section className="space-y-8 py-10">
+      {/* Hero del mapa */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-turquoise/10 via-cream to-purple/10 border-2 border-navy/10 p-8 md:p-12 shadow-md">
+        <div className="blob-decoration absolute top-5 right-5 w-32 h-32 bg-orange/20" />
+        <div className="blob-decoration absolute bottom-5 left-5 w-24 h-24 bg-turquoise/15" style={{ animationDelay: '2s' }} />
+        
+        <div className="relative space-y-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-6 w-6 text-turquoise animate-paw-bounce" />
+            <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Explorar</span>
+          </div>
+          <h1 className="font-display text-4xl md:text-5xl font-extrabold text-navy">
+            🗺️ Explora en el mapa
+          </h1>
+          <p className="text-lg text-navy/70 leading-relaxed max-w-2xl">
+            Cada marcador representa un caso activo. Las ubicaciones están difuminadas para proteger la privacidad.
+          </p>
+          <div className="flex items-center gap-3 text-sm text-navy/60">
+            <Layers className="h-4 w-4" />
+            <span className="font-semibold">{results.length} {results.length === 1 ? 'caso' : 'casos'} en el mapa</span>
+          </div>
+        </div>
       </div>
 
-      <div className="soft-panel rounded-4xl p-4 space-y-4">
+      {/* Filtros */}
+      <div className="rounded-2xl border-2 border-navy/10 bg-white p-6 shadow-md space-y-6">
+        <div className="flex items-center gap-2">
+          <Layers className="h-5 w-5 text-navy/60" />
+          <h2 className="font-display text-xl font-extrabold text-navy">Filtros</h2>
+        </div>
+        
         <div className="grid gap-4 md:grid-cols-3">
-          <label className="space-y-2 text-sm font-semibold text-(--color-text)">
-            <span>Tipo de caso</span>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-navy/70">Tipo de caso</span>
             <select
-              className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+              className="h-12 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
               value={filters.type}
               onChange={(e) => setFilters((f) => ({ ...f, type: e.target.value as typeof filters.type }))}
             >
@@ -111,10 +145,10 @@ export function MapPage() {
             </select>
           </label>
 
-          <label className="space-y-2 text-sm font-semibold text-(--color-text)">
-            <span>Especie</span>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-navy/70">Especie</span>
             <select
-              className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+              className="h-12 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
               value={filters.species}
               onChange={(e) => setFilters((f) => ({ ...f, species: e.target.value }))}
             >
@@ -124,10 +158,10 @@ export function MapPage() {
             </select>
           </label>
 
-          <label className="space-y-2 text-sm font-semibold text-(--color-text)">
-            <span>Provincia</span>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-navy/70">Provincia</span>
             <select
-              className="h-12 w-full rounded-[16px] border-2 border-[#CFEFE6] bg-white px-4 text-sm font-medium text-[#0B3B3C] shadow-sm outline-none transition focus:border-[#FF6B35] focus:ring-4 focus:ring-[#FF6B35]/20"
+              className="h-12 w-full rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
               value={filters.province}
               onChange={(e) => setFilters((f) => ({ ...f, province: e.target.value }))}
             >
@@ -138,19 +172,34 @@ export function MapPage() {
           </label>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {(Object.entries(TYPE_LABELS) as [string, string][]).map(([type, label]) => (
-            <span key={type} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: `${TYPE_COLORS[type]}20`, color: TYPE_COLORS[type] }}>
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TYPE_COLORS[type] }} />
-              {label}
-            </span>
-          ))}
+        {/* Leyenda */}
+        <div className="pt-4 border-t-2 border-navy/10">
+          <p className="text-xs font-bold uppercase tracking-wider text-navy/60 mb-3">Leyenda</p>
+          <div className="flex flex-wrap gap-3">
+            {(Object.entries(TYPE_LABELS) as [string, string][]).map(([type, label]) => (
+              <span 
+                key={type} 
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-transform hover:scale-105" 
+                style={{ 
+                  backgroundColor: `${TYPE_COLORS[type]}20`, 
+                  color: TYPE_COLORS[type] 
+                }}
+              >
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS[type] }} />
+                {label}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-4xl border border-black/5 shadow-(--shadow-soft)">
+      {/* Mapa */}
+      <div className="overflow-hidden rounded-3xl border-2 border-navy/10 shadow-lg">
         {loading ? (
-          <div className="soft-panel rounded-none p-8">Cargando mapa...</div>
+          <div className="flex flex-col items-center justify-center gap-4 bg-white p-12">
+            <PawLoader size="lg" />
+            <p className="font-display text-lg font-semibold text-navy">Cargando casos en el mapa...</p>
+          </div>
         ) : (
           <MapContainer center={center} zoom={8} className="h-[70vh] w-full">
             <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -158,19 +207,32 @@ export function MapPage() {
               <ColoredMarker
                 key={publication.id}
                 position={[publication.approximateLat as number, publication.approximateLng as number]}
-                color={TYPE_COLORS[publication.type] ?? '#FF6B35'}
+                color={TYPE_COLORS[publication.type] ?? '#ff8c42'}
               >
                 <Popup>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-3 py-2 min-w-50">
                     <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS[publication.type] ?? '#FF6B35' }} />
-                      <span className="font-bold text-(--color-text)">{TYPE_LABELS[publication.type] ?? publication.type}</span>
+                      <span 
+                        className="w-4 h-4 rounded-full shrink-0" 
+                        style={{ backgroundColor: TYPE_COLORS[publication.type] ?? '#ff8c42' }} 
+                      />
+                      <span className="font-bold text-navy text-sm">{TYPE_LABELS[publication.type] ?? publication.type}</span>
                     </div>
-                    <p className="font-semibold text-(--color-text)">{publication.title}</p>
-                    <p>{publication.zone ?? publication.municipality ?? publication.province}</p>
-                    <p className="text-xs text-(--color-muted)">{publication.species ? `Especie: ${publication.species}` : ''}</p>
-                    <Link className="font-semibold text-(--color-primary) hover:underline" to={`/p/${publication.slug}`}>
-                      Ver publicación
+                    <p className="font-display text-lg font-extrabold text-navy">{publication.title}</p>
+                    <p className="text-sm text-navy/70 flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {publication.zone ?? publication.municipality ?? publication.province}
+                    </p>
+                    {publication.species ? (
+                      <p className="text-xs text-navy/60">
+                        <span className="font-semibold">Especie:</span> {publication.species}
+                      </p>
+                    ) : null}
+                    <Link 
+                      className="inline-block font-semibold text-orange hover:text-orange-dark transition-colors text-sm" 
+                      to={`/p/${publication.slug}`}
+                    >
+                      Ver caso completo →
                     </Link>
                   </div>
                 </Popup>
@@ -178,6 +240,24 @@ export function MapPage() {
             ))}
           </MapContainer>
         )}
+      </div>
+      
+      {/* Info adicional */}
+      <div className="rounded-2xl border-2 border-turquoise/20 bg-turquoise/5 p-6">
+        <div className="flex gap-4">
+          <div className="shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-turquoise/10 flex items-center justify-center">
+              <PawPrint className="h-6 w-6 text-turquoise" />
+            </div>
+          </div>
+          <div className="flex-1 space-y-1">
+            <h3 className="font-display text-lg font-bold text-navy">Privacidad protegida</h3>
+            <p className="text-sm text-navy/70 leading-relaxed">
+              Las ubicaciones mostradas en el mapa están difuminadas automáticamente (±350 metros aproximadamente). 
+              Nunca revelamos direcciones exactas para proteger la privacidad de las personas y mascotas.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

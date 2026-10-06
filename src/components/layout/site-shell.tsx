@@ -26,7 +26,7 @@ function NavItem({ href, label, Icon, badge }: { href: string; label: string; Ic
       <Icon className="h-4 w-4" aria-hidden="true" />
       {label}
       {badge && badge > 0 && (
-        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-lost text-white text-[10px] font-bold shadow-sm animate-paw-pulse">
+        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-lost text-white text-[10px] font-bold shadow-sm animate-paw-pulse">
           {badge > 9 ? '9+' : badge}
         </span>
       )}
@@ -80,7 +80,7 @@ export function SiteShell({ children }: SiteShellProps) {
             {/* CTA destacado */}
             <Link
               to="/publicar"
-              className="group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-orange px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:shadow-lg hover:scale-105 hover:bg-orange-dark active:scale-95"
+              className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-orange px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:shadow-lg hover:scale-105 hover:bg-orange-dark active:scale-95"
               style={{ fontFamily: '"Baloo 2", cursive' }}
             >
               <PlusCircle className="h-4 w-4 transition-transform duration-base group-hover:rotate-90" aria-hidden="true" />
