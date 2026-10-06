@@ -36,3 +36,13 @@ export async function markNotificationAsRead(notificationId: string, profileId: 
     throw error;
   }
 }
+export async function getUnreadNotificationsCount(profileId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('profile_id', profileId)
+    .eq('is_read', false);
+
+  if (error) throw error;
+  return count ?? 0;
+}

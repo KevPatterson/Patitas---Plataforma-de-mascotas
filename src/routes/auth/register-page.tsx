@@ -5,7 +5,7 @@ import { AuthCard } from '../../components/ui/auth-card';
 import { Button, LinkButton } from '../../components/ui/button';
 import { TextField } from '../../components/ui/text-field';
 import { registerSchema, type RegisterInput } from '../../lib/validations/auth';
-import { signUpWithPassword } from '../../lib/supabase/auth';
+import { signUpWithPassword, signInWithGoogle } from '../../lib/supabase/auth';
 
 export function RegisterPage() {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -15,7 +15,6 @@ export function RegisterPage() {
   const onSubmit = async (values: RegisterInput) => {
     setServerError(null);
     setSuccessMessage(null);
-
     try {
       await signUpWithPassword(values.email, values.password, {
         fullName: values.fullName,
@@ -24,6 +23,15 @@ export function RegisterPage() {
       setSuccessMessage('Cuenta creada. Revisa tu correo para verificar tu sesión.');
     } catch (error) {
       setServerError(error instanceof Error ? error.message : 'No pudimos crear tu cuenta.');
+    }
+  };
+
+  const handleGoogle = async () => {
+    setServerError(null);
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      setServerError(error instanceof Error ? error.message : 'No pudimos iniciar con Google.');
     }
   };
 
@@ -48,6 +56,8 @@ export function RegisterPage() {
           {serverError ? <p className="rounded-2xl bg-[rgba(181,76,69,0.12)] px-4 py-3 text-sm font-medium text-(--color-danger)">{serverError}</p> : null}
           {successMessage ? <p className="rounded-2xl bg-[rgba(46,139,87,0.12)] px-4 py-3 text-sm font-medium text-(--color-success)">{successMessage}</p> : null}
           <Button type="submit" disabled={isSubmitting} className="w-full">{isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}</Button>
+          <div className="relative py-2 text-center text-xs font-semibold uppercase tracking-widest text-(--color-muted)"><span className="relative bg-white px-3 dark:bg-[#0B3B3C]">o</span></div>
+          <Button type="button" variant="secondary" className="w-full justify-center" onClick={handleGoogle}>Continuar con Google</Button>
           <p className="text-center text-xs leading-6 text-(--color-muted)">Al registrarte aceptas que Patitas use tu perfil para publicaciones y seguimiento de casos.</p>
         </form>
       </AuthCard>

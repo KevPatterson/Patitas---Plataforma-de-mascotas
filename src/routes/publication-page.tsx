@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X, Heart } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { TextareaField } from '../components/ui/textarea-field';
 import { StatusBadge } from '../components/ui/status-badge';
@@ -16,6 +16,7 @@ import { SightingsTimeline } from '../components/publications/sightings-timeline
 import { CommentsSection } from '../components/publications/comments-section';
 import { resolvePublication, getSightings } from '../lib/supabase/publication-actions';
 import { findMatches } from '../lib/matching/match-calculator';
+import { createAdoptionRequest } from '../lib/supabase/adoption-requests';
 import { generateLostPetStructuredData, injectStructuredData, removeStructuredData } from '../lib/seo/structured-data';
 export function PublicationPage() {
   const { user } = useAuth();
@@ -29,7 +30,11 @@ export function PublicationPage() {
   const [reportDescription, setReportDescription] = useState('');
   const [reportMessage, setReportMessage] = useState<string | null>(null);
   const [resolving, setResolving] = useState(false);
-
+  const [showAdoptForm, setShowAdoptForm] = useState(false);
+  const [adoptMessage, setAdoptMessage] = useState('');
+  const [adoptLoading, setAdoptLoading] = useState(false);
+  const [adoptError, setAdoptError] = useState<string | null>(null);
+  const [adoptSuccess, setAdoptSuccess] = useState(false);
   const loadSightings = async () => {
     if (!publication) return;
     const data = await getSightings(publication.id);
@@ -185,6 +190,25 @@ export function PublicationPage() {
       console.error('Error resolving publication:', error);
     } finally {
       setResolving(false);
+    }
+  };
+
+  const handleAdoptRequest = async () => {
+    if (!publication || !user) return;
+
+    setAdoptLoading(true);
+    setAdoptError(null);
+    setAdoptSuccess(false);
+
+    try {
+      await createAdoptionRequest(publication.id, adoptMessage.trim());
+      setAdoptSuccess(true);
+      setAdoptMessage('');
+      setShowAdoptForm(false);
+    } catch (error) {
+      setAdoptError(error instanceof Error ? error.message : 'No pudimos enviar la solicitud.');
+    } finally {
+      setAdoptLoading(false);
     }
   };
 
@@ -366,6 +390,36 @@ export function PublicationPage() {
                       <CheckCircle size={16} />
                       {resolving ? 'Resolviendo...' : 'Marcar como resuelto'}
                     </Button>
+                  ) : null}
+                  
+                  {publication.type === 'ADOPTION' && publication.status === 'ACTIVE' && user && !isOwner ? (
+                    !showAdoptForm ? (
+                      <Button type="button" variant="secondary" onClick={() => setShowAdoptForm(true)} className="gap-2">
+                        <Heart size={16} />
+                        Solicitar adopción
+                      </Button>
+                    ) : (
+                      <div className="space-y-3 p-4 bg-[#F5FBF9] rounded-[16px]">
+                        <h3 className="font-semibold text-[#0B3B3C]">Solicitar adopción</h3>
+                        <p className="text-sm text-[#0B3B3C]/70">Cuéntale al por qué quieres adoptar a esta mascota.</p>
+                        <TextareaField
+                          label="Mensaje"
+                          placeholder="Hola, me gustaría adoptar a esta mascota porque..."
+                          value={adoptMessage}
+                          onChange={(event) => setAdoptMessage(event.target.value)}
+                        />
+                        {adoptError ? (
+                          <p className="rounded-[16px] bg-[rgba(181,76,69,0.12)] px-4 py-3 text-sm font-medium text-[#C2332C]">{adoptError}</p>
+                        ) : null}
+                        {adoptSuccess ? (
+                          <p className="rounded-[16px] bg-[rgba(46,139,87,0.12)] px-4 py-3 text-sm font-medium text-[#0E7C66]">Solicitud enviada. El propietario recibirá una notificación.</p>
+                        ) : null}
+                        <div className="flex gap-3">
+                          <Button type="button" onClick={handleAdoptRequest} disabled={adoptLoading}>{adoptLoading ? 'Enviando...' : 'Enviar solicitud'}</Button>
+                          <Button type="button" variant="ghost" onClick={() => { setShowAdoptForm(false); setAdoptMessage(''); setAdoptError(null); setAdoptSuccess(false); }}>Cancelar</Button>
+                        </div>
+                      </div>
+                    )
                   ) : null}
                   
                   <ShareMenu

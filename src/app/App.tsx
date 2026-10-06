@@ -7,6 +7,7 @@ import { BottomNav } from '../components/layout/bottom-nav';
 import { HomePage } from '../routes/home-page';
 import { LoginPage } from '../routes/auth/login-page';
 import { RegisterPage } from '../routes/auth/register-page';
+import { CallbackPage } from '../routes/auth/callback-page';
 import { ForgotPasswordPage } from '../routes/auth/forgot-password-page';
 import { ResetPasswordPage } from '../routes/auth/reset-password-page';
 import { SearchPage } from '../routes/search-page';
@@ -17,7 +18,8 @@ import { PublicationPage } from '../routes/publication-page';
 import { AdminPage } from '../routes/admin-page';
 import { NotificationsPage } from '../routes/notifications-page';
 import { AdoptionsPage } from '../routes/adoptions-page';
-
+import { HowItWorksPage } from '../routes/how-it-works-page';
+import { DashboardPage } from '../routes/dashboard-page';
 function NotFound() {
   return (
     <div className="border-2 border-[#CFEFE6] bg-white rounded-[24px] p-10 max-w-lg mx-auto mt-10 text-center">
@@ -54,6 +56,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/auth/callback" element={<CallbackPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
         <Route path="/buscar" element={<SearchPage />} />
@@ -62,8 +65,10 @@ export default function App() {
         <Route path="/adopciones" element={<AdoptionsPage />} />
         <Route path="/p/:slug" element={<PublicationPage />} />
         <Route path="/perfil/:username" element={<ProfilePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/notificaciones" element={<NotificationsPage />} />
+        <Route path="/como-funciona" element={<HowItWorksPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

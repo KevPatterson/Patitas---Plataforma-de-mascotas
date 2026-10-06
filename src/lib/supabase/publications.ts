@@ -1,5 +1,5 @@
 import { supabase } from './client';
-
+import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_IMAGES } from '../constants/labels';
 type CreateLocationInput = {
   province: string;
   municipality: string;
@@ -12,6 +12,7 @@ type CreatePublicationInput = {
   ownerProfileId: string;
   slug: string;
   locationId: string | null;
+  petId?: string | null;
   type: 'LOST' | 'FOUND' | 'ABANDONED' | 'ADOPTION' | 'SIGHTING';
   title: string;
   description: string;
@@ -25,9 +26,10 @@ type CreatePublicationInput = {
   collar: boolean;
   plate: boolean;
   reward?: string;
-  contactMode: 'INTERNAL' | 'PHONE' | 'WHATSAPP';
+  contactMode: 'INTERNAL' | 'PHONE' | 'WHATSAPP' | 'EMAIL';
   contactPhone?: string;
   contactWhatsapp?: string;
+  contactEmail?: string;
   eventDate?: string;
   eventTimeApprox?: string;
 };
@@ -52,6 +54,40 @@ export async function createLocation(input: CreateLocationInput) {
   return data.id as string;
 }
 
+export async function createPet(input: {
+  ownerProfileId: string;
+  species: string;
+  breed?: string;
+  sex?: string;
+  size?: string;
+  ageApprox?: string;
+  color?: string;
+  characteristics?: string;
+  collar?: boolean;
+  plate?: boolean;
+  microchip?: string;
+}) {
+  const { data, error } = await supabase
+    .from('pets')
+    .insert({
+      owner_profile_id: input.ownerProfileId,
+      species: input.species,
+      breed: input.breed || null,
+      sex: input.sex || null,
+      size: input.size || null,
+      age_approx: input.ageApprox || null,
+      color: input.color || null,
+      characteristics: input.characteristics || null,
+      has_collar: input.collar ?? false,
+      has_plate: input.plate ?? false,
+      microchip_private: input.microchip || null,
+    })
+    .select('id')
+    .single();
+  if (error) throw error;
+  return data.id as string;
+}
+
 export async function createPublication(input: CreatePublicationInput) {
   const { data, error } = await supabase
     .from('publications')
@@ -59,6 +95,7 @@ export async function createPublication(input: CreatePublicationInput) {
       owner_profile_id: input.ownerProfileId,
       slug: input.slug,
       location_id: input.locationId,
+      pet_id: input.petId ?? null,
       type: input.type,
       title: input.title,
       description: input.description,
@@ -75,6 +112,7 @@ export async function createPublication(input: CreatePublicationInput) {
       contact_mode: input.contactMode,
       contact_phone: input.contactPhone || null,
       contact_whatsapp: input.contactWhatsapp || null,
+      contact_email: input.contactEmail || null,
       event_date: input.eventDate || null,
       event_time_approx: input.eventTimeApprox || null,
     })
@@ -89,13 +127,16 @@ export async function createPublication(input: CreatePublicationInput) {
 }
 
 export async function uploadPublicationImages(publicationId: string, files: File[]) {
+  if (files.length > MAX_IMAGES) {
+    throw new Error(`Máximo ${MAX_IMAGES} imágenes por publicación.`);
+  }
   const uploads = await Promise.all(
     files.map(async (file, index) => {
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Solo se permiten imágenes.');
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type as typeof ALLOWED_IMAGE_TYPES[number])) {
+        throw new Error(`Formato no permitido: ${file.type}. Usa JPG, PNG o WebP.`);
       }
 
-      if (file.size > 8 * 1024 * 1024) {
+      if (file.size > MAX_IMAGE_BYTES) {
         throw new Error('Cada imagen debe pesar menos de 8 MB.');
       }
 

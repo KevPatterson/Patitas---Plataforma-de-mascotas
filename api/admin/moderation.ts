@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { supabaseAdmin } from '../_lib/supabase-admin';
 import { consumeRateLimit } from '../_lib/rate-limit';
 
-type ModerationAction = 'resolve-report' | 'hide-publication' | 'restore-publication';
+type ModerationAction = 'resolve-report' | 'hide-publication' | 'restore-publication' | 'set-role';
 
 function json(res: VercelResponse, statusCode: number, body: Record<string, unknown>) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -49,7 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return json(res, 403, { error: 'Forbidden' });
   }
 
-  let payload: { action?: ModerationAction; id?: string } = {};
+  let payload: { action?: ModerationAction; id?: string; role?: string } = {};
 
   try {
     payload = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as typeof payload);
@@ -104,6 +104,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     return json(res, 200, { ok: true });
+  }
+
+  if (payload.action === 'set-role') {
+    if (profile.role !== 'ADMIN') {
+      return json(res, 403, { error: 'Only admins can change roles' });
+    }
+
+    const newRole = payload.role as 'USER' | 'MODERATOR' | 'ADMIN';
+    if (!newRole || !['USER', 'MODERATOR', 'ADMIN'].includes(newRole)) {
+      return json(res, 400, { error: 'Invalid role' });
+    }
+
+    const { error } = await supabaseAdmin.from('profiles').update({ role: newRole }).eq('id', payload.id);
+
+    if (error) {
+      return json(res, 500, { error: error.message });
+    }
+
+    await supabaseAdmin.from('audit_logs').insert({
+      actor_profile_id: userData.user.id,
+      action: 'set-role',
+      entity_type: 'profile',
+      entity_id: payload.id,
+      metadata: { newRole },
+    });
+
+    return json(res, 200, { ok: true, role: newRole });
   }
 
   return json(res, 400, { error: 'Unknown action' });

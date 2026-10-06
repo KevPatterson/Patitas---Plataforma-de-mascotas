@@ -6,7 +6,7 @@ import { AuthCard } from '../../components/ui/auth-card';
 import { Button, LinkButton } from '../../components/ui/button';
 import { TextField } from '../../components/ui/text-field';
 import { loginSchema, type LoginInput } from '../../lib/validations/auth';
-import { signInWithPassword } from '../../lib/supabase/auth';
+import { signInWithPassword, signInWithGoogle } from '../../lib/supabase/auth';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -15,12 +15,20 @@ export function LoginPage() {
 
   const onSubmit = async (values: LoginInput) => {
     setServerError(null);
-
     try {
       await signInWithPassword(values.email, values.password);
       navigate('/publicar', { replace: true });
     } catch (error) {
       setServerError(error instanceof Error ? error.message : 'No pudimos iniciar sesión.');
+    }
+  };
+
+  const handleGoogle = async () => {
+    setServerError(null);
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      setServerError(error instanceof Error ? error.message : 'No pudimos iniciar con Google.');
     }
   };
 
@@ -45,6 +53,10 @@ export function LoginPage() {
             <Link className="text-sm font-semibold text-(--color-primary) hover:underline" to="/auth/forgot-password">Olvidé mi contraseña</Link>
             <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Entrando...' : 'Entrar'}</Button>
           </div>
+          <div className="relative py-2 text-center text-xs font-semibold uppercase tracking-widest text-(--color-muted)">
+            <span className="relative bg-white px-3 dark:bg-[#0B3B3C]">o</span>
+          </div>
+          <Button type="button" variant="secondary" className="w-full justify-center" onClick={handleGoogle}>Continuar con Google</Button>
         </form>
       </AuthCard>
     </section>

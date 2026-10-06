@@ -58,8 +58,16 @@ export type PublicationSummary = {
 type SearchFilters = {
   query?: string;
   type?: PublicationRow['type'] | 'ALL';
+  species?: string;
+  sex?: string;
+  size?: string;
   province?: string;
+  municipality?: string;
   status?: PublicationRow['status'] | 'ALL';
+  since?: string;
+  until?: string;
+  limit?: number;
+  offset?: number;
 };
 
 function mapPublication(row: PublicationRow): PublicationSummary {
@@ -88,12 +96,15 @@ function mapPublication(row: PublicationRow): PublicationSummary {
 }
 
 export async function searchPublications(filters: SearchFilters) {
+  const limit = filters.limit ?? 48;
+  const offset = filters.offset ?? 0;
+
   let query = supabase
     .from('publications')
     .select('id, slug, title, description, type, status, species, breed, color, sex, size, published_at, location:locations(province, municipality, zone, approximate_lat, approximate_lng), publication_images(storage_path, is_cover, alt_text)')
     .neq('status', 'DELETED')
     .order('published_at', { ascending: false })
-    .limit(48);
+    .range(offset, offset + limit - 1);
 
   if (filters.type && filters.type !== 'ALL') {
     query = query.eq('type', filters.type);
@@ -105,6 +116,30 @@ export async function searchPublications(filters: SearchFilters) {
 
   if (filters.province) {
     query = query.eq('location.province', filters.province);
+  }
+
+  if (filters.municipality) {
+    query = query.eq('location.municipality', filters.municipality);
+  }
+
+  if (filters.species) {
+    query = query.eq('species', filters.species);
+  }
+
+  if (filters.sex) {
+    query = query.eq('sex', filters.sex);
+  }
+
+  if (filters.size) {
+    query = query.eq('size', filters.size);
+  }
+
+  if (filters.since) {
+    query = query.gte('published_at', filters.since);
+  }
+
+  if (filters.until) {
+    query = query.lte('published_at', filters.until);
   }
 
   if (filters.query) {
@@ -130,6 +165,73 @@ export async function searchPublications(filters: SearchFilters) {
   }
 
   return (data as PublicationRow[]).map(mapPublication);
+}
+
+export async function countPublications(filters: SearchFilters): Promise<number> {
+  let query = supabase
+    .from('publications')
+    .select('id', { count: 'exact', head: true })
+    .neq('status', 'DELETED');
+
+  if (filters.type && filters.type !== 'ALL') {
+    query = query.eq('type', filters.type);
+  }
+
+  if (filters.status && filters.status !== 'ALL') {
+    query = query.eq('status', filters.status);
+  }
+
+  if (filters.province) {
+    query = query.eq('location.province', filters.province);
+  }
+
+  if (filters.municipality) {
+    query = query.eq('location.municipality', filters.municipality);
+  }
+
+  if (filters.species) {
+    query = query.eq('species', filters.species);
+  }
+
+  if (filters.sex) {
+    query = query.eq('sex', filters.sex);
+  }
+
+  if (filters.size) {
+    query = query.eq('size', filters.size);
+  }
+
+  if (filters.since) {
+    query = query.gte('published_at', filters.since);
+  }
+
+  if (filters.until) {
+    query = query.lte('published_at', filters.until);
+  }
+
+  if (filters.query) {
+    const normalized = filters.query.trim();
+
+    if (normalized.length > 1) {
+      query = query.or(
+        [
+          `title.ilike.%${normalized}%`,
+          `description.ilike.%${normalized}%`,
+          `species.ilike.%${normalized}%`,
+          `breed.ilike.%${normalized}%`,
+          `color.ilike.%${normalized}%`,
+        ].join(',')
+      );
+    }
+  }
+
+  const { count, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  return count ?? 0;
 }
 
 export async function getPublicationBySlug(slug: string) {
