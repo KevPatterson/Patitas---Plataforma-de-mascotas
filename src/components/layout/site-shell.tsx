@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Bell, Search, MapPin, LogOut, User, Menu, X, type LucideIcon } from 'lucide-react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Bell, Search, MapPin, LogOut, User, type LucideIcon } from 'lucide-react';
 import { signOut } from '../../lib/supabase/auth';
 import { useAuth } from '../../app/auth-context';
 import { getUnreadCount } from '../../lib/supabase/notifications';
@@ -49,11 +49,9 @@ function NavItem({ href, label, Icon, badge }: { href: string; label: string; Ic
 export function SiteShell({ children }: SiteShellProps) {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [loggingOut, setLoggingOut] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -108,11 +106,6 @@ export function SiteShell({ children }: SiteShellProps) {
       clearInterval(interval);
     };
   }, [user, authLoading]);
-
-  // Cerrar menú móvil al navegar
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
 
   return (
     <div className="flex min-h-screen flex-col bg-cream">
@@ -180,39 +173,74 @@ export function SiteShell({ children }: SiteShellProps) {
               Publicar
             </Link>
             
-            {/* User Actions - Desktop */}
+            {/* User Actions - Desktop y Móvil */}
             {!authLoading && (
               user ? (
-                <div className="hidden gap-1 min-[901px]:flex">
-                  {/* Perfil */}
-                  <Link
-                    to={profileHref}
-                    className="inline-flex items-center gap-2 rounded-full border-2 border-[#231942] bg-white px-3.5 py-2 text-sm font-semibold text-[#231942] transition-all duration-base hover:bg-[#FFE3CC] active:scale-95 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
-                  >
-                    <div className="flex size-[30px] items-center justify-center rounded-full border-2 border-[#231942] bg-cream/50 overflow-hidden">
-                      {avatarUrl ? (
-                        <img 
-                          src={avatarUrl} 
-                          alt="Avatar" 
-                          className="size-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <User className="size-4 text-[#231942]" aria-hidden="true" />
-                      )}
-                    </div>
-                    <span>Perfil</span>
-                  </Link>
-                  
-                  {/* Salir */}
-                  <button
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                    className="flex size-[42px] items-center justify-center rounded-[14px] border-2 border-transparent bg-transparent text-[#6B6585] transition-all duration-base hover:border-[#231942] hover:bg-[#FFE3CC] hover:text-[#231942] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
-                    aria-label="Salir"
-                  >
-                    <LogOut className="size-5" strokeWidth={2} aria-hidden="true" />
-                  </button>
-                </div>
+                <>
+                  {/* Desktop */}
+                  <div className="hidden gap-1 min-[901px]:flex">
+                    {/* Perfil */}
+                    <Link
+                      to={profileHref}
+                      className="inline-flex items-center gap-2 rounded-full border-2 border-[#231942] bg-white px-3.5 py-2 text-sm font-semibold text-[#231942] transition-all duration-base hover:bg-[#FFE3CC] active:scale-95 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
+                    >
+                      <div className="flex size-[30px] items-center justify-center rounded-full border-2 border-[#231942] bg-cream/50 overflow-hidden">
+                        {avatarUrl ? (
+                          <img 
+                            src={avatarUrl} 
+                            alt="Avatar" 
+                            className="size-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <User className="size-4 text-[#231942]" aria-hidden="true" />
+                        )}
+                      </div>
+                      <span>Perfil</span>
+                    </Link>
+                    
+                    {/* Salir */}
+                    <button
+                      onClick={handleLogout}
+                      disabled={loggingOut}
+                      className="flex size-[42px] items-center justify-center rounded-[14px] border-2 border-transparent bg-transparent text-[#6B6585] transition-all duration-base hover:border-[#231942] hover:bg-[#FFE3CC] hover:text-[#231942] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
+                      aria-label="Salir"
+                    >
+                      <LogOut className="size-5" strokeWidth={2} aria-hidden="true" />
+                    </button>
+                  </div>
+
+                  {/* Móvil - Solo Perfil y Logout */}
+                  <div className="flex gap-1 min-[901px]:hidden">
+                    {/* Perfil */}
+                    <Link
+                      to={profileHref}
+                      className="flex items-center justify-center rounded-full border-2 border-[#231942] bg-white p-2 transition-all duration-base hover:bg-[#FFE3CC] active:scale-95 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
+                      aria-label="Perfil"
+                    >
+                      <div className="flex size-[30px] items-center justify-center rounded-full border-2 border-[#231942] bg-cream/50 overflow-hidden">
+                        {avatarUrl ? (
+                          <img 
+                            src={avatarUrl} 
+                            alt="Avatar" 
+                            className="size-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <User className="size-4 text-[#231942]" aria-hidden="true" />
+                        )}
+                      </div>
+                    </Link>
+                    
+                    {/* Salir */}
+                    <button
+                      onClick={handleLogout}
+                      disabled={loggingOut}
+                      className="flex size-[42px] items-center justify-center rounded-[14px] border-2 border-transparent bg-transparent text-[#6B6585] transition-all duration-base hover:border-[#231942] hover:bg-[#FFE3CC] hover:text-[#231942] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
+                      aria-label="Salir"
+                    >
+                      <LogOut className="size-5" strokeWidth={2} aria-hidden="true" />
+                    </button>
+                  </div>
+                </>
               ) : (
                 <Link
                   to="/auth/login"
@@ -222,136 +250,7 @@ export function SiteShell({ children }: SiteShellProps) {
                 </Link>
               )
             )}
-            
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex size-11 items-center justify-center rounded-[14px] border-2 border-[#231942] bg-white text-[#231942] transition-colors duration-base hover:bg-[#FFE3CC] focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange min-[901px]:hidden"
-              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-menu"
-            >
-              {mobileMenuOpen ? (
-                <X className="size-5" strokeWidth={2} aria-hidden="true" />
-              ) : (
-                <Menu className="size-5" strokeWidth={2} aria-hidden="true" />
-              )}
-            </button>
           </nav>
-
-          {/* Mobile Menu Panel */}
-          {mobileMenuOpen && (
-            <div 
-              id="mobile-menu"
-              className="absolute left-4 right-4 top-[calc(100%-6px)] flex flex-col gap-1.5 rounded-[22px] border-2 border-[#231942] bg-white p-3.5 shadow-[0_4px_0_#231942] min-[901px]:hidden"
-            >
-              <NavLink
-                to="/buscar"
-                className={({ isActive }) => [
-                  'flex items-center gap-2 rounded-[14px] border-2 px-3.5 py-2 text-sm font-semibold transition-all duration-base',
-                  isActive
-                    ? 'border-[#231942] bg-[#FFE3CC] text-[#231942]'
-                    : 'border-transparent text-[#6B6585] hover:bg-[#FFE3CC] hover:text-[#231942]',
-                ].join(' ')}
-              >
-                <Search className="size-5" strokeWidth={2} aria-hidden="true" />
-                Buscar
-              </NavLink>
-
-              <NavLink
-                to="/mapa"
-                className={({ isActive }) => [
-                  'flex items-center gap-2 rounded-[14px] border-2 px-3.5 py-2 text-sm font-semibold transition-all duration-base',
-                  isActive
-                    ? 'border-[#231942] bg-[#FFE3CC] text-[#231942]'
-                    : 'border-transparent text-[#6B6585] hover:bg-[#FFE3CC] hover:text-[#231942]',
-                ].join(' ')}
-              >
-                <MapPin className="size-5" strokeWidth={2} aria-hidden="true" />
-                Mapa
-              </NavLink>
-
-              <Link
-                to="/publicar"
-                className="group flex items-center justify-center gap-2 rounded-2xl border-2 border-[#231942] bg-orange px-5 py-2.5 font-display text-sm font-extrabold text-[#231942] shadow-[0_4px_0_#231942] transition-all duration-base hover:-translate-y-0.5 hover:shadow-[0_6px_0_#231942] active:translate-y-[3px] active:shadow-[0_1px_0_#231942]"
-              >
-                <svg 
-                  className="size-5 transition-transform duration-300 group-hover:-rotate-[20deg] group-hover:scale-[1.2]" 
-                  viewBox="0 0 24 24" 
-                  fill="currentColor" 
-                  aria-hidden="true"
-                >
-                  <ellipse cx="6" cy="10" rx="2" ry="2.6"/>
-                  <ellipse cx="10" cy="5.8" rx="2" ry="2.8"/>
-                  <ellipse cx="14.5" cy="5.8" rx="2" ry="2.8"/>
-                  <ellipse cx="18.5" cy="10" rx="2" ry="2.6"/>
-                  <path d="M12 11c-3 0-5.6 3.4-5.6 6 0 1.8 1.4 2.6 3 2.4 1-.1 1.8-.5 2.6-.5s1.6.4 2.6.5c1.6.2 3-.6 3-2.4 0-2.6-2.6-6-5.6-6z"/>
-                </svg>
-                Publicar
-              </Link>
-
-              {user && (
-                <>
-                  <NavLink
-                    to="/notificaciones"
-                    className={({ isActive }) => [
-                      'relative flex items-center gap-2 rounded-[14px] border-2 px-3.5 py-2 text-sm font-semibold transition-all duration-base',
-                      isActive
-                        ? 'border-[#231942] bg-[#FFE3CC] text-[#231942]'
-                        : 'border-transparent text-[#6B6585] hover:bg-[#FFE3CC] hover:text-[#231942]',
-                    ].join(' ')}
-                  >
-                    <Bell className="size-5" strokeWidth={2} aria-hidden="true" />
-                    Avisos
-                    {unreadCount > 0 && (
-                      <span 
-                        className="ml-auto flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#231942] bg-[#38C9A3] px-1 text-[11px] font-bold leading-none text-[#231942]"
-                        aria-label={`${unreadCount} notificaciones no leídas`}
-                      >
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </NavLink>
-
-                  <Link
-                    to={profileHref}
-                    className="flex items-center gap-2 rounded-[14px] border-2 border-transparent px-3.5 py-2 text-sm font-semibold text-[#6B6585] transition-all duration-base hover:bg-[#FFE3CC] hover:text-[#231942]"
-                  >
-                    <div className="flex size-[30px] items-center justify-center rounded-full border-2 border-[#231942] bg-cream/50 overflow-hidden">
-                      {avatarUrl ? (
-                        <img 
-                          src={avatarUrl} 
-                          alt="Avatar" 
-                          className="size-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <User className="size-4 text-[#231942]" aria-hidden="true" />
-                      )}
-                    </div>
-                    Perfil
-                  </Link>
-
-                  <button
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                    className="flex items-center gap-2 rounded-[14px] border-2 border-transparent px-3.5 py-2 text-sm font-semibold text-[#6B6585] transition-all duration-base hover:bg-[#FFE3CC] hover:text-[#231942] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <LogOut className="size-5" strokeWidth={2} aria-hidden="true" />
-                    Salir
-                  </button>
-                </>
-              )}
-
-              {!user && !authLoading && (
-                <Link
-                  to="/auth/login"
-                  className="flex items-center justify-center gap-2 rounded-full border-2 border-[#231942] bg-[#231942] px-5 py-2.5 text-sm font-extrabold text-white shadow-sm transition-all duration-base hover:bg-[#1a1332] active:scale-95"
-                >
-                  Entrar
-                </Link>
-              )}
-            </div>
-          )}
         </div>
       </header>
 
