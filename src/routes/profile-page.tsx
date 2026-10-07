@@ -198,7 +198,7 @@ export function ProfilePage() {
             </p>
           </div>
           <Link to="/buscar">
-            <Button variant="ghost">Ver publicaciones</Button>
+            <Button variant="secondary">Ver publicaciones</Button>
           </Link>
         </div>
       </div>

@@ -46,7 +46,7 @@ export function ForgotPasswordPage() {
             <Link className="font-semibold text-orange hover:text-orange-dark transition-colors" to="/auth/login">
               Volver al acceso
             </Link>
-            <LinkButton href="/auth/register" variant="ghost">
+            <LinkButton href="/auth/register" variant="secondary" className="text-sm font-bold">
               Crear cuenta
             </LinkButton>
           </div>

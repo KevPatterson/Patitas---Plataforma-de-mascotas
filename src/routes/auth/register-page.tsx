@@ -54,7 +54,7 @@ export function RegisterPage() {
         footer={
           <div className="flex flex-wrap items-center justify-center sm:justify-between gap-3 text-sm text-navy/70">
             <span>¿Ya tienes cuenta?</span>
-            <LinkButton href="/auth/login" variant="ghost">
+            <LinkButton href="/auth/login" variant="secondary" className="text-sm font-bold">
               Entrar
             </LinkButton>
           </div>

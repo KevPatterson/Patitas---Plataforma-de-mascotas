@@ -134,10 +134,10 @@ export function AvatarUpload({ currentAvatarUrl, userName, onUpload, onDelete }:
 
         {(currentAvatarUrl || previewUrl) && onDelete && (
           <Button
-            variant="ghost"
+            variant="danger"
             onClick={handleDelete}
             disabled={uploading || deleting}
-            className="gap-2 hover:bg-lost/10 hover:text-lost"
+            className="gap-2"
           >
             <Trash2 className="size-4" />
             Eliminar
