@@ -547,7 +547,10 @@ export function PublicationPage() {
                     publication={{
                       title: publication.title,
                       type: publication.type,
-                      location: [publication.location?.[0]?.municipality, publication.location?.[0]?.province].filter(Boolean).join(', '),
+                      location: (() => {
+                        const loc = normalizeLocation(publication.location);
+                        return [loc?.municipality, loc?.province].filter(Boolean).join(', ');
+                      })(),
                       slug: publication.slug,
                     }}
                   />

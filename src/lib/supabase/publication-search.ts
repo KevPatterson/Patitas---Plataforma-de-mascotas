@@ -19,14 +19,22 @@ type PublicationRow = {
   reward?: string | null;
   event_date?: string | null;
   event_time_approx?: string | null;
-  owner_profile_id?: string;
-  location: {
-    province: string;
-    municipality: string;
-    zone: string | null;
-    approximate_lat: number | null;
-    approximate_lng: number | null;
-  } | null;
+  location:
+    | {
+        province: string;
+        municipality: string;
+        zone: string | null;
+        approximate_lat: number | null;
+        approximate_lng: number | null;
+      }
+    | Array<{
+        province: string;
+        municipality: string;
+        zone: string | null;
+        approximate_lat: number | null;
+        approximate_lng: number | null;
+      }>
+    | null;
   publication_images: Array<{
     storage_path: string;
     is_cover: boolean;
@@ -140,6 +148,22 @@ export async function searchPublications(filters: SearchFilters) {
           .in('id', ids);
 
         if (!imgError && withImages) {
+          // Type assertion for location as object (due to !inner)
+          const typedWithImages = withImages as unknown as Array<{
+            id: string;
+            location: {
+              province: string;
+              municipality: string;
+              zone: string | null;
+              approximate_lat: number | null;
+              approximate_lng: number | null;
+            } | null;
+            publication_images: Array<{
+              storage_path: string;
+              is_cover: boolean;
+              alt_text: string | null;
+            }> | null;
+          }>;
           // Combinar resultados FTS con imágenes
           return ftsResults.map((fts: {
             id: string;
@@ -155,21 +179,7 @@ export async function searchPublications(filters: SearchFilters) {
             color: string;
             published_at: string;
           }) => {
-            const withImg = withImages.find((w: { 
-              id: string;
-              location?: {
-                province: string;
-                municipality: string;
-                zone: string | null;
-                approximate_lat: number | null;
-                approximate_lng: number | null;
-              } | null;
-              publication_images?: Array<{
-                storage_path: string;
-                is_cover: boolean;
-                alt_text: string | null;
-              }>;
-            }) => w.id === fts.id);
+            const withImg = typedWithImages.find((w) => w.id === fts.id);
             
             const cover = withImg?.publication_images?.find((img) => img.is_cover) ?? 
                          withImg?.publication_images?.[0] ?? null;
@@ -206,7 +216,7 @@ export async function searchPublications(filters: SearchFilters) {
   // Búsqueda básica (fallback o sin query de texto)
   let query = supabase
     .from('publications')
-    .select('id, slug, title, description, type, status, species, breed, color, sex, size, published_at, location:locations(province, municipality, zone, approximate_lat, approximate_lng), publication_images(storage_path, is_cover, alt_text)')
+    .select('id, slug, title, description, type, status, species, breed, color, sex, size, published_at, location:locations!inner(province, municipality, zone, approximate_lat, approximate_lng), publication_images(storage_path, is_cover, alt_text)')
     .neq('status', 'DELETED')
     .order('published_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -375,7 +385,7 @@ export async function getPublicationBySlug(slug: string) {
       event_time_approx, 
       owner_profile_id,
       owner:profiles!owner_profile_id(username),
-      location:locations(province, municipality, zone, approximate_lat, approximate_lng), 
+      location:locations!inner(province, municipality, zone, approximate_lat, approximate_lng), 
       publication_images(storage_path, is_cover, alt_text)
     `)
     .eq('slug', slug)
@@ -395,6 +405,7 @@ export async function getPublicationBySlug(slug: string) {
         reward: string | null;
         event_date: string | null;
         event_time_approx: string | null;
+        owner_profile_id: string | null;
         owner: { username: string } | null;
       })
     | null;
