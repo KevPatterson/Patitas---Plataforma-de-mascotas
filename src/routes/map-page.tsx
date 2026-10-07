@@ -93,6 +93,7 @@ function MapRecenter({ center }: { center: LatLngExpression }) {
 export function MapPage() {
   const [publications, setPublications] = useState<PublicationSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     type: 'ALL' as PublicationSummary['type'] | 'ALL',
@@ -116,6 +117,8 @@ export function MapPage() {
 
     async function load() {
       setLoading(true);
+      setError(null);
+      console.log('🗺️ Iniciando carga de datos del mapa...');
       try {
         const searchFilters: {
           type?: PublicationSummary['type'] | 'ALL';
@@ -135,18 +138,25 @@ export function MapPage() {
           searchFilters.species = filters.species;
         }
 
+        console.log('🔍 Filtros de búsqueda:', searchFilters);
         const data = await searchPublications(searchFilters);
+        console.log('📊 Publicaciones recibidas:', data.length);
 
         // Filtrar solo publicaciones con coordenadas
         const withCoords = data.filter(
           (pub: PublicationSummary) => pub.approximateLat !== null && pub.approximateLng !== null
         );
+        console.log('📍 Publicaciones con coordenadas:', withCoords.length);
 
         if (active) {
           setPublications(withCoords);
         }
       } catch (error) {
-        console.error('Error loading map data:', error);
+        console.error('❌ Error loading map data:', error);
+        console.error('Detalles del error:', JSON.stringify(error, null, 2));
+        if (active) {
+          setError(error instanceof Error ? error.message : 'No se pudieron cargar los casos del mapa');
+        }
       } finally {
         if (active) {
           setLoading(false);
@@ -226,6 +236,29 @@ export function MapPage() {
           <p className="text-xs font-medium text-navy/60">Avistamientos</p>
         </div>
       </div>
+
+      {/* Mensaje de error */}
+      {error && (
+        <div className="rounded-2xl border-2 border-lost/30 bg-lost/10 p-6">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div className="flex-1">
+              <h3 className="font-display text-lg font-bold text-lost mb-2">Error al cargar el mapa</h3>
+              <p className="text-sm text-navy/70 mb-3">{error}</p>
+              <p className="text-xs text-navy/60">
+                Esto puede deberse a un problema de conexión o configuración. Verifica tu archivo .env y asegúrate de que las credenciales de Supabase sean correctas.
+              </p>
+              <Button 
+                variant="secondary" 
+                className="mt-4"
+                onClick={() => window.location.reload()}
+              >
+                Reintentar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="rounded-2xl border-2 border-navy/10 bg-white p-4 shadow-md">
