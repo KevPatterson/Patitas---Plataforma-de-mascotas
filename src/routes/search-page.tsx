@@ -31,6 +31,18 @@ export function SearchPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(() => {
+    // Cargar ubicación guardada de localStorage
+    try {
+      const saved = localStorage.getItem('userLocation');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.warn('Error cargando ubicación:', error);
+    }
+    return null;
+  });
 
   const LIMIT = 48;
 
@@ -64,7 +76,23 @@ export function SearchPage() {
           countPublications(searchFilters),
         ]);
         if (active) {
-          setResults(data);
+          // Calcular distancia si hay ubicación del usuario
+          let resultsWithDistance = data;
+          if (userLocation) {
+            resultsWithDistance = data.map((pub) => {
+              if (pub.approximateLat && pub.approximateLng) {
+                const distance = calculateDistance(
+                  userLocation.lat,
+                  userLocation.lng,
+                  pub.approximateLat,
+                  pub.approximateLng
+                );
+                return { ...pub, distance };
+              }
+              return pub;
+            });
+          }
+          setResults(resultsWithDistance);
           setTotalCount(count);
         }
       } catch (error) {
@@ -81,7 +109,21 @@ export function SearchPage() {
     return () => {
       active = false;
     };
-  }, [filters, page]);
+  }, [filters, page, userLocation]);
+
+  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radio de la Tierra en km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
 
   function updateParam(key: string, value: string | null) {
     setSearchParams((prev) => {
@@ -323,7 +365,11 @@ export function SearchPage() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((pub) => (
-              <PublicationCard key={pub.id} publication={pub} />
+              <PublicationCard 
+                key={pub.id} 
+                publication={pub} 
+                distance={(pub as any).distance}
+              />
             ))}
           </div>
 

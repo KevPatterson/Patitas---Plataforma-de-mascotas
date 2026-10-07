@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Icon, type LatLngExpression } from 'leaflet';
-import { MapPin, Filter, X, Layers } from 'lucide-react';
+import { MapPin, Filter, X, Layers, PawPrint } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { StatusBadge } from '../components/ui/status-badge';
 import { searchPublications, type PublicationSummary } from '../lib/supabase/publication-search';
@@ -24,7 +24,7 @@ Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// Iconos personalizados por tipo
+// Iconos personalizados por tipo - forma de patita
 const createCustomIcon = (type: PublicationSummary['type']) => {
   const colors: Record<PublicationSummary['type'], string> = {
     LOST: '#E63946',
@@ -35,22 +35,48 @@ const createCustomIcon = (type: PublicationSummary['type']) => {
   };
 
   const svgIcon = `
-    <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 24 16 24s16-12 16-24C32 7.2 24.8 0 16 0z" 
-            fill="${colors[type]}" 
-            stroke="#231942" 
-            stroke-width="2"/>
-      <circle cx="16" cy="15" r="7" fill="white"/>
-      <text x="16" y="19" text-anchor="middle" font-size="12" font-weight="bold" fill="#231942">
-        ${type === 'LOST' ? '?' : type === 'FOUND' ? '!' : type === 'ADOPTION' ? '♥' : type === 'SIGHTING' ? '👁' : '📍'}
-      </text>
+    <svg width="40" height="45" viewBox="0 0 40 45" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow-${type}" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+          <feOffset dx="0" dy="2" result="offsetblur"/>
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.3"/>
+          </feComponentTransfer>
+          <feMerge> 
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/> 
+          </feMerge>
+        </filter>
+      </defs>
+      
+      <!-- Huella de patita -->
+      <g filter="url(#shadow-${type})">
+        <!-- 4 dedos -->
+        <ellipse cx="12" cy="13" rx="3.5" ry="5" transform="rotate(-20 12 13)" fill="${colors[type]}" stroke="#231942" stroke-width="1.5"/>
+        <ellipse cx="18" cy="9" rx="3.5" ry="5" transform="rotate(-8 18 9)" fill="${colors[type]}" stroke="#231942" stroke-width="1.5"/>
+        <ellipse cx="25" cy="9" rx="3.5" ry="5" transform="rotate(8 25 9)" fill="${colors[type]}" stroke="#231942" stroke-width="1.5"/>
+        <ellipse cx="31" cy="13" rx="3.5" ry="5" transform="rotate(20 31 13)" fill="${colors[type]}" stroke="#231942" stroke-width="1.5"/>
+        
+        <!-- Almohadilla principal -->
+        <path d="M 20 40 C 20 40 10 32 10 24 C 10 18 14 14 20 14 C 26 14 30 18 30 24 C 30 32 20 40 20 40 Z" 
+              fill="${colors[type]}" 
+              stroke="#231942" 
+              stroke-width="1.5"/>
+        
+        <!-- Badge con tipo -->
+        <circle cx="20" cy="25" r="6" fill="white" opacity="0.95"/>
+        <text x="20" y="28.5" text-anchor="middle" font-size="9" font-weight="bold" fill="#231942">
+          ${type === 'LOST' ? '?' : type === 'FOUND' ? '!' : type === 'ADOPTION' ? '♥' : type === 'SIGHTING' ? '👁' : '📍'}
+        </text>
+      </g>
     </svg>
   `;
 
   return new Icon({
     iconUrl: `data:image/svg+xml;base64,${btoa(svgIcon)}`,
-    iconSize: [32, 40],
-    iconAnchor: [16, 40],
+    iconSize: [40, 45],
+    iconAnchor: [20, 40],
     popupAnchor: [0, -40],
   });
 };
@@ -351,28 +377,28 @@ export function MapPage() {
         <h3 className="font-display text-lg font-bold text-navy mb-4">Leyenda del mapa</h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div className="flex items-center gap-3">
-            <div className="size-8 rounded-full bg-lost flex items-center justify-center text-white text-lg">?</div>
+            <PawPrint className="size-8 text-lost fill-lost/20" />
             <span className="text-sm font-medium text-navy">Perdida</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="size-8 rounded-full bg-found flex items-center justify-center text-white text-lg">!</div>
+            <PawPrint className="size-8 text-found fill-found/20" />
             <span className="text-sm font-medium text-navy">Encontrada</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="size-8 rounded-full bg-purple flex items-center justify-center text-white text-lg">♥</div>
+            <PawPrint className="size-8 text-purple fill-purple/20" />
             <span className="text-sm font-medium text-navy">Adopción</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="size-8 rounded-full bg-orange flex items-center justify-center text-white text-lg">👁</div>
+            <PawPrint className="size-8 text-orange fill-orange/20" />
             <span className="text-sm font-medium text-navy">Avistamiento</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="size-8 rounded-full bg-navy/60 flex items-center justify-center text-white text-lg">📍</div>
+            <PawPrint className="size-8 text-navy/60 fill-navy/10" />
             <span className="text-sm font-medium text-navy">Abandonada</span>
           </div>
         </div>
         <p className="mt-4 text-xs text-navy/60 leading-relaxed">
-          ℹ️ Las ubicaciones mostradas son aproximadas (±500m) para proteger la privacidad. Los marcadores agrupados representan múltiples casos en la misma zona.
+          🐾 Cada huella representa un caso. Las ubicaciones son aproximadas (±500m) para proteger la privacidad. Los grupos de huellas representan múltiples casos en la misma zona.
         </p>
       </div>
     </section>

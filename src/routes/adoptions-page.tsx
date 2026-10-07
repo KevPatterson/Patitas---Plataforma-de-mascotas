@@ -16,6 +16,18 @@ export function AdoptionsPage() {
   const [results, setResults] = useState<PublicationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(() => {
+    // Cargar ubicación guardada de localStorage
+    try {
+      const saved = localStorage.getItem('userLocation');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.warn('Error cargando ubicación:', error);
+    }
+    return null;
+  });
 
   useEffect(() => {
     setPageMeta({
@@ -52,6 +64,22 @@ export function AdoptionsPage() {
             filtered = filtered.filter((p: { size?: string | null }) => p.size?.toLowerCase().includes(size.toLowerCase()));
           }
 
+          // Calcular distancia si hay ubicación del usuario
+          if (userLocation) {
+            filtered = filtered.map((pub) => {
+              if (pub.approximateLat && pub.approximateLng) {
+                const distance = calculateDistance(
+                  userLocation.lat,
+                  userLocation.lng,
+                  pub.approximateLat,
+                  pub.approximateLng
+                );
+                return { ...pub, distance };
+              }
+              return pub;
+            });
+          }
+
           setResults(filtered);
         }
       } catch (error) {
@@ -70,7 +98,21 @@ export function AdoptionsPage() {
     return () => {
       active = false;
     };
-  }, [province, query, size, species]);
+  }, [province, query, size, species, userLocation]);
+
+  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radio de la Tierra en km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
 
   const hasActiveFilters = Boolean(query || species || size || province);
 
@@ -210,7 +252,11 @@ export function AdoptionsPage() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((publication) => (
-              <PublicationCard key={publication.id} publication={publication} />
+              <PublicationCard 
+                key={publication.id} 
+                publication={publication} 
+                distance={(publication as any).distance}
+              />
             ))}
           </div>
 

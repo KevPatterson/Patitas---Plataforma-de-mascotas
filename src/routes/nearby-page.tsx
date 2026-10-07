@@ -70,12 +70,10 @@ export function NearbyPage() {
 
   // Reordenar cuando cambia la ubicación
   useEffect(() => {
-    if (allCases.length === 0) return;
+    if (allCases.length === 0 || !userLocation) return;
 
-    let sorted = allCases;
-
-    if (userLocation) {
-      sorted = allCases
+    setAllCases((currentCases) => {
+      return currentCases
         .map((pub) => {
           if (pub.approximateLat && pub.approximateLng) {
             const distance = calculateDistance(
@@ -89,9 +87,7 @@ export function NearbyPage() {
           return { ...pub, distance: Infinity };
         })
         .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
-    }
-
-    setAllCases(sorted);
+    });
   }, [userLocation]);
 
   const getLocation = async () => {

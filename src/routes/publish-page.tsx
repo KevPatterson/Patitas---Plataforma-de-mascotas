@@ -432,7 +432,7 @@ export function PublishPage() {
                 </label>
                 <TextField
                   label="Raza"
-                  placeholder="Caramelo"
+                  placeholder="Husky siberiano"
                   value={values.breed ?? ''}
                   onChange={(event) => updateValue('breed', event.target.value)}
                 />
