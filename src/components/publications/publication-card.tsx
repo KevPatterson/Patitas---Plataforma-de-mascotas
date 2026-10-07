@@ -6,6 +6,7 @@ import { SPECIES_LABELS } from '../../lib/constants/labels';
 
 type PublicationCardProps = {
   publication: PublicationSummary;
+  distance?: number;
 };
 
 const typeEmojis: Record<PublicationSummary['type'], string> = {
@@ -16,7 +17,7 @@ const typeEmojis: Record<PublicationSummary['type'], string> = {
   SIGHTING: '🔵',
 };
 
-export function PublicationCard({ publication }: PublicationCardProps) {
+export function PublicationCard({ publication, distance }: PublicationCardProps) {
   const formattedDate = new Date(publication.publishedAt).toLocaleDateString('es-ES', {
     day: 'numeric',
     month: 'short',
@@ -43,8 +44,13 @@ export function PublicationCard({ publication }: PublicationCardProps) {
         )}
         
         {/* Badge de tipo en esquina superior izquierda */}
-        <div className="absolute left-3 top-3">
+        <div className="absolute left-3 top-3 flex flex-col gap-2">
           <StatusBadge status={publication.type} />
+          {distance !== undefined && distance !== Infinity && (
+            <div className="rounded-full bg-turquoise/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold text-white shadow-lg border-2 border-white">
+              📍 {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
+            </div>
+          )}
         </div>
         
         {/* Badge de estado en esquina superior derecha */}

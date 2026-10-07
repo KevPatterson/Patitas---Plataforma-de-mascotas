@@ -20,6 +20,7 @@ import { NotificationsPage } from '../routes/notifications-page';
 import { AdoptionsPage } from '../routes/adoptions-page';
 import { HowItWorksPage } from '../routes/how-it-works-page';
 import { DashboardPage } from '../routes/dashboard-page';
+import { NearbyPage } from '../routes/nearby-page';
 function NotFound() {
   return (
     <div className="flex items-center justify-center min-h-[60vh] py-16 px-4">
@@ -73,6 +74,7 @@ export default function App() {
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
         <Route path="/buscar" element={<SearchPage />} />
+        <Route path="/cerca-de-ti" element={<NearbyPage />} />
         <Route path="/mapa" element={<MapPage />} />
         <Route path="/publicar" element={<PublishPage />} />
         <Route path="/adopciones" element={<AdoptionsPage />} />

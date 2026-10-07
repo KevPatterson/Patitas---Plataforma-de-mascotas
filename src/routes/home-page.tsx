@@ -17,8 +17,30 @@ export function HomePage() {
   const [adoptionCases, setAdoptionCases] = useState<PublicationSummary[]>([]);
   const [stats, setStats] = useState({ LOST: 0, FOUND: 0, ADOPTION: 0, ADOPTED: 0, total: 0 });
   const [loading, setLoading] = useState(true);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(() => {
+    // Cargar ubicación guardada de localStorage al inicio
+    try {
+      const saved = localStorage.getItem('userLocation');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        console.log('📦 Ubicación cargada de localStorage:', parsed);
+        return parsed;
+      }
+    } catch (error) {
+      console.warn('Error cargando ubicación guardada:', error);
+    }
+    return null;
+  });
   const [locationError, setLocationError] = useState(false);
+  const [loadingLocation, setLoadingLocation] = useState(() => {
+    // Si ya tiene ubicación guardada, no mostrar indicador
+    try {
+      const saved = localStorage.getItem('userLocation');
+      return !saved; // true si NO hay ubicación guardada
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     setPageMeta({
@@ -42,47 +64,61 @@ export function HomePage() {
     // Función para obtener la ubicación aproximada por IP (fallback)
     const getFallbackLocation = async () => {
       try {
-        console.log('🌐 Intentando obtener ubicación aproximada por IP...');
+        console.log('🌐 Intentando ubicación por IP...');
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
         
         if (data.latitude && data.longitude) {
-          console.log('✅ Ubicación aproximada obtenida por IP:', data.latitude, data.longitude, `(${data.city}, ${data.country_name})`);
-          setUserLocation({
-            lat: data.latitude,
-            lng: data.longitude,
-          });
+          console.log('✅ IP obtenida:', data.latitude, data.longitude);
+          const location = { lat: data.latitude, lng: data.longitude };
+          setUserLocation(location);
+          // Guardar en localStorage
+          localStorage.setItem('userLocation', JSON.stringify(location));
           setLocationError(false);
+          setLoadingLocation(false);
           return true;
         }
       } catch (error) {
-        console.warn('No se pudo obtener ubicación por IP:', error);
+        console.error('❌ Error IP:', error);
       }
+      setLoadingLocation(false);
       return false;
     };
 
     // Función para obtener la ubicación
     const getLocation = async () => {
+      console.log('🎯 getLocation() llamada. Verificando...');
+      console.log('- isRequestingLocation:', isRequestingLocation);
+      console.log('- geolocation disponible:', 'geolocation' in navigator);
+      
       if (isRequestingLocation || !('geolocation' in navigator)) {
+        console.log('⚠️ Condición de salida temprana');
         // Si no hay geolocalización, intentar fallback por IP
         if (!('geolocation' in navigator)) {
+          console.log('📱 Geolocalización no disponible, fallback a IP');
           await getFallbackLocation();
         }
         return;
       }
       
+      console.log('📍 Solicitando ubicación GPS...');
       isRequestingLocation = true;
+      setLoadingLocation(true);
       
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log('✅ Ubicación GPS obtenida:', position.coords.latitude, position.coords.longitude);
-          setUserLocation({
+          console.log('✅ GPS obtenido:', position.coords.latitude, position.coords.longitude);
+          const location = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-          });
+          };
+          setUserLocation(location);
+          // Guardar en localStorage
+          localStorage.setItem('userLocation', JSON.stringify(location));
           setLocationError(false);
           isRequestingLocation = false;
-          retryCount = 0; // Resetear contador de reintentos
+          retryCount = 0;
+          setLoadingLocation(false);
         },
         async (error) => {
           isRequestingLocation = false;
@@ -90,26 +126,26 @@ export function HomePage() {
           // Si es timeout y no hemos excedido reintentos, intentar de nuevo
           if (error.code === 3 && retryCount < MAX_RETRIES) { // 3 = TIMEOUT
             retryCount++;
-            console.log(`⏱️ Timeout obteniendo ubicación GPS, reintentando (${retryCount}/${MAX_RETRIES})...`);
-            setTimeout(() => getLocation(), 1000); // Reintentar después de 1 segundo
+            console.log(`⏱️ Reintentando (${retryCount}/${MAX_RETRIES})...`);
+            setTimeout(() => getLocation(), 1000);
             return;
           }
           
           // Si agotamos reintentos o es otro error, intentar fallback por IP
-          console.log('📍 No se pudo obtener ubicación GPS, intentando ubicación aproximada...');
+          console.log('🔄 Intentando fallback por IP...');
           const fallbackSuccess = await getFallbackLocation();
           
           if (!fallbackSuccess) {
-            // Solo mostrar error si no es por denegación de permisos y falló todo
-            if (error.code !== 1) { // 1 = PERMISSION_DENIED
-              console.warn('❌ No se pudo obtener ninguna ubicación');
+            if (error.code !== 1) {
+              console.warn('No se pudo obtener ubicación');
             }
             setLocationError(true);
+            setLoadingLocation(false);
           }
         },
         {
-          enableHighAccuracy: false,
-          timeout: 15000, // 15 segundos - más tiempo para obtener ubicación
+          enableHighAccuracy: true, // Mejor precisión GPS
+          timeout: 20000, // 20 segundos para dar más tiempo con alta precisión
           maximumAge: 0, // No usar caché, siempre obtener ubicación fresca
         }
       );
@@ -194,9 +230,9 @@ export function HomePage() {
 
   // Efecto separado para reordenar casos cuando cambia la ubicación
   useEffect(() => {
-    console.log('🔄 Efecto de reordenamiento ejecutado:', { 
+    console.log('🔄 Reordenamiento:', { 
       allCasesLength: allCases.length, 
-      userLocation,
+      userLocation, 
       hasLocation: !!userLocation 
     });
     
@@ -205,7 +241,14 @@ export function HomePage() {
     let sortedRecent = allCases;
     
     if (userLocation) {
-      console.log('📍 Ordenando por distancia desde:', userLocation);
+      console.log('📍 Ordenando por distancia...');
+      console.log('📍 Primer caso:', {
+        title: allCases[0]?.title,
+        approximateLat: allCases[0]?.approximateLat,
+        approximateLng: allCases[0]?.approximateLng,
+        hasCoords: !!(allCases[0]?.approximateLat && allCases[0]?.approximateLng)
+      });
+      
       sortedRecent = allCases
         .map((pub: PublicationSummary & { distance?: number }) => {
           // Calcular distancia si la publicación tiene coordenadas
@@ -216,19 +259,25 @@ export function HomePage() {
               pub.approximateLat,
               pub.approximateLng
             );
+            console.log('📏 Distancia calculada:', {
+              title: pub.title.substring(0, 20),
+              distance: distance.toFixed(2)
+            });
             return { ...pub, distance };
           }
+          console.log('⚠️ Sin coordenadas:', pub.title.substring(0, 20));
           return { ...pub, distance: Infinity };
         })
         .sort((a: PublicationSummary & { distance?: number }, b: PublicationSummary & { distance?: number }) => 
           (a.distance || Infinity) - (b.distance || Infinity)
         );
-      console.log('✅ Casos ordenados, primeros 3:', sortedRecent.slice(0, 3).map(c => ({ 
-        title: c.title, 
-        distance: (c as any).distance 
+      console.log('✅ Ordenado. Primeros 3:', sortedRecent.slice(0, 3).map(c => ({ 
+        title: c.title.substring(0, 20), 
+        distance: (c as any).distance?.toFixed(2),
+        hasDistance: (c as any).distance !== undefined
       })));
     } else {
-      console.log('📍 Sin ubicación, mostrando casos recientes');
+      console.log('❌ Sin ubicación');
     }
     
     setRecentCases(sortedRecent.slice(0, 6));
@@ -412,13 +461,28 @@ export function HomePage() {
               <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
                 {userLocation ? '🐾 Casos cerca de ti' : '🐾 Casos recientes'}
               </h2>
-              <p className="text-navy/60 mt-1">
-                {userLocation 
-                  ? 'Ordenados por proximidad a tu ubicación' 
-                  : 'Últimos casos publicados'}
-              </p>
+              {loadingLocation && (
+                <div className="mt-3 flex items-center gap-3 bg-turquoise/10 border-2 border-turquoise/20 rounded-xl px-4 py-3">
+                  <div className="relative flex items-center justify-center">
+                    <span className="absolute inline-block size-8 rounded-full bg-turquoise/40 animate-ping" />
+                    <span className="relative inline-block size-4 rounded-full bg-turquoise" />
+                  </div>
+                  <p className="text-sm font-semibold text-turquoise">
+                    Obteniendo tu ubicación...
+                  </p>
+                </div>
+              )}
+              {!loadingLocation && (
+                <p className="text-navy/60 mt-1 flex items-center gap-2">
+                  {userLocation ? (
+                    'Ordenados por proximidad a tu ubicación'
+                  ) : (
+                    'Últimos casos publicados'
+                  )}
+                </p>
+              )}
             </div>
-            <LinkButton href="/buscar" variant="ghost" className="hidden sm:flex">
+            <LinkButton href="/cerca-de-ti" variant="ghost" className="hidden sm:flex">
               Ver todos →
             </LinkButton>
           </div>
@@ -439,14 +503,17 @@ export function HomePage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {recentCases.map((pub, index) => (
                 <ScrollReveal key={pub.id} animation="scale-in" delay={index * 100}>
-                  <PublicationCard publication={pub} />
+                  <PublicationCard 
+                    publication={pub} 
+                    distance={(pub as any).distance}
+                  />
                 </ScrollReveal>
               ))}
             </div>
           )}
 
           <div className="text-center pt-4">
-            <LinkButton href="/buscar" variant="ghost" className="sm:hidden">
+            <LinkButton href="/cerca-de-ti" variant="ghost" className="sm:hidden">
               Ver todos los casos →
             </LinkButton>
           </div>
