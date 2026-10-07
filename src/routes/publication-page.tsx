@@ -8,6 +8,7 @@ import { PawLoader } from '../components/ui/paw-loader';
 import { ProcessingStatusBadge } from '../components/ai/processing-status';
 import { DuplicateWarning } from '../components/ai/duplicate-warning';
 import { MatchesPanel } from '../components/publications/matches-panel';
+import { ProcessButton } from '../components/ai/process-button';
 import { createReport } from '../lib/supabase/reports';
 import { useAuth } from '../app/auth-context';
 import { getPublicationBySlug, searchPublications } from '../lib/supabase/publication-search';
@@ -377,6 +378,13 @@ export function PublicationPage() {
 
             {/* Columna lateral */}
             <aside className="space-y-5">
+              {/* Botón de procesamiento IA (solo para el dueño) */}
+              {isOwner && publication.id && (
+                <div className="rounded-xl border-2 border-purple/20 bg-white p-4 shadow-sm">
+                  <ProcessButton publicationId={publication.id} />
+                </div>
+              )}
+
               {/* Estado de procesamiento de IA */}
               {publication.id && <ProcessingStatusBadge publicationId={publication.id} />}
 

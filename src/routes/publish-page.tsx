@@ -8,6 +8,7 @@ import { Button, LinkButton } from '../components/ui/button';
 import { TextField } from '../components/ui/text-field';
 import { TextareaField } from '../components/ui/textarea-field';
 import { PawLoader } from '../components/ui/paw-loader';
+import { ImageDataExtractor } from '../components/ai/image-data-extractor';
 import { createLocation, createPublication, uploadPublicationImages, createPet } from '../lib/supabase/publications';
 import { buildPublicationSlug } from '../lib/utils/slug';
 import { publicationFormSchema, type PublicationFormValues } from '../lib/validations/publication';
@@ -117,6 +118,35 @@ export function PublishPage() {
     URL.revokeObjectURL(filePreviews[index]);
     setFiles((prev) => prev.filter((_, i) => i !== index));
     setFilePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAIDataExtracted = (data: {
+    species?: string;
+    breed?: string;
+    sex?: string;
+    size?: string;
+    ageApprox?: string;
+    color?: string;
+    characteristics?: string;
+    collar?: boolean;
+    plate?: boolean;
+  }) => {
+    // Actualizar los valores del formulario con los datos extraídos
+    setValues((current) => ({
+      ...current,
+      ...(data.species && { species: data.species }),
+      ...(data.breed && { breed: data.breed }),
+      ...(data.sex && { sex: data.sex }),
+      ...(data.size && { size: data.size }),
+      ...(data.ageApprox && { ageApprox: data.ageApprox }),
+      ...(data.color && { color: data.color }),
+      ...(data.characteristics && { characteristics: data.characteristics }),
+      ...(data.collar !== undefined && { collar: data.collar }),
+      ...(data.plate !== undefined && { plate: data.plate }),
+    }));
+
+    // Limpiar cualquier mensaje de error previo
+    setErrorMessage(null);
   };
 
   const nextStep = () => {
@@ -293,6 +323,13 @@ export function PublishPage() {
 
           {step === 2 && (
             <div className="space-y-4">
+              {/* Componente de extracción IA */}
+              <ImageDataExtractor 
+                onDataExtracted={handleAIDataExtracted}
+                disabled={submitting}
+              />
+
+              {/* Campos del formulario */}
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
                   <span className="block text-sm font-semibold text-navy">Especie</span>

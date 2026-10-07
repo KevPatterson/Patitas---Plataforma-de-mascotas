@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../app/auth-context';
 import { supabase } from '../lib/supabase/client';
 import { Button } from '../components/ui/button';
-import { UserPlus, Shield } from 'lucide-react';
+import { DuplicateReview } from '../components/admin/duplicate-review';
+import { ModerationQueue } from '../components/admin/moderation-queue';
+import { UserPlus, Shield, Copy, AlertTriangle } from 'lucide-react';
 
 type DashboardCounts = {
   activePublications: number;
@@ -45,7 +47,7 @@ type UserProfile = {
   deleted_at: string | null;
 };
 
-type Tab = 'dashboard' | 'reports' | 'users' | 'publications';
+type Tab = 'dashboard' | 'reports' | 'users' | 'publications' | 'duplicates' | 'moderation';
 
 export function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -218,6 +220,8 @@ export function AdminPage() {
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Resumen', icon: <Shield className="size-5" /> },
     { id: 'reports', label: 'Reportes', icon: <Shield className="size-5" /> },
+    { id: 'duplicates', label: 'Duplicados', icon: <Copy className="size-5" /> },
+    { id: 'moderation', label: 'Moderación IA', icon: <AlertTriangle className="size-5" /> },
     { id: 'publications', label: 'Publicaciones', icon: <UserPlus className="size-5" /> },
     { id: 'users', label: 'Usuarios', icon: <UserPlus className="size-5" /> },
   ];
@@ -407,6 +411,18 @@ export function AdminPage() {
               </div>
             ) : null}
           </div>
+        </div>
+      )}
+
+      {activeTab === 'duplicates' && (
+        <div className="rounded-3xl border-2 border-navy/10 bg-white p-8 shadow-md">
+          <DuplicateReview />
+        </div>
+      )}
+
+      {activeTab === 'moderation' && (
+        <div className="rounded-3xl border-2 border-navy/10 bg-white p-8 shadow-md">
+          <ModerationQueue />
         </div>
       )}
 
