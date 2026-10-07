@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { PawLoader } from '../ui/paw-loader';
 
 type ExtractedData = {
+  // Datos del animal
   species?: string;
   breed?: string;
   sex?: string;
@@ -13,7 +14,22 @@ type ExtractedData = {
   characteristics?: string;
   collar?: boolean;
   plate?: boolean;
+  
+  // Datos contextuales extraídos de texto en la imagen
+  province?: string;
+  municipality?: string;
+  zone?: string;
+  reward?: string;
+  eventDate?: string;
+  eventTimeApprox?: string;
+  contactMode?: 'INTERNAL' | 'PHONE' | 'WHATSAPP' | 'EMAIL';
+  contactPhone?: string;
+  contactWhatsapp?: string;
+  contactEmail?: string;
+  
+  // Metadatos
   confidence: number;
+  hasTextOverlay?: boolean; // Indica si detectó texto en la imagen
 };
 
 type ImageDataExtractorProps = {
