@@ -6,7 +6,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 begin
   insert into public.profiles (id, username, full_name, avatar_url)
   values (
@@ -23,7 +23,7 @@ begin
 
   return new;
 end;
-$;
+$$;
 
 -- Comentario explicativo
 comment on function public.handle_new_user() is 

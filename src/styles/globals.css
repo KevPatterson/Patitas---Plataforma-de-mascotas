@@ -525,6 +525,77 @@ body {
   max-width: 100vw;
 }
 
+/* ==================== SCROLLBAR PERSONALIZADA ==================== */
+
+/* Para navegadores basados en WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-orange) 0%, var(--color-orange-dark) 100%);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-cream);
+  transition: background var(--duration-base) var(--ease-smooth);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--color-orange-light) 0%, var(--color-orange) 100%);
+  border-color: var(--color-cream-dark);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--color-orange-dark);
+}
+
+/* Para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-orange) var(--color-cream);
+}
+
+/* Scrollbar en hover para un efecto más sutil */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Versión más delgada para pantallas pequeñas */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    border: 1px solid var(--color-cream);
+  }
+}
+
+/* Scrollbar en elementos con overflow (modales, paneles) */
+.overflow-auto::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: var(--color-turquoise);
+  border-radius: var(--radius-pill);
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover,
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: var(--color-turquoise-dark);
+}
+
+/* ==================== FIN SCROLLBAR ==================== */
+
 /* Imágenes responsive por defecto */
 img {
   max-width: 100%;

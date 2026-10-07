@@ -241,9 +241,6 @@ export function SiteShell({ children }: SiteShellProps) {
             </Link>
           </nav>
         </div>
-
-        {/* Barra decorativa inferior */}
-        <div className="h-2 bg-linear-to-r from-orange via-turquoise to-purple" />
       </footer>
     </div>
   );
