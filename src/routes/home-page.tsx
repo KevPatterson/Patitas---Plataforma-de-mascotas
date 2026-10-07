@@ -36,35 +36,81 @@ export function HomePage() {
 
     let permissionListener: (() => void) | null = null;
     let isRequestingLocation = false;
+    let retryCount = 0;
+    const MAX_RETRIES = 2;
+
+    // Función para obtener la ubicación aproximada por IP (fallback)
+    const getFallbackLocation = async () => {
+      try {
+        console.log('🌐 Intentando obtener ubicación aproximada por IP...');
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data.latitude && data.longitude) {
+          console.log('✅ Ubicación aproximada obtenida por IP:', data.latitude, data.longitude, `(${data.city}, ${data.country_name})`);
+          setUserLocation({
+            lat: data.latitude,
+            lng: data.longitude,
+          });
+          setLocationError(false);
+          return true;
+        }
+      } catch (error) {
+        console.warn('No se pudo obtener ubicación por IP:', error);
+      }
+      return false;
+    };
 
     // Función para obtener la ubicación
-    const getLocation = () => {
-      if (isRequestingLocation || !('geolocation' in navigator)) return;
+    const getLocation = async () => {
+      if (isRequestingLocation || !('geolocation' in navigator)) {
+        // Si no hay geolocalización, intentar fallback por IP
+        if (!('geolocation' in navigator)) {
+          await getFallbackLocation();
+        }
+        return;
+      }
       
       isRequestingLocation = true;
       
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log('✅ Ubicación obtenida:', position.coords.latitude, position.coords.longitude);
+          console.log('✅ Ubicación GPS obtenida:', position.coords.latitude, position.coords.longitude);
           setUserLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
           setLocationError(false);
           isRequestingLocation = false;
+          retryCount = 0; // Resetear contador de reintentos
         },
-        (error) => {
-          // Solo mostrar error si no es por denegación de permisos
-          if (error.code !== 1) { // 1 = PERMISSION_DENIED
-            console.warn('Error obteniendo ubicación:', error.message);
-          }
-          setLocationError(true);
+        async (error) => {
           isRequestingLocation = false;
+          
+          // Si es timeout y no hemos excedido reintentos, intentar de nuevo
+          if (error.code === 3 && retryCount < MAX_RETRIES) { // 3 = TIMEOUT
+            retryCount++;
+            console.log(`⏱️ Timeout obteniendo ubicación GPS, reintentando (${retryCount}/${MAX_RETRIES})...`);
+            setTimeout(() => getLocation(), 1000); // Reintentar después de 1 segundo
+            return;
+          }
+          
+          // Si agotamos reintentos o es otro error, intentar fallback por IP
+          console.log('📍 No se pudo obtener ubicación GPS, intentando ubicación aproximada...');
+          const fallbackSuccess = await getFallbackLocation();
+          
+          if (!fallbackSuccess) {
+            // Solo mostrar error si no es por denegación de permisos y falló todo
+            if (error.code !== 1) { // 1 = PERMISSION_DENIED
+              console.warn('❌ No se pudo obtener ninguna ubicación');
+            }
+            setLocationError(true);
+          }
         },
         {
           enableHighAccuracy: false,
-          timeout: 5000,
-          maximumAge: 300000, // 5 minutos
+          timeout: 15000, // 15 segundos - más tiempo para obtener ubicación
+          maximumAge: 0, // No usar caché, siempre obtener ubicación fresca
         }
       );
     };
