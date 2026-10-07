@@ -1,9 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
-import { Icon, type LatLngExpression, divIcon } from 'leaflet';
+import { divIcon, type LatLngExpression } from 'leaflet';
 import { MapPin, Filter, X, Layers, PawPrint } from 'lucide-react';
-import { renderToString } from 'react-dom/server';
 import { Button } from '../components/ui/button';
 import { StatusBadge } from '../components/ui/status-badge';
 import { searchPublications, type PublicationSummary } from '../lib/supabase/publication-search';
@@ -12,55 +10,35 @@ import { setPageMeta } from '../lib/seo/page-meta';
 import { Link } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 
-// Iconos personalizados usando PawPrint de Lucide (igual que la leyenda)
-// Creamos los iconos fuera del componente para evitar problemas de renderizado
+// Iconos personalizados usando SVG de PawPrint de Lucide (igual que la leyenda)
 const MARKER_ICONS: Record<PublicationSummary['type'], ReturnType<typeof divIcon>> = (() => {
-  const colors: Record<PublicationSummary['type'], string> = {
-    LOST: '#E63946',
-    FOUND: '#38C9A3',
-    ABANDONED: '#6B6585',
-    ADOPTION: '#9B51E0',
-    SIGHTING: '#FF9E00',
-  };
-
-  const fillColors: Record<PublicationSummary['type'], string> = {
-    LOST: 'rgba(230, 57, 70, 0.2)',
-    FOUND: 'rgba(56, 201, 163, 0.2)',
-    ABANDONED: 'rgba(107, 101, 133, 0.1)',
-    ADOPTION: 'rgba(155, 81, 224, 0.2)',
-    SIGHTING: 'rgba(255, 158, 0, 0.2)',
+  const configs: Record<PublicationSummary['type'], { color: string; fillColor: string }> = {
+    LOST: { color: '#E63946', fillColor: 'rgba(230, 57, 70, 0.2)' },
+    FOUND: { color: '#38C9A3', fillColor: 'rgba(56, 201, 163, 0.2)' },
+    ABANDONED: { color: '#6B6585', fillColor: 'rgba(107, 101, 133, 0.1)' },
+    ADOPTION: { color: '#9B51E0', fillColor: 'rgba(155, 81, 224, 0.2)' },
+    SIGHTING: { color: '#FF9E00', fillColor: 'rgba(255, 158, 0, 0.2)' },
   };
 
   const icons: Partial<Record<PublicationSummary['type'], ReturnType<typeof divIcon>>> = {};
 
-  for (const [type, color] of Object.entries(colors)) {
-    const fillColor = fillColors[type as PublicationSummary['type']];
-    
-    // Usar el icono PawPrint de Lucide igual que en la leyenda
-    const iconHtml = renderToString(
-      <div style={{ 
-        width: '40px', 
-        height: '40px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        transform: 'translate(-50%, -100%)'
-      }}>
-        <PawPrint 
-          size={32}
-          color={color}
-          fill={fillColor}
-          strokeWidth={2.5}
-        />
-      </div>
-    );
+  for (const [type, { color, fillColor }] of Object.entries(configs)) {
+    // SVG de PawPrint de Lucide (copiado del icono original)
+    const iconHtml = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="${fillColor}" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));">
+        <circle cx="11" cy="4" r="2"/>
+        <circle cx="18" cy="8" r="2"/>
+        <circle cx="20" cy="16" r="2"/>
+        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>
+      </svg>
+    `;
 
     icons[type as PublicationSummary['type']] = divIcon({
       html: iconHtml,
       className: 'custom-paw-marker',
-      iconSize: [40, 40],
-      iconAnchor: [20, 40],
-      popupAnchor: [0, -40],
+      iconSize: [32, 32],
+      iconAnchor: [16, 28], // Punto en el centro-abajo del icono
+      popupAnchor: [0, -28],
     });
   }
 
@@ -113,7 +91,7 @@ export function MapPage() {
           limit: number;
         } = {
           status: 'ACTIVE',
-          limit: 500, // Más publicaciones para el mapa
+          limit: 200, // Reducido para mejor rendimiento inicial
         };
 
         if (filters.type !== 'ALL') {
@@ -335,19 +313,8 @@ export function MapPage() {
             />
             <MapRecenter center={mapCenter} />
 
-            {/* Estilos personalizados para los marcadores PawPrint */}
-            <style>{`
-              .custom-paw-marker {
-                background: transparent !important;
-                border: none !important;
-              }
-              .custom-paw-marker svg {
-                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-              }
-            `}</style>
-
-            <MarkerClusterGroup chunkedLoading>
-              {publications.map((pub) => {
+            {/* Renderizar marcadores sin clustering para que siempre se vean las patitas */}
+            {publications.map((pub) => {
                 if (!pub.approximateLat || !pub.approximateLng) {
                   console.warn('Publicación sin coordenadas válidas:', pub.title);
                   return null;
@@ -407,7 +374,6 @@ export function MapPage() {
                   </Marker>
                 );
               })}
-            </MarkerClusterGroup>
           </MapContainer>
         )}
       </div>
@@ -438,7 +404,7 @@ export function MapPage() {
           </div>
         </div>
         <p className="mt-4 text-xs text-navy/60 leading-relaxed">
-          🐾 Cada huella representa un caso. Las ubicaciones son aproximadas (±50m) para proteger la privacidad. Los grupos de huellas representan múltiples casos en la misma zona.
+          🐾 Cada huella representa un caso. Las ubicaciones son aproximadas (±50m) para proteger la privacidad. Todas las huellas se muestran en el mapa sin importar el nivel de zoom.
         </p>
       </div>
     </section>

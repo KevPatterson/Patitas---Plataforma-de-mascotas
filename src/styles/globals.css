@@ -642,3 +642,24 @@ video {
 @media (prefers-color-scheme: dark) {
   /* Los estilos dark ya están definidos en la sección base */
 }
+
+
+/* ==================== ESTILOS DEL MAPA ==================== */
+/* Marcadores personalizados con PawPrint */
+.custom-paw-marker {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Popup personalizado */
+.leaflet-popup-content-wrapper {
+  border-radius: 1rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  width: 100% !important;
+}
