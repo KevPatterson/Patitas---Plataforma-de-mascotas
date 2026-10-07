@@ -231,7 +231,7 @@ export function PublishPage() {
             <span className="text-turquoise">{user.email}</span>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-2 px-1" aria-label="Pasos del wizard">
+          <div className="flex gap-2 overflow-x-auto pb-2 px-2 -mx-2" aria-label="Pasos del wizard">
             {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
