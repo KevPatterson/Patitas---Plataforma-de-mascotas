@@ -99,6 +99,81 @@ export async function searchPublications(filters: SearchFilters) {
   const limit = filters.limit ?? 48;
   const offset = filters.offset ?? 0;
 
+  // Si hay query de texto, intentar usar la función optimizada con FTS
+  if (filters.query && filters.query.trim().length > 2) {
+    try {
+      const { data: ftsResults, error: ftsError } = await supabase.rpc('search_publications', {
+        search_query: filters.query.trim(),
+        filter_type: filters.type && filters.type !== 'ALL' ? filters.type : null,
+        filter_species: filters.species || null,
+        filter_sex: filters.sex || null,
+        filter_size: filters.size || null,
+        filter_status: filters.status && filters.status !== 'ALL' ? filters.status : 'ACTIVE',
+        filter_province: filters.province || null,
+        filter_municipality: filters.municipality || null,
+        since_date: filters.since || null,
+        result_limit: limit,
+        result_offset: offset,
+      });
+
+      if (!ftsError && ftsResults) {
+        // Obtener imágenes para cada resultado
+        const ids = ftsResults.map((r: { id: string }) => r.id);
+        const { data: withImages, error: imgError } = await supabase
+          .from('publications')
+          .select('id, location:locations(province, municipality, zone, approximate_lat, approximate_lng), publication_images(storage_path, is_cover, alt_text)')
+          .in('id', ids);
+
+        if (!imgError && withImages) {
+          // Combinar resultados FTS con imágenes
+          return ftsResults.map((fts: {
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            type: string;
+            status: string;
+            species: string;
+            breed: string | null;
+            sex: string | null;
+            size: string | null;
+            color: string;
+            published_at: string;
+          }) => {
+            const withImg = withImages.find((w: { id: string }) => w.id === fts.id);
+            const cover = withImg?.publication_images?.find((img: { is_cover: boolean }) => img.is_cover) ?? 
+                         withImg?.publication_images?.[0] ?? null;
+            
+            return {
+              id: fts.id,
+              slug: fts.slug,
+              title: fts.title,
+              description: fts.description,
+              type: fts.type as PublicationRow['type'],
+              status: fts.status as PublicationRow['status'],
+              species: fts.species,
+              breed: fts.breed,
+              color: fts.color,
+              sex: fts.sex,
+              size: fts.size,
+              publishedAt: fts.published_at,
+              province: withImg?.location?.[0]?.province ?? null,
+              municipality: withImg?.location?.[0]?.municipality ?? null,
+              zone: withImg?.location?.[0]?.zone ?? null,
+              approximateLat: withImg?.location?.[0]?.approximate_lat ?? null,
+              approximateLng: withImg?.location?.[0]?.approximate_lng ?? null,
+              coverImageUrl: cover ? supabase.storage.from('pet-images').getPublicUrl(cover.storage_path).data.publicUrl : null,
+            };
+          });
+        }
+      }
+    } catch (err) {
+      // Fallback a búsqueda básica si FTS falla
+      console.warn('FTS search fallback:', err);
+    }
+  }
+
+  // Búsqueda básica (fallback o sin query de texto)
   let query = supabase
     .from('publications')
     .select('id, slug, title, description, type, status, species, breed, color, sex, size, published_at, location:locations(province, municipality, zone, approximate_lat, approximate_lng), publication_images(storage_path, is_cover, alt_text)')

@@ -3,7 +3,7 @@ import { Search, MapPin, Heart, BadgeCheck, PawPrint, TrendingUp, Users, Map as 
 import { LinkButton } from '../components/ui/button';
 import { StatCard } from '../components/ui/stat-card';
 import { PublicationCard } from '../components/publications/publication-card';
-import { PawLoader, PawTrail } from '../components/ui/paw-loader';
+import { PawTrail } from '../components/ui/paw-loader';
 import { EmptyState } from '../components/ui/empty-state';
 import { ScrollReveal } from '../components/ui/scroll-reveal';
 import { setPageMeta } from '../lib/seo/page-meta';

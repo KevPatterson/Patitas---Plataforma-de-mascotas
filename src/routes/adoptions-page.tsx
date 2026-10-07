@@ -45,11 +45,11 @@ export function AdoptionsPage() {
           let filtered = data;
 
           if (species) {
-            filtered = filtered.filter((p) => p.species?.toLowerCase().includes(species.toLowerCase()));
+            filtered = filtered.filter((p: { species?: string }) => p.species?.toLowerCase().includes(species.toLowerCase()));
           }
 
           if (size) {
-            filtered = filtered.filter((p) => p.size?.toLowerCase().includes(size.toLowerCase()));
+            filtered = filtered.filter((p: { size?: string | null }) => p.size?.toLowerCase().includes(size.toLowerCase()));
           }
 
           setResults(filtered);

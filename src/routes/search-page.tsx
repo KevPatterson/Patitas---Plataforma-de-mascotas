@@ -4,7 +4,7 @@ import { Search, Filter, X, ChevronDown } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { TextField } from '../components/ui/text-field';
 import { PublicationCard } from '../components/publications/publication-card';
-import { PawLoader, PawTrail } from '../components/ui/paw-loader';
+import { PawTrail } from '../components/ui/paw-loader';
 import { EmptyState } from '../components/ui/empty-state';
 import { searchPublications, countPublications, type PublicationSummary } from '../lib/supabase/publication-search';
 import { TYPE_LABELS, SPECIES_LABELS, SEX_LABELS, SIZE_LABELS, STATUS_LABELS } from '../lib/constants/labels';

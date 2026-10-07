@@ -7,14 +7,6 @@ type PublicationCardProps = {
   publication: PublicationSummary;
 };
 
-const typeLabels: Record<PublicationSummary['type'], string> = {
-  LOST: 'Perdida',
-  FOUND: 'Encontrada',
-  ABANDONED: 'Abandonada',
-  ADOPTION: 'En adopción',
-  SIGHTING: 'Avistamiento',
-};
-
 const typeEmojis: Record<PublicationSummary['type'], string> = {
   LOST: '🔴',
   FOUND: '🟢',

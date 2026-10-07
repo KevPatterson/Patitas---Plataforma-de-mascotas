@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Camera, Trash2, User } from 'lucide-react';
+import { Camera, Trash2 } from 'lucide-react';
 import { Button } from './button';
 import { PawLoader } from './paw-loader';
 

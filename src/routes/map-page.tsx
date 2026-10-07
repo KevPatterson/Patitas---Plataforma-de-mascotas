@@ -60,7 +60,9 @@ export function MapPage() {
         };
         const data = await searchPublications(searchFilters);
         if (active) {
-          setResults(data.filter((p) => p.approximateLat !== null && p.approximateLng !== null));
+          setResults(data.filter((p: { approximateLat: number | null; approximateLng: number | null }) => 
+            p.approximateLat !== null && p.approximateLng !== null
+          ));
         }
       } catch (error) {
         console.error('Error loading map:', error);

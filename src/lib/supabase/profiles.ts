@@ -27,8 +27,97 @@ export async function ensureProfile(username: string, fullName?: string | null) 
 export async function getProfile(userId: string) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, full_name, avatar_url, created_at')
+    .select('id, username, full_name, avatar_url, bio, city, country, created_at')
     .eq('id', userId)
+    .is('deleted_at', null)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function getProfileByUsername(username: string) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, full_name, avatar_url, bio, city, country, created_at')
+    .ilike('username', username)
+    .is('deleted_at', null)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function getUserPublications(userId: string) {
+  const { data, error } = await supabase
+    .from('publications')
+    .select(
+      `
+      id,
+      slug,
+      title,
+      type,
+      status,
+      species,
+      published_at,
+      publication_images(storage_path, is_cover)
+    `
+    )
+    .eq('owner_profile_id', userId)
+    .in('status', ['ACTIVE', 'RESOLVED'])
+    .is('deleted_at', null)
+    .order('published_at', { ascending: false })
+    .limit(20);
+
+  if (error) {
+    throw error;
+  }
+
+  return (
+    data?.map((pub) => {
+      const cover = pub.publication_images?.find((img: { is_cover: boolean }) => img.is_cover) ?? 
+                   pub.publication_images?.[0] ?? null;
+
+      return {
+        id: pub.id,
+        slug: pub.slug,
+        title: pub.title,
+        type: pub.type,
+        status: pub.status,
+        species: pub.species,
+        published_at: pub.published_at,
+        coverImageUrl: cover
+          ? supabase.storage.from('pet-images').getPublicUrl(cover.storage_path).data.publicUrl
+          : null,
+      };
+    }) || []
+  );
+}
+
+export async function updateProfile(userId: string, updates: {
+  username?: string;
+  full_name?: string;
+  bio?: string;
+  city?: string;
+}) {
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.username !== undefined) updateData.username = updates.username;
+  if (updates.full_name !== undefined) updateData.full_name = updates.full_name;
+  if (updates.bio !== undefined) updateData.bio = updates.bio;
+  if (updates.city !== undefined) updateData.city = updates.city;
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updateData)
+    .eq('id', userId)
+    .select()
     .single();
 
   if (error) {

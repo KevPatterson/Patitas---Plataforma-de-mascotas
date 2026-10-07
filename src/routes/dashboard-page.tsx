@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/auth-context';
-import { getMyPublications, deleteMyPublication, resolveMyPublication, type MyPublication } from '../lib/supabase/my-publications';
+import { getMyPublications, type MyPublication } from '../lib/supabase/my-publications';
+import { resolvePublication, hidePublication, deletePublication } from '../lib/supabase/publication-actions';
 import { signOut } from '../lib/supabase/auth';
 import { getProfile, uploadAvatar, deleteAvatar } from '../lib/supabase/profiles';
 import { PublicationCard } from '../components/publications/publication-card';
@@ -28,7 +29,7 @@ export function DashboardPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const data = await getMyPublications(user.id);
+      const data = await getMyPublications();
       setPublications(data);
       setStats({
         active: data.filter((p) => p.status === 'ACTIVE').length,
@@ -50,10 +51,11 @@ export function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      loadData();
-      loadProfileData();
+      void loadData();
+      void loadProfileData();
     }
-  }, [user, activeTab, loadData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, activeTab]);
 
   const loadProfileData = async () => {
     if (!user) return;
@@ -67,29 +69,21 @@ export function DashboardPage() {
 
   const handleAvatarUpload = async (file: File) => {
     if (!user) return;
-    try {
-      const newAvatarUrl = await uploadAvatar(user.id, file);
-      setAvatarUrl(newAvatarUrl);
-    } catch (error) {
-      throw error;
-    }
+    const newAvatarUrl = await uploadAvatar(user.id, file);
+    setAvatarUrl(newAvatarUrl);
   };
 
   const handleAvatarDelete = async () => {
     if (!user) return;
-    try {
-      await deleteAvatar(user.id);
-      setAvatarUrl(null);
-    } catch (error) {
-      throw error;
-    }
+    await deleteAvatar(user.id);
+    setAvatarUrl(null);
   };
 
   const handleResolve = async (id: string) => {
     if (!user) return;
     setActionLoading(id);
     try {
-      await resolveMyPublication(user.id, id);
+      await resolvePublication(id, user.id);
       setPublications((prev) =>
         prev.map((p) => (p.id === id ? { ...p, status: 'RESOLVED' as const } : p))
       );
@@ -105,7 +99,7 @@ export function DashboardPage() {
     if (!user || !window.confirm('¿Eliminar esta publicación? No se puede deshacer.')) return;
     setActionLoading(id);
     try {
-      await deleteMyPublication(user.id, id);
+      await deletePublication(id, user.id);
       const deletedPub = publications.find((p) => p.id === id);
       setPublications((prev) => prev.filter((p) => p.id !== id));
       setStats((s) => ({
@@ -253,12 +247,12 @@ export function DashboardPage() {
                       color: pub.color,
                       sex: pub.sex,
                       size: pub.size,
-                      publishedAt: pub.publishedAt,
-                      province: pub.province,
-                      municipality: pub.municipality,
-                      zone: pub.zone,
-                      approximateLat: pub.approximateLat,
-                      approximateLng: pub.approximateLng,
+                      publishedAt: pub.published_at,
+                      province: pub.province ?? null,
+                      municipality: pub.municipality ?? null,
+                      zone: pub.zone ?? null,
+                      approximateLat: pub.approximateLat ?? null,
+                      approximateLng: pub.approximateLng ?? null,
                       coverImageUrl: pub.coverImageUrl,
                     }}
                   />

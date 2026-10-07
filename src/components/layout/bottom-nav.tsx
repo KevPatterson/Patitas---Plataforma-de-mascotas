@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, MapPinned, PlusCircle, User, Bell } from 'lucide-react';
+import { Home, Search, MapPinned, PlusCircle, Bell } from 'lucide-react';
 import { useAuth } from '../../app/auth-context';
 import { getUnreadNotificationsCount } from '../../lib/supabase/notifications';
 import { useEffect, useState } from 'react';

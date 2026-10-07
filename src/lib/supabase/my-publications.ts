@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { getUser } from './auth';
 
 export type MyPublication = {
   id: string;
@@ -12,24 +13,27 @@ export type MyPublication = {
   color: string | null;
   sex: string | null;
   size: string | null;
-  publishedAt: string;
-  province: string | null;
-  municipality: string | null;
-  zone: string | null;
-  approximateLat: number | null;
-  approximateLng: number | null;
+  published_at: string;
+  resolved_at: string | null;
   coverImageUrl: string | null;
-  contactMode: 'INTERNAL' | 'PHONE' | 'WHATSAPP' | 'EMAIL';
-  contactPhone: string | null;
-  contactWhatsapp: string | null;
-  contactEmail: string | null;
-  reward: string | null;
+  province?: string | null;
+  municipality?: string | null;
+  zone?: string | null;
+  approximateLat?: number | null;
+  approximateLng?: number | null;
+  adoption_requests_count?: number;
+  comments_count?: number;
+  sightings_count?: number;
 };
 
-export async function getMyPublications(userId: string): Promise<MyPublication[]> {
+export async function getMyPublications(): Promise<MyPublication[]> {
+  const user = await getUser();
+  if (!user) return [];
+
   const { data, error } = await supabase
     .from('publications')
-    .select(`
+    .select(
+      `
       id,
       slug,
       title,
@@ -42,98 +46,163 @@ export async function getMyPublications(userId: string): Promise<MyPublication[]
       sex,
       size,
       published_at,
-      contact_mode,
-      contact_phone,
-      contact_whatsapp,
-      contact_email,
-      reward,
-      location:locations(province, municipality, zone, approximate_lat, approximate_lng),
-      publication_images(storage_path, is_cover, alt_text)
-    `)
-    .eq('owner_profile_id', userId)
-    .neq('status', 'DELETED')
+      resolved_at,
+      publication_images(storage_path, is_cover, alt_text),
+      location:locations(province, municipality, zone, approximate_lat, approximate_lng)
+    `
+    )
+    .eq('owner_profile_id', user.id)
     .order('published_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
-  return (data as Array<{
-    id: string;
-    slug: string;
-    title: string;
-    description: string;
-    type: MyPublication['type'];
-    status: MyPublication['status'];
-    species: string;
-    breed: string | null;
-    color: string | null;
-    sex: string | null;
-    size: string | null;
-    published_at: string;
-    contact_mode: MyPublication['contactMode'];
-    contact_phone: string | null;
-    contact_whatsapp: string | null;
-    contact_email: string | null;
-    reward: string | null;
-    location: Array<{
-      province: string;
-      municipality: string;
-      zone: string | null;
-      approximate_lat: number | null;
-      approximate_lng: number | null;
-    }>;
-    publication_images: Array<{
-      storage_path: string;
-      is_cover: boolean;
-      alt_text: string | null;
-    }>;
-  }>).map((row) => {
-    const cover = row.publication_images.find((img) => img.is_cover) ?? row.publication_images[0] ?? null;
-    return {
-      id: row.id,
-      slug: row.slug,
-      title: row.title,
-      description: row.description,
-      type: row.type,
-      status: row.status,
-      species: row.species,
-      breed: row.breed,
-      color: row.color,
-      sex: row.sex,
-      size: row.size,
-      publishedAt: row.published_at,
-      province: row.location[0]?.province ?? null,
-      municipality: row.location[0]?.municipality ?? null,
-      zone: row.location[0]?.zone ?? null,
-      approximateLat: row.location[0]?.approximate_lat ?? null,
-      approximateLng: row.location[0]?.approximate_lng ?? null,
-      coverImageUrl: cover
-        ? supabase.storage.from('pet-images').getPublicUrl(cover.storage_path).data.publicUrl
-        : null,
-      contactMode: row.contact_mode,
-      contactPhone: row.contact_phone,
-      contactWhatsapp: row.contact_whatsapp,
-      contactEmail: row.contact_email,
-      reward: row.reward,
-    };
-  });
+  return (
+    data?.map((pub) => {
+      const cover =
+        pub.publication_images?.find((img: { is_cover: boolean }) => img.is_cover) ?? 
+        pub.publication_images?.[0] ?? 
+        null;
+      
+      const location = Array.isArray(pub.location) ? pub.location[0] : pub.location;
+
+      return {
+        id: pub.id,
+        slug: pub.slug,
+        title: pub.title,
+        description: pub.description,
+        type: pub.type,
+        status: pub.status,
+        species: pub.species,
+        breed: pub.breed,
+        color: pub.color,
+        sex: pub.sex,
+        size: pub.size,
+        published_at: pub.published_at,
+        resolved_at: pub.resolved_at,
+        province: location?.province ?? null,
+        municipality: location?.municipality ?? null,
+        zone: location?.zone ?? null,
+        approximateLat: location?.approximate_lat ?? null,
+        approximateLng: location?.approximate_lng ?? null,
+        coverImageUrl: cover
+          ? supabase.storage.from('pet-images').getPublicUrl(cover.storage_path).data.publicUrl
+          : null,
+      };
+    }) || []
+  );
 }
 
-export async function deleteMyPublication(userId: string, publicationId: string) {
-  const { error } = await supabase
-    .from('publications')
-    .update({ status: 'DELETED', deleted_at: new Date().toISOString() })
-    .eq('id', publicationId)
-    .eq('owner_profile_id', userId);
+export async function getMyPublicationById(publicationId: string) {
+  const user = await getUser();
+  if (!user) throw new Error('No autenticado');
 
-  if (error) throw error;
+  const { data, error } = await supabase
+    .from('publications')
+    .select(
+      `
+      *,
+      location:locations(*),
+      pet:pets(*),
+      publication_images(*)
+    `
+    )
+    .eq('id', publicationId)
+    .eq('owner_profile_id', user.id)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 }
 
-export async function resolveMyPublication(userId: string, publicationId: string) {
-  const { error } = await supabase
-    .from('publications')
-    .update({ status: 'RESOLVED', resolved_at: new Date().toISOString() })
-    .eq('id', publicationId)
-    .eq('owner_profile_id', userId);
+export async function updatePublication(
+  publicationId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    species?: string;
+    breed?: string;
+    sex?: string;
+    size?: string;
+    ageApprox?: string;
+    color?: string;
+    characteristics?: string;
+    collar?: boolean;
+    plate?: boolean;
+    reward?: string;
+    contactMode?: 'INTERNAL' | 'PHONE' | 'WHATSAPP' | 'EMAIL';
+    contactPhone?: string;
+    contactWhatsapp?: string;
+    contactEmail?: string;
+  }
+) {
+  const user = await getUser();
+  if (!user) throw new Error('No autenticado');
 
-  if (error) throw error;
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.title !== undefined) updateData.title = updates.title;
+  if (updates.description !== undefined) updateData.description = updates.description;
+  if (updates.species !== undefined) updateData.species = updates.species;
+  if (updates.breed !== undefined) updateData.breed = updates.breed || null;
+  if (updates.sex !== undefined) updateData.sex = updates.sex || null;
+  if (updates.size !== undefined) updateData.size = updates.size || null;
+  if (updates.ageApprox !== undefined) updateData.age_approx = updates.ageApprox || null;
+  if (updates.color !== undefined) updateData.color = updates.color;
+  if (updates.characteristics !== undefined)
+    updateData.characteristics = updates.characteristics || null;
+  if (updates.collar !== undefined) updateData.collar = updates.collar;
+  if (updates.plate !== undefined) updateData.plate = updates.plate;
+  if (updates.reward !== undefined) updateData.reward = updates.reward || null;
+  if (updates.contactMode !== undefined) updateData.contact_mode = updates.contactMode;
+  if (updates.contactPhone !== undefined) updateData.contact_phone = updates.contactPhone || null;
+  if (updates.contactWhatsapp !== undefined)
+    updateData.contact_whatsapp = updates.contactWhatsapp || null;
+  if (updates.contactEmail !== undefined) updateData.contact_email = updates.contactEmail || null;
+
+  const { data, error } = await supabase
+    .from('publications')
+    .update(updateData)
+    .eq('id', publicationId)
+    .eq('owner_profile_id', user.id)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function getPublicationStats(userId: string) {
+  const [totalResult, activeResult, resolvedResult] = await Promise.all([
+    supabase
+      .from('publications')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_profile_id', userId)
+      .neq('status', 'DELETED'),
+
+    supabase
+      .from('publications')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_profile_id', userId)
+      .eq('status', 'ACTIVE'),
+
+    supabase
+      .from('publications')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_profile_id', userId)
+      .eq('status', 'RESOLVED'),
+  ]);
+
+  return {
+    total: totalResult.count ?? 0,
+    active: activeResult.count ?? 0,
+    resolved: resolvedResult.count ?? 0,
+  };
 }

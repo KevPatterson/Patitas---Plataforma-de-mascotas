@@ -1,6 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
 import { Home, PawPrint } from 'lucide-react';
-import { Logo } from '../components/Logo';
 import { LinkButton } from '../components/ui/button';
 import { SiteShell } from '../components/layout/site-shell';
 import { BottomNav } from '../components/layout/bottom-nav';

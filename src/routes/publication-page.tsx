@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X, Heart, Eye, Flag } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X, Heart, Flag } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { TextareaField } from '../components/ui/textarea-field';
 import { StatusBadge } from '../components/ui/status-badge';
@@ -77,7 +77,15 @@ export function PublicationPage() {
             event_date: data.event_date,
           };
 
-          const candidatePubs = candidates.map((c) => ({
+          const candidatePubs = candidates.map((c: {
+            id: string;
+            species: string;
+            color: string | null;
+            size: string | null;
+            sex: string | null;
+            province: string | null;
+            municipality: string | null;
+          }) => ({
             id: c.id,
             species: c.species,
             color: c.color,
@@ -91,7 +99,7 @@ export function PublicationPage() {
           const matchResults = findMatches(targetPub, candidatePubs);
 
           const enrichedMatches = matchResults.slice(0, 3).map((match) => {
-            const candidate = candidates.find((c) => c.id === match.publicationId)!;
+            const candidate = candidates.find((c: { id: string }) => c.id === match.publicationId)!;
             return {
               ...match,
               publication: {
