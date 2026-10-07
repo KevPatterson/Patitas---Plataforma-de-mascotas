@@ -18,50 +18,65 @@ export type Notification = {
  * Obtener todas las notificaciones del usuario autenticado
  */
 export async function getNotifications(limit = 50): Promise<Notification[]> {
-  const { data: userResponse } = await supabase.auth.getUser();
-  const user = userResponse.user;
+  try {
+    const { data: userResponse, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !userResponse.user) {
+      console.warn('No hay usuario autenticado para obtener notificaciones');
+      return [];
+    }
 
-  if (!user) {
-    throw new Error('No hay sesión activa');
+    const user = userResponse.user;
+
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('profile_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error obteniendo notificaciones:', error);
+      return [];
+    }
+
+    return (data as Notification[]) || [];
+  } catch (err) {
+    console.error('Error en getNotifications:', err);
+    return [];
   }
-
-  const { data, error } = await supabase
-    .from('notifications')
-    .select('*')
-    .eq('profile_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    throw error;
-  }
-
-  return (data as Notification[]) || [];
 }
 
 /**
  * Obtener contador de notificaciones no leídas
  */
 export async function getUnreadCount(): Promise<number> {
-  const { data: userResponse } = await supabase.auth.getUser();
-  const user = userResponse.user;
+  try {
+    const { data: userResponse, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !userResponse.user) {
+      console.warn('No hay usuario autenticado para obtener notificaciones');
+      return 0;
+    }
 
-  if (!user) {
+    const user = userResponse.user;
+
+    const { count, error } = await supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('profile_id', user.id)
+      .eq('is_read', false);
+
+    if (error) {
+      console.error('Error getting unread count:', error);
+      return 0;
+    }
+
+    return count ?? 0;
+  } catch (err) {
+    console.error('Error en getUnreadCount:', err);
     return 0;
   }
-
-  const { count, error } = await supabase
-    .from('notifications')
-    .select('id', { count: 'exact', head: true })
-    .eq('profile_id', user.id)
-    .eq('is_read', false);
-
-  if (error) {
-    console.error('Error getting unread count:', error);
-    return 0;
-  }
-
-  return count ?? 0;
 }
 
 /**
@@ -85,24 +100,30 @@ export async function markAsRead(notificationId: string): Promise<void> {
  * Marcar todas las notificaciones como leídas
  */
 export async function markAllAsRead(): Promise<void> {
-  const { data: userResponse } = await supabase.auth.getUser();
-  const user = userResponse.user;
+  try {
+    const { data: userResponse, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !userResponse.user) {
+      console.warn('No hay usuario autenticado');
+      return;
+    }
 
-  if (!user) {
-    throw new Error('No hay sesión activa');
-  }
+    const user = userResponse.user;
 
-  const { error } = await supabase
-    .from('notifications')
-    .update({
-      is_read: true,
-      read_at: new Date().toISOString(),
-    })
-    .eq('profile_id', user.id)
-    .eq('is_read', false);
+    const { error } = await supabase
+      .from('notifications')
+      .update({
+        is_read: true,
+        read_at: new Date().toISOString(),
+      })
+      .eq('profile_id', user.id)
+      .eq('is_read', false);
 
-  if (error) {
-    throw error;
+    if (error) {
+      console.error('Error marcando notificaciones como leídas:', error);
+    }
+  } catch (err) {
+    console.error('Error en markAllAsRead:', err);
   }
 }
 

@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Bell, Search, MapPin, LogOut, User, type LucideIcon } from 'lucide-react';
 import { signOut } from '../../lib/supabase/auth';
 import { useAuth } from '../../app/auth-context';
-import { getUnreadCount } from '../../lib/supabase/notifications';
+import { useNotificationCount } from '../../lib/hooks/use-notification-count';
 import { supabase } from '../../lib/supabase/client';
 import { Logo } from '../Logo';
 
@@ -49,7 +49,7 @@ function NavItem({ href, label, Icon, badge }: { href: string; label: string; Ic
 export function SiteShell({ children }: SiteShellProps) {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const unreadCount = useNotificationCount();
   const [loggingOut, setLoggingOut] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -72,14 +72,6 @@ export function SiteShell({ children }: SiteShellProps) {
     if (authLoading || !user) return;
 
     let active = true;
-    const fetchCount = async () => {
-      try {
-        const count = await getUnreadCount();
-        if (active) setUnreadCount(count);
-      } catch {
-        if (active) setUnreadCount(0);
-      }
-    };
 
     const fetchProfile = async () => {
       try {
@@ -97,13 +89,10 @@ export function SiteShell({ children }: SiteShellProps) {
       }
     };
 
-    fetchCount();
     fetchProfile();
-    const interval = setInterval(fetchCount, 30_000);
 
     return () => {
       active = false;
-      clearInterval(interval);
     };
   }, [user, authLoading]);
 

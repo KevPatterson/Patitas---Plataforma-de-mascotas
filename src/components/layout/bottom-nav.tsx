@@ -1,8 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Search, MapPinned, PlusCircle, Bell } from 'lucide-react';
 import { useAuth } from '../../app/auth-context';
-import { getUnreadCount } from '../../lib/supabase/notifications';
-import { useEffect, useState } from 'react';
+import { useNotificationCount } from '../../lib/hooks/use-notification-count';
 
 const items = [
   { to: '/', label: 'Inicio', icon: Home },
@@ -13,31 +12,9 @@ const items = [
 ];
 
 export function BottomNav() {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    if (authLoading || !user) return;
-
-    let active = true;
-    const fetchCount = async () => {
-      try {
-        const count = await getUnreadCount();
-        if (active) setUnreadCount(count);
-      } catch {
-        if (active) setUnreadCount(0);
-      }
-    };
-
-    fetchCount();
-    const interval = setInterval(fetchCount, 30_000);
-
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, [user, authLoading]);
+  const unreadCount = useNotificationCount();
 
   return (
     <nav 
