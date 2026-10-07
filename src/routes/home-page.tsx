@@ -148,11 +148,18 @@ export function HomePage() {
 
   // Efecto separado para reordenar casos cuando cambia la ubicación
   useEffect(() => {
+    console.log('🔄 Efecto de reordenamiento ejecutado:', { 
+      allCasesLength: allCases.length, 
+      userLocation,
+      hasLocation: !!userLocation 
+    });
+    
     if (allCases.length === 0) return;
 
     let sortedRecent = allCases;
     
     if (userLocation) {
+      console.log('📍 Ordenando por distancia desde:', userLocation);
       sortedRecent = allCases
         .map((pub: PublicationSummary & { distance?: number }) => {
           // Calcular distancia si la publicación tiene coordenadas
@@ -170,6 +177,12 @@ export function HomePage() {
         .sort((a: PublicationSummary & { distance?: number }, b: PublicationSummary & { distance?: number }) => 
           (a.distance || Infinity) - (b.distance || Infinity)
         );
+      console.log('✅ Casos ordenados, primeros 3:', sortedRecent.slice(0, 3).map(c => ({ 
+        title: c.title, 
+        distance: (c as any).distance 
+      })));
+    } else {
+      console.log('📍 Sin ubicación, mostrando casos recientes');
     }
     
     setRecentCases(sortedRecent.slice(0, 6));
