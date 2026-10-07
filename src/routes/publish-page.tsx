@@ -198,6 +198,9 @@ export function PublishPage() {
       if (!values.municipality || values.municipality.trim().length < 2) {
         return 'Debes seleccionar un municipio.';
       }
+      if (!values.approximateLat || !values.approximateLng) {
+        return 'Debes hacer clic en el mapa para marcar la ubicación aproximada.';
+      }
     }
     
     if (currentStep === 5) {
@@ -568,26 +571,34 @@ export function PublishPage() {
                 />
               </div>
 
-              <fieldset className="space-y-3">
-                <legend className="text-sm font-semibold text-navy">📍 Ubicación aproximada (click en el mapa)</legend>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <TextField
-                    label="Latitud aprox."
-                    placeholder="23.136"
-                    value={values.approximateLat ?? ''}
-                    onChange={(event) => updateValue('approximateLat', event.target.value)}
-                    readOnly
-                  />
-                  <TextField
-                    label="Longitud aprox."
-                    placeholder="-82.430"
-                    value={values.approximateLng ?? ''}
-                    onChange={(event) => updateValue('approximateLng', event.target.value)}
-                    readOnly
-                  />
+              <fieldset className="space-y-4">
+                <div className="bg-turquoise/10 border-2 border-turquoise/30 rounded-2xl p-4">
+                  <legend className="text-base font-bold text-navy mb-2">📍 Ubicación aproximada (REQUERIDO)</legend>
+                  <p className="text-sm text-navy/70 mb-3">
+                    Haz clic en el mapa para marcar dónde ocurrió el evento. Esta ubicación ayuda a encontrar casos cercanos.
+                  </p>
+                  {!values.approximateLat && !values.approximateLng && (
+                    <div className="bg-orange/10 border-2 border-orange/30 rounded-xl px-4 py-3 flex items-start gap-3">
+                      <span className="text-2xl shrink-0">👆</span>
+                      <div>
+                        <p className="text-sm font-semibold text-orange">¡Haz clic en el mapa!</p>
+                        <p className="text-xs text-orange/80">Debes marcar la ubicación para continuar</p>
+                      </div>
+                    </div>
+                  )}
+                  {values.approximateLat && values.approximateLng && (
+                    <div className="bg-turquoise/10 border-2 border-turquoise/30 rounded-xl px-4 py-3 flex items-start gap-3">
+                      <span className="text-2xl shrink-0">✅</span>
+                      <div>
+                        <p className="text-sm font-semibold text-turquoise">Ubicación marcada</p>
+                        <p className="text-xs text-turquoise/80">Puedes hacer clic de nuevo para ajustar</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="h-64 rounded-2xl border-2 border-turquoise/20 overflow-hidden shadow-md">
-                  <MapContainer center={[23.1136, -82.3666]} zoom={8} className="h-full w-full">
+
+                <div className="h-80 rounded-2xl border-4 border-turquoise/30 overflow-hidden shadow-lg ring-4 ring-turquoise/10">
+                  <MapContainer center={[23.1136, -82.3666]} zoom={8} className="h-full w-full cursor-crosshair">
                     <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     {values.approximateLat && values.approximateLng && (
                       <Marker position={[parseFloat(values.approximateLat), parseFloat(values.approximateLng)]} />
@@ -596,13 +607,38 @@ export function PublishPage() {
                       onChange={(lat, lng) => {
                         updateValue('approximateLat', lat);
                         updateValue('approximateLng', lng);
+                        setErrorMessage(null); // Limpiar error cuando se selecciona ubicación
                       }}
                     />
                   </MapContainer>
                 </div>
-                <p className="text-xs text-navy/60 bg-turquoise/5 border border-turquoise/20 rounded-2xl px-4 py-3">
-                  🔒 Haz clic en el mapa para seleccionar. Las coordenadas se difuminan ±0.02° para privacidad.
-                </p>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <TextField
+                    label="Latitud aprox."
+                    placeholder="Haz clic en el mapa"
+                    value={values.approximateLat ?? ''}
+                    onChange={(event) => updateValue('approximateLat', event.target.value)}
+                    readOnly
+                  />
+                  <TextField
+                    label="Longitud aprox."
+                    placeholder="Haz clic en el mapa"
+                    value={values.approximateLng ?? ''}
+                    onChange={(event) => updateValue('approximateLng', event.target.value)}
+                    readOnly
+                  />
+                </div>
+
+                <div className="bg-purple/5 border border-purple/20 rounded-2xl px-4 py-3">
+                  <p className="text-xs text-navy/70 flex items-start gap-2">
+                    <span className="text-base">🔒</span>
+                    <span>
+                      <strong>Privacidad:</strong> Las coordenadas se difuminan automáticamente ±0.02° (aprox. 2 km) 
+                      para proteger tu ubicación exacta. Solo se muestra una zona aproximada.
+                    </span>
+                  </p>
+                </div>
               </fieldset>
             </div>
           )}
