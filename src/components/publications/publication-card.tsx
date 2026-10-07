@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { PawPrint, MapPin, Calendar } from 'lucide-react';
 import type { PublicationSummary } from '../../lib/supabase/publication-search';
 import { StatusBadge } from '../ui/status-badge';
+import { SPECIES_LABELS } from '../../lib/constants/labels';
 
 type PublicationCardProps = {
   publication: PublicationSummary;
@@ -93,7 +94,7 @@ export function PublicationCard({ publication }: PublicationCardProps) {
           <div className="flex flex-wrap gap-2">
             {publication.species && (
               <span className="inline-flex items-center rounded-lg bg-navy/5 px-2.5 py-1 text-xs font-medium text-navy">
-                {publication.species}
+                {SPECIES_LABELS[publication.species] ?? publication.species}
               </span>
             )}
             {publication.breed && (

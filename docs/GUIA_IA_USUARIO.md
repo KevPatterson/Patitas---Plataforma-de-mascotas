@@ -13,9 +13,11 @@ El sistema de IA de Patitas está diseñado para ayudarte automáticamente a enc
 En el formulario de publicación, específicamente en el **Paso 2: Información de la mascota**, encontrarás el nuevo **Asistente IA para Formulario**.
 
 #### **Cómo funciona**:
-1. Sube una imagen del animal
+1. Sube una imagen del animal (puede ser una foto del animal o un cartel/póster)
 2. Haz clic en "Extraer datos con IA"
-3. La IA analiza la imagen y extrae automáticamente:
+3. La IA analiza la imagen en dos niveles:
+   
+   **A) Análisis visual del animal:**
    - **Especie** (Perro, Gato, etc.)
    - **Raza** (si es identificable)
    - **Sexo** (si es visible en la imagen)
@@ -25,34 +27,71 @@ En el formulario de publicación, específicamente en el **Paso 2: Información 
    - **Características distintivas**
    - **Collar** (si es visible)
    - **Placa** (si es visible)
-4. Los datos se rellenan automáticamente en el formulario
+   
+   **B) OCR de texto en la imagen (si hay cartel/póster):**
+   - **Ubicación** (Provincia, Municipio, Zona)
+   - **Recompensa** (si se menciona)
+   - **Fecha del evento** (si aparece)
+   - **Hora** (si aparece)
+   - **Información de contacto** (Teléfono, WhatsApp, Email)
+   - **Modo de contacto preferido**
+
+4. Los datos se rellenan automáticamente en los campos correspondientes del formulario
 5. **Revisa y edita** cualquier dato antes de publicar
 
 #### **Ventajas**:
 - ⚡ **Ahorra tiempo**: No tienes que escribir todos los datos manualmente
 - 🎯 **Mayor precisión**: La IA detecta detalles que podrías olvidar
+- 📸 **Extrae de carteles**: Si subes una foto de un póster/cartel, extrae texto
 - 📝 **Editable**: Puedes corregir cualquier dato extraído
 - 🔒 **Privado**: La imagen solo se usa para extracción, no se guarda
 
 #### **Limitaciones**:
 - La imagen debe ser clara y bien iluminada
-- Algunos datos pueden no ser detectables (como el sexo)
-- Siempre revisa los datos antes de publicar
+- Para OCR, el texto debe ser legible (no borroso ni muy pequeño)
+- Algunos datos pueden no ser detectables (como el sexo del animal)
 - La precisión varía según la calidad de la imagen
+- Siempre revisa los datos antes de publicar
 
-#### **Ejemplo de uso**:
+#### **Casos de uso**:
+1. **Foto directa del animal**: Extrae características físicas
+2. **Cartel impreso**: Extrae tanto características como datos de contacto/ubicación del texto
+3. **Póster digital fotografiado**: Extrae toda la información visible
+4. **Screenshot de red social**: Puede extraer datos del texto superpuesto
+
+#### **Ejemplo de uso completo**:
 ```
-1. Tienes una foto de tu perro perdido
-2. En el paso 2 del formulario, subes la imagen al Asistente IA
-3. La IA detecta:
+Escenario: Fotografiaste un cartel de "Perro Perdido" pegado en un poste
+
+1. Subes la foto del cartel al Asistente IA
+2. El cartel dice:
+   "PERRO PERDIDO
+   Labrador marrón y blanco
+   Perdido el 3 de octubre cerca del Vedado, Plaza
+   Collar rojo con placa
+   RECOMPENSA 1000 CUP
+   Llamar al 5352123456"
+
+3. La IA detecta y extrae:
+   Visual:
    - Especie: Perro
-   - Raza: Mestizo
+   - Raza: Labrador
    - Color: Marrón y blanco
-   - Tamaño: Mediano
    - Collar: Sí
+   - Placa: Sí
+   
+   Texto (OCR):
+   - Provincia: La Habana
+   - Municipio: Plaza de la Revolución
+   - Zona: Vedado
+   - Fecha: 2026-10-03
+   - Recompensa: 1000 CUP
+   - Teléfono: 5352123456
+   - Modo de contacto: PHONE
+
 4. Revisas que todo es correcto
-5. Editas la edad a "Adulto" (no detectada automáticamente)
-6. Continúas con el resto del formulario
+5. Editas cualquier detalle si es necesario
+6. Continúas con el resto del formulario (ya casi completo)
 ```
 
 ---

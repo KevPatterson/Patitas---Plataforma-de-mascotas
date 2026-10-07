@@ -86,7 +86,7 @@ export function ImageDataExtractor({ onDataExtracted, disabled }: ImageDataExtra
       const base64Image = await base64Promise;
 
       // Enviar la imagen al endpoint
-      const response = await fetch('/api/ai/extract-from-image', {
+      const response = await fetch('/api/ai?action=extract-from-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,8 +155,8 @@ export function ImageDataExtractor({ onDataExtracted, disabled }: ImageDataExtra
         </label>
       ) : (
         <div className="space-y-3">
-          <div className="relative rounded-2xl overflow-hidden border-2 border-purple/20">
-            <img src={preview} alt="Vista previa" className="w-full h-48 object-cover" />
+          <div className="relative rounded-2xl overflow-hidden border-2 border-purple/20 max-w-xs mx-auto">
+            <img src={preview} alt="Vista previa" className="w-full h-24 object-cover" />
             <button
               type="button"
               onClick={handleClear}
@@ -243,6 +243,81 @@ export function ImageDataExtractor({ onDataExtracted, disabled }: ImageDataExtra
                     <dd className="text-navy">{extractedData.characteristics}</dd>
                   </div>
                 )}
+                
+                {/* Datos contextuales extraídos de texto */}
+                {(extractedData.province || extractedData.municipality || extractedData.zone) && (
+                  <div className="col-span-full pt-2 border-t border-turquoise/20">
+                    <p className="text-xs font-semibold text-navy/60 mb-2">📍 Ubicación extraída:</p>
+                    {extractedData.province && (
+                      <div className="flex justify-between">
+                        <dt className="text-navy/60">Provincia:</dt>
+                        <dd className="font-semibold text-navy">{extractedData.province}</dd>
+                      </div>
+                    )}
+                    {extractedData.municipality && (
+                      <div className="flex justify-between">
+                        <dt className="text-navy/60">Municipio:</dt>
+                        <dd className="font-semibold text-navy">{extractedData.municipality}</dd>
+                      </div>
+                    )}
+                    {extractedData.zone && (
+                      <div className="flex justify-between">
+                        <dt className="text-navy/60">Zona:</dt>
+                        <dd className="font-semibold text-navy">{extractedData.zone}</dd>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {(extractedData.eventDate || extractedData.eventTimeApprox) && (
+                  <div className="col-span-full pt-2 border-t border-turquoise/20">
+                    <p className="text-xs font-semibold text-navy/60 mb-2">📅 Fecha extraída:</p>
+                    {extractedData.eventDate && (
+                      <div className="flex justify-between">
+                        <dt className="text-navy/60">Fecha:</dt>
+                        <dd className="font-semibold text-navy">{extractedData.eventDate}</dd>
+                      </div>
+                    )}
+                    {extractedData.eventTimeApprox && (
+                      <div className="flex justify-between">
+                        <dt className="text-navy/60">Hora:</dt>
+                        <dd className="font-semibold text-navy">{extractedData.eventTimeApprox}</dd>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {(extractedData.contactPhone || extractedData.contactWhatsapp || extractedData.contactEmail) && (
+                  <div className="col-span-full pt-2 border-t border-turquoise/20">
+                    <p className="text-xs font-semibold text-navy/60 mb-2">📞 Contacto extraído:</p>
+                    {extractedData.contactPhone && (
+                      <div className="flex justify-between">
+                        <dt className="text-navy/60">Teléfono:</dt>
+                        <dd className="font-semibold text-navy">{extractedData.contactPhone}</dd>
+                      </div>
+                    )}
+                    {extractedData.contactWhatsapp && (
+                      <div className="flex justify-between">
+                        <dt className="text-navy/60">WhatsApp:</dt>
+                        <dd className="font-semibold text-navy">{extractedData.contactWhatsapp}</dd>
+                      </div>
+                    )}
+                    {extractedData.contactEmail && (
+                      <div className="flex justify-between">
+                        <dt className="text-navy/60">Email:</dt>
+                        <dd className="font-semibold text-navy">{extractedData.contactEmail}</dd>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {extractedData.reward && (
+                  <div className="flex justify-between pt-2 border-t border-turquoise/20">
+                    <dt className="text-navy/60">💰 Recompensa:</dt>
+                    <dd className="font-semibold text-navy">{extractedData.reward}</dd>
+                  </div>
+                )}
+                
                 {(extractedData.collar || extractedData.plate) && (
                   <div className="flex gap-2 flex-wrap pt-2">
                     {extractedData.collar && (
@@ -278,6 +353,7 @@ export function ImageDataExtractor({ onDataExtracted, disabled }: ImageDataExtra
         <p className="font-semibold">Cómo funciona:</p>
         <ul className="space-y-1 pl-4 list-disc">
           <li>La IA analiza la imagen y detecta características del animal</li>
+          <li>Si hay texto visible (cartel, letrero), extrae datos como dirección, teléfono, fecha y recompensa</li>
           <li>Los datos se rellenan automáticamente en el formulario</li>
           <li>Revisa y corrige cualquier dato antes de publicar</li>
           <li>La imagen no se guarda, solo se usa para extraer información</li>

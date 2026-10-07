@@ -3,6 +3,7 @@ import { Home, PawPrint } from 'lucide-react';
 import { LinkButton } from '../components/ui/button';
 import { SiteShell } from '../components/layout/site-shell';
 import { BottomNav } from '../components/layout/bottom-nav';
+import { ScrollToTop } from '../components/layout/scroll-to-top';
 import { HomePage } from '../routes/home-page';
 import { LoginPage } from '../routes/auth/login-page';
 import { RegisterPage } from '../routes/auth/register-page';
@@ -63,6 +64,7 @@ function NotFound() {
 export default function App() {
   return (
     <SiteShell>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/auth/login" element={<LoginPage />} />

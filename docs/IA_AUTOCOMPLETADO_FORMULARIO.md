@@ -2,7 +2,12 @@
 
 ## 📋 Descripción General
 
-Sistema que permite a los usuarios subir una imagen de un animal al crear una publicación, y la IA extrae automáticamente los datos relevantes para rellenar el formulario (especie, raza, color, tamaño, características, etc.).
+Sistema avanzado de extracción de información mediante IA que permite a los usuarios subir una imagen (foto del animal o cartel/póster) al crear una publicación, y la IA extrae automáticamente:
+
+1. **Características visuales del animal** (análisis de imagen)
+2. **Información contextual del texto** (OCR de carteles/letreros)
+
+Ambos conjuntos de datos se utilizan para rellenar el formulario de publicación automáticamente.
 
 ## 🎯 Objetivos
 

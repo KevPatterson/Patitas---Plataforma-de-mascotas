@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Circle, Tag } from 'lucide-react';
 import { useAuth } from '../app/auth-context';
 import { Button, LinkButton } from '../components/ui/button';
 import { TextField } from '../components/ui/text-field';
@@ -12,7 +13,7 @@ import { ImageDataExtractor } from '../components/ai/image-data-extractor';
 import { createLocation, createPublication, uploadPublicationImages, createPet } from '../lib/supabase/publications';
 import { buildPublicationSlug } from '../lib/utils/slug';
 import { publicationFormSchema, type PublicationFormValues } from '../lib/validations/publication';
-import { TYPE_LABELS, TYPE_EMOJIS, SPECIES_LABELS, SEX_LABELS, SIZE_LABELS, MAX_IMAGES, MAX_IMAGE_BYTES, ALLOWED_IMAGE_TYPES } from '../lib/constants/labels';
+import { TYPE_LABELS, TYPE_EMOJIS, SPECIES_LABELS, SEX_LABELS, SIZE_LABELS, AGE_LABELS, MAX_IMAGES, MAX_IMAGE_BYTES, ALLOWED_IMAGE_TYPES } from '../lib/constants/labels';
 import { CUBA, PROVINCES } from '../lib/constants/cuba';
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -130,10 +131,21 @@ export function PublishPage() {
     characteristics?: string;
     collar?: boolean;
     plate?: boolean;
+    province?: string;
+    municipality?: string;
+    zone?: string;
+    reward?: string;
+    eventDate?: string;
+    eventTimeApprox?: string;
+    contactMode?: 'INTERNAL' | 'PHONE' | 'WHATSAPP' | 'EMAIL';
+    contactPhone?: string;
+    contactWhatsapp?: string;
+    contactEmail?: string;
   }) => {
     // Actualizar los valores del formulario con los datos extraídos
     setValues((current) => ({
       ...current,
+      // Datos del animal
       ...(data.species && { species: data.species }),
       ...(data.breed && { breed: data.breed }),
       ...(data.sex && { sex: data.sex }),
@@ -143,13 +155,74 @@ export function PublishPage() {
       ...(data.characteristics && { characteristics: data.characteristics }),
       ...(data.collar !== undefined && { collar: data.collar }),
       ...(data.plate !== undefined && { plate: data.plate }),
+      // Datos contextuales (ubicación, contacto, etc.)
+      ...(data.province && { province: data.province }),
+      ...(data.municipality && { municipality: data.municipality }),
+      ...(data.zone && { zone: data.zone }),
+      ...(data.reward && { reward: data.reward }),
+      ...(data.eventDate && { eventDate: data.eventDate }),
+      ...(data.eventTimeApprox && { eventTimeApprox: data.eventTimeApprox }),
+      ...(data.contactMode && { contactMode: data.contactMode }),
+      ...(data.contactPhone && { contactPhone: data.contactPhone }),
+      ...(data.contactWhatsapp && { contactWhatsapp: data.contactWhatsapp }),
+      ...(data.contactEmail && { contactEmail: data.contactEmail }),
     }));
 
     // Limpiar cualquier mensaje de error previo
     setErrorMessage(null);
   };
 
+  const validateStep = (currentStep: number): string | null => {
+    if (currentStep === 1) {
+      if (!values.title || values.title.trim().length < 3) {
+        return 'El título debe tener al menos 3 caracteres.';
+      }
+      if (!values.description || values.description.trim().length < 20) {
+        return 'La descripción debe tener al menos 20 caracteres.';
+      }
+    }
+    
+    if (currentStep === 2) {
+      if (!values.species || values.species.trim().length < 2) {
+        return 'Debes seleccionar una especie.';
+      }
+      if (!values.color || values.color.trim().length < 2) {
+        return 'Debes describir el color principal (mínimo 2 caracteres).';
+      }
+    }
+    
+    if (currentStep === 3) {
+      if (!values.province || values.province.trim().length < 2) {
+        return 'Debes seleccionar una provincia.';
+      }
+      if (!values.municipality || values.municipality.trim().length < 2) {
+        return 'Debes seleccionar un municipio.';
+      }
+    }
+    
+    if (currentStep === 5) {
+      if (values.contactMode === 'PHONE' && (!values.contactPhone || values.contactPhone.trim().length === 0)) {
+        return 'Debes ingresar un número de teléfono.';
+      }
+      if (values.contactMode === 'WHATSAPP' && (!values.contactWhatsapp || values.contactWhatsapp.trim().length === 0)) {
+        return 'Debes ingresar un número de WhatsApp.';
+      }
+      if (values.contactMode === 'EMAIL' && (!values.contactEmail || values.contactEmail.trim().length === 0)) {
+        return 'Debes ingresar un correo electrónico.';
+      }
+    }
+    
+    return null;
+  };
+
   const nextStep = () => {
+    const error = validateStep(step);
+    if (error) {
+      setErrorMessage(error);
+      return;
+    }
+    
+    setErrorMessage(null);
     if (step < totalSteps) {
       setStep((current) => current + 1);
     }
@@ -223,8 +296,15 @@ export function PublishPage() {
 
       setSuccessSlug(slug);
       navigate(`/p/${slug}`);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'No pudimos publicar el caso.');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'issues' in error) {
+        const zodError = error as { issues: Array<{ path: string[]; message: string }> };
+        const firstError = zodError.issues[0];
+        const fieldName = firstError.path[0] || 'desconocido';
+        setErrorMessage(`Error en el campo "${fieldName}": ${firstError.message}`);
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'No pudimos publicar el caso.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -307,16 +387,18 @@ export function PublishPage() {
               </fieldset>
 
               <TextField
-                label="Título"
+                label="Título *"
                 placeholder="Toby perdido en Playa"
                 value={values.title}
                 onChange={(event) => updateValue('title', event.target.value)}
+                required
               />
               <TextareaField
-                label="Descripción breve"
-                placeholder="Cuéntanos lo ocurrido, señales y contexto."
+                label="Descripción breve *"
+                placeholder="Cuéntanos lo ocurrido, señales y contexto (mínimo 20 caracteres)."
                 value={values.description}
                 onChange={(event) => updateValue('description', event.target.value)}
+                required
               />
             </div>
           )}
@@ -332,11 +414,12 @@ export function PublishPage() {
               {/* Campos del formulario */}
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-navy">Especie</span>
+                  <span className="block text-sm font-semibold text-navy">Especie *</span>
                   <select
                     className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
                     value={values.species}
                     onChange={(event) => updateValue('species', event.target.value)}
+                    required
                   >
                     <option value="">Selecciona</option>
                     {(Object.entries(SPECIES_LABELS) as [string, string][]).map(([value, label]) => (
@@ -376,17 +459,25 @@ export function PublishPage() {
                     ))}
                   </select>
                 </label>
+                <label className="space-y-2">
+                  <span className="block text-sm font-semibold text-navy">Edad aproximada</span>
+                  <select
+                    className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
+                    value={values.ageApprox}
+                    onChange={(event) => updateValue('ageApprox', event.target.value)}
+                  >
+                    <option value="">Selecciona</option>
+                    {(Object.entries(AGE_LABELS) as [string, string][]).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </label>
                 <TextField
-                  label="Edad aproximada"
-                  placeholder="2 años"
-                  value={values.ageApprox ?? ''}
-                  onChange={(event) => updateValue('ageApprox', event.target.value)}
-                />
-                <TextField
-                  label="Color"
+                  label="Color *"
                   placeholder="Marrón y blanco"
                   value={values.color}
                   onChange={(event) => updateValue('color', event.target.value)}
+                  required
                 />
                 <TextareaField
                   className="md:col-span-2"
@@ -400,10 +491,12 @@ export function PublishPage() {
               <div className="flex flex-wrap gap-4">
                 <label className="flex items-center gap-3 rounded-2xl border-2 border-turquoise/20 bg-turquoise/5 px-4 py-3 text-sm font-semibold text-navy cursor-pointer transition hover:bg-turquoise/10">
                   <input type="checkbox" className="rounded border-turquoise text-turquoise focus:ring-turquoise" checked={values.collar} onChange={(event) => updateValue('collar', event.target.checked)} />
+                  <Circle className="size-4 text-turquoise" aria-hidden="true" />
                   Tiene collar
                 </label>
                 <label className="flex items-center gap-3 rounded-2xl border-2 border-purple/20 bg-purple/5 px-4 py-3 text-sm font-semibold text-navy cursor-pointer transition hover:bg-purple/10">
                   <input type="checkbox" className="rounded border-purple text-purple focus:ring-purple" checked={values.plate} onChange={(event) => updateValue('plate', event.target.checked)} />
+                  <Tag className="size-4 text-purple" aria-hidden="true" />
                   Tiene placa
                 </label>
               </div>
@@ -421,11 +514,12 @@ export function PublishPage() {
             <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-navy">Provincia</span>
+                  <span className="block text-sm font-semibold text-navy">Provincia *</span>
                   <select
                     className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20"
                     value={values.province}
                     onChange={(event) => updateValue('province', event.target.value)}
+                    required
                   >
                     <option value="">Selecciona provincia</option>
                     {PROVINCES.map((p) => (
@@ -434,12 +528,13 @@ export function PublishPage() {
                   </select>
                 </label>
                 <label className="space-y-2">
-                  <span className="block text-sm font-semibold text-navy">Municipio</span>
+                  <span className="block text-sm font-semibold text-navy">Municipio *</span>
                   <select
                     className="w-full h-12 rounded-2xl border-2 border-navy/10 bg-white px-4 text-base text-navy shadow-sm outline-none transition focus:border-orange focus:ring-4 focus:ring-orange/20 disabled:opacity-50"
                     value={values.municipality}
                     onChange={(event) => updateValue('municipality', event.target.value)}
                     disabled={municipalities.length === 0}
+                    required
                   >
                     <option value="">Selecciona municipio</option>
                     {municipalities.map((m) => (

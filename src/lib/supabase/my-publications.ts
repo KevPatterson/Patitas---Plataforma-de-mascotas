@@ -138,6 +138,14 @@ export async function updatePublication(
     contactPhone?: string;
     contactWhatsapp?: string;
     contactEmail?: string;
+    type?: 'LOST' | 'FOUND' | 'ABANDONED' | 'ADOPTION' | 'SIGHTING';
+    eventDate?: string;
+    eventTimeApprox?: string;
+    province?: string;
+    municipality?: string;
+    zone?: string;
+    approximateLat?: string;
+    approximateLng?: string;
   }
 ) {
   const user = await getUser();
@@ -163,6 +171,9 @@ export async function updatePublication(
   if (updates.contactWhatsapp !== undefined)
     updateData.contact_whatsapp = updates.contactWhatsapp || null;
   if (updates.contactEmail !== undefined) updateData.contact_email = updates.contactEmail || null;
+  if (updates.type !== undefined) updateData.type = updates.type;
+  if (updates.eventDate !== undefined) updateData.event_date = updates.eventDate || null;
+  if (updates.eventTimeApprox !== undefined) updateData.event_time_approx = updates.eventTimeApprox || null;
 
   const { data, error } = await supabase
     .from('publications')
@@ -174,6 +185,68 @@ export async function updatePublication(
 
   if (error) {
     throw error;
+  }
+
+  // Actualizar ubicación si se proporcionaron campos de ubicación
+  if (
+    updates.province !== undefined ||
+    updates.municipality !== undefined ||
+    updates.zone !== undefined ||
+    updates.approximateLat !== undefined ||
+    updates.approximateLng !== undefined
+  ) {
+    const { data: pub } = await supabase
+      .from('publications')
+      .select('location_id')
+      .eq('id', publicationId)
+      .single();
+
+    if (pub?.location_id) {
+      const locationUpdate: Record<string, unknown> = {};
+      if (updates.province !== undefined) locationUpdate.province = updates.province;
+      if (updates.municipality !== undefined) locationUpdate.municipality = updates.municipality;
+      if (updates.zone !== undefined) locationUpdate.zone = updates.zone || null;
+      if (updates.approximateLat !== undefined)
+        locationUpdate.approximate_lat = updates.approximateLat ? Number(updates.approximateLat) : null;
+      if (updates.approximateLng !== undefined)
+        locationUpdate.approximate_lng = updates.approximateLng ? Number(updates.approximateLng) : null;
+
+      const { error: locationError } = await supabase
+        .from('locations')
+        .update(locationUpdate)
+        .eq('id', pub.location_id);
+
+      if (locationError) {
+        throw locationError;
+      }
+    } else if (updates.province && updates.municipality) {
+      // Crear nueva ubicación si no existe
+      const { data: newLocation, error: locationError } = await supabase
+        .from('locations')
+        .insert({
+          province: updates.province,
+          municipality: updates.municipality,
+          zone: updates.zone || null,
+          approximate_lat: updates.approximateLat ? Number(updates.approximateLat) : null,
+          approximate_lng: updates.approximateLng ? Number(updates.approximateLng) : null,
+        })
+        .select('id')
+        .single();
+
+      if (locationError) {
+        throw locationError;
+      }
+
+      const { error: pubError } = await supabase
+        .from('publications')
+        .update({ location_id: newLocation.id })
+        .eq('id', publicationId)
+        .eq('owner_profile_id', user.id);
+
+      if (pubError) {
+        throw pubError;
+      }
+    }
   }
 
   return data;

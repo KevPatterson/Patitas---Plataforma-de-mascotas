@@ -1,0 +1,14 @@
+# Excluir helpers internos de IA (importados dinámicamente por api/ai.ts)
+api/ai/calculate-matches.ts
+api/ai/create-match.ts
+api/ai/detect-duplicates.ts
+api/ai/extract-from-image.ts
+api/ai/process-job.ts
+api/ai/process-publication.ts
+
+# Excluir folders vacíos
+api/publications/
+api/uploads/
+
+# Documentación
+api/README.md

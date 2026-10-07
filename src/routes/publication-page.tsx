@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X, Heart, Flag } from 'lucide-react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { AlertTriangle, Calendar, CheckCircle, MapPin, PawPrint, X, Heart, Flag, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { TextareaField } from '../components/ui/textarea-field';
 import { StatusBadge } from '../components/ui/status-badge';
@@ -18,13 +18,15 @@ import { ResolvedCelebration } from '../components/publications/resolved-celebra
 import { SightingForm } from '../components/publications/sighting-form';
 import { SightingsTimeline } from '../components/publications/sightings-timeline';
 import { CommentsSection } from '../components/publications/comments-section';
-import { resolvePublication, getSightings } from '../lib/supabase/publication-actions';
+import { resolvePublication, getSightings, deletePublication } from '../lib/supabase/publication-actions';
 import { findMatches } from '../lib/matching/match-calculator';
 import { createAdoptionRequest } from '../lib/supabase/adoption-requests';
 import { generateLostPetStructuredData, injectStructuredData, removeStructuredData } from '../lib/seo/structured-data';
+import { SPECIES_LABELS, SEX_LABELS, SIZE_LABELS, AGE_LABELS } from '../lib/constants/labels';
 export function PublicationPage() {
   const { user } = useAuth();
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [publication, setPublication] = useState<Awaited<ReturnType<typeof getPublicationBySlug>> | null>(null);
   const [sightings, setSightings] = useState<Awaited<ReturnType<typeof getSightings>>>([]);
   const [matches, setMatches] = useState<Array<{ publicationId: string; score: number; reasons: string[]; publication: { slug: string; title: string; coverImageUrl: string | null } }>>([]);
@@ -39,6 +41,8 @@ export function PublicationPage() {
   const [adoptLoading, setAdoptLoading] = useState(false);
   const [adoptError, setAdoptError] = useState<string | null>(null);
   const [adoptSuccess, setAdoptSuccess] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const loadSightings = async () => {
     if (!publication) return;
     const data = await getSightings(publication.id);
@@ -224,6 +228,22 @@ export function PublicationPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!publication || !user || !deleteConfirm) return;
+
+    setDeleting(true);
+
+    try {
+      await deletePublication(publication.id, user.id);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error deleting publication:', error);
+      alert(error instanceof Error ? error.message : 'No se pudo eliminar la publicación');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const isOwner = user && publication && publication.owner_profile_id === user.id;
 
   return (
@@ -271,7 +291,7 @@ export function PublicationPage() {
                   {publication.species ? (
                     <div className="rounded-2xl border border-turquoise/20 bg-turquoise/5 px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Especie</p>
-                      <p className="mt-1 font-semibold text-navy">{publication.species}</p>
+                      <p className="mt-1 font-semibold text-navy">{SPECIES_LABELS[publication.species] ?? publication.species}</p>
                     </div>
                   ) : null}
                   {publication.breed ? (
@@ -289,19 +309,19 @@ export function PublicationPage() {
                   {publication.size ? (
                     <div className="rounded-2xl border border-turquoise/20 bg-turquoise/5 px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Tamaño</p>
-                      <p className="mt-1 font-semibold text-navy">{publication.size}</p>
+                      <p className="mt-1 font-semibold text-navy">{SIZE_LABELS[publication.size] ?? publication.size}</p>
                     </div>
                   ) : null}
                   {publication.sex ? (
                     <div className="rounded-2xl border border-orange/20 bg-orange/5 px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Sexo</p>
-                      <p className="mt-1 font-semibold text-navy">{publication.sex}</p>
+                      <p className="mt-1 font-semibold text-navy">{SEX_LABELS[publication.sex] ?? publication.sex}</p>
                     </div>
                   ) : null}
                   {publication.age_approx ? (
                     <div className="rounded-2xl border border-purple/20 bg-purple/5 px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">Edad aprox.</p>
-                      <p className="mt-1 font-semibold text-navy">{publication.age_approx}</p>
+                      <p className="mt-1 font-semibold text-navy">{AGE_LABELS[publication.age_approx] ?? publication.age_approx}</p>
                     </div>
                   ) : null}
                 </div>
@@ -426,10 +446,56 @@ export function PublicationPage() {
                 <h2 className="font-display text-2xl font-extrabold text-navy">⚡ Acciones</h2>
                 <div className="flex flex-col gap-3">
                   {isOwner && publication.status === 'ACTIVE' ? (
-                    <Button type="button" onClick={handleResolve} disabled={resolving} className="gap-2">
-                      <CheckCircle size={16} />
-                      {resolving ? 'Resolviendo...' : 'Marcar como resuelto'}
-                    </Button>
+                    <>
+                      <Button type="button" onClick={handleResolve} disabled={resolving} className="gap-2">
+                        <CheckCircle size={16} />
+                        {resolving ? 'Resolviendo...' : 'Marcar como resuelto'}
+                      </Button>
+                      
+                      <Link to={`/publicar?edit=${publication.id}`}>
+                        <Button type="button" variant="secondary" className="w-full gap-2">
+                          <Pencil size={16} />
+                          Editar publicación
+                        </Button>
+                      </Link>
+                      
+                      {!deleteConfirm ? (
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          onClick={() => setDeleteConfirm(true)}
+                          className="gap-2 text-lost hover:text-lost-dark"
+                        >
+                          <Trash2 size={16} />
+                          Eliminar publicación
+                        </Button>
+                      ) : (
+                        <div className="space-y-2 p-4 bg-lost/10 border-2 border-lost/20 rounded-2xl">
+                          <p className="text-sm font-semibold text-lost-dark">
+                            ¿Estás seguro? Esta acción no se puede deshacer.
+                          </p>
+                          <div className="flex gap-2">
+                            <Button 
+                              type="button" 
+                              variant="ghost"
+                              onClick={handleDelete}
+                              disabled={deleting}
+                              className="flex-1 bg-lost text-white hover:bg-lost-dark"
+                            >
+                              {deleting ? 'Eliminando...' : 'Sí, eliminar'}
+                            </Button>
+                            <Button 
+                              type="button" 
+                              variant="ghost"
+                              onClick={() => setDeleteConfirm(false)}
+                              className="flex-1"
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : null}
                   
                   {publication.type === 'ADOPTION' && publication.status === 'ACTIVE' && user && !isOwner ? (

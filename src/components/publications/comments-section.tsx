@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { MessageCircle, Trash2, PawPrint } from 'lucide-react';
+import { MessageCircle, Trash2, PawPrint, Edit2, X, Check } from 'lucide-react';
 import { Button } from '../ui/button';
 import { TextareaField } from '../ui/textarea-field';
-import { createComment, deleteComment, getComments, type Comment } from '../../lib/supabase/comments';
+import { createComment, deleteComment, updateComment, getComments, type Comment } from '../../lib/supabase/comments';
 
 type CommentsSectionProps = {
   publicationId: string;
@@ -30,6 +30,9 @@ export function CommentsSection({ publicationId, currentUserId }: CommentsSectio
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingBody, setEditingBody] = useState('');
+  const [editingError, setEditingError] = useState<string | null>(null);
 
   const loadComments = async () => {
     try {
@@ -74,12 +77,48 @@ export function CommentsSection({ publicationId, currentUserId }: CommentsSectio
 
   const handleDelete = async (commentId: string) => {
     if (!currentUserId) return;
+    
+    if (!confirm('¿Estás seguro de que quieres eliminar este comentario?')) {
+      return;
+    }
 
     try {
       await deleteComment(commentId, currentUserId);
       await loadComments();
     } catch (error) {
       console.error('Error deleting comment:', error);
+    }
+  };
+
+  const handleStartEdit = (comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditingBody(comment.body);
+    setEditingError(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditingBody('');
+    setEditingError(null);
+  };
+
+  const handleSaveEdit = async (commentId: string) => {
+    if (!currentUserId) return;
+
+    if (!editingBody.trim() || editingBody.trim().length < 3) {
+      setEditingError('El comentario debe tener al menos 3 caracteres.');
+      return;
+    }
+
+    setEditingError(null);
+
+    try {
+      await updateComment(commentId, currentUserId, editingBody);
+      setEditingCommentId(null);
+      setEditingBody('');
+      await loadComments();
+    } catch (error) {
+      setEditingError(error instanceof Error ? error.message : 'No pudimos actualizar el comentario.');
     }
   };
 
@@ -234,23 +273,68 @@ export function CommentsSection({ publicationId, currentUserId }: CommentsSectio
                       {formatRelativeTime(comment.created_at)}
                     </span>
                   </div>
-                  <p className="text-sm leading-relaxed text-navy/80">
-                    {comment.body}
-                  </p>
+                  
+                  {/* Mostrar textarea si está editando, de lo contrario mostrar el texto */}
+                  {editingCommentId === comment.id ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={editingBody}
+                        onChange={(e) => setEditingBody(e.target.value)}
+                        className="w-full min-h-20 rounded-xl border-2 border-turquoise/30 bg-white px-4 py-3 text-sm text-navy shadow-sm outline-none transition focus:border-turquoise focus:ring-4 focus:ring-turquoise/20 resize-y"
+                        placeholder="Edita tu comentario..."
+                      />
+                      {editingError && (
+                        <p className="text-xs font-medium text-lost">{editingError}</p>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEdit(comment.id)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-turquoise hover:bg-turquoise-dark border border-turquoise-dark px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:scale-105"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                          Guardar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-navy/10 hover:bg-navy/20 border border-navy/20 px-3 py-1.5 text-xs font-semibold text-navy transition-all duration-200 hover:scale-105"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed text-navy/80">
+                      {comment.body}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Botón eliminar mejorado */}
-              {comment.author && currentUserId === comment.author.username && (
-                <button
-                  type="button"
-                  onClick={() => handleDelete(comment.id)}
-                  className="group/btn shrink-0 flex items-center gap-1.5 rounded-lg bg-lost/10 hover:bg-lost/20 border border-lost/20 hover:border-lost/30 px-3 py-1.5 text-xs font-semibold text-lost transition-all duration-200 hover:scale-105"
-                  aria-label="Eliminar comentario"
-                >
-                  <Trash2 className="h-3.5 w-3.5 transition-transform group-hover/btn:scale-110" />
-                  <span className="hidden sm:inline">Eliminar</span>
-                </button>
+              {/* Botones de acción (editar y eliminar) */}
+              {comment.author && currentUserId === comment.author_profile_id && editingCommentId !== comment.id && (
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleStartEdit(comment)}
+                    className="group/btn flex items-center gap-1.5 rounded-lg bg-turquoise/10 hover:bg-turquoise/20 border border-turquoise/20 hover:border-turquoise/30 px-3 py-1.5 text-xs font-semibold text-turquoise transition-all duration-200 hover:scale-105"
+                    aria-label="Editar comentario"
+                  >
+                    <Edit2 className="h-3.5 w-3.5 transition-transform group-hover/btn:scale-110" />
+                    <span className="hidden sm:inline">Editar</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(comment.id)}
+                    className="group/btn flex items-center gap-1.5 rounded-lg bg-lost/10 hover:bg-lost/20 border border-lost/20 hover:border-lost/30 px-3 py-1.5 text-xs font-semibold text-lost transition-all duration-200 hover:scale-105"
+                    aria-label="Eliminar comentario"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 transition-transform group-hover/btn:scale-110" />
+                    <span className="hidden sm:inline">Eliminar</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>

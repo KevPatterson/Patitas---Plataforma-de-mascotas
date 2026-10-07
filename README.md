@@ -94,7 +94,9 @@ Patitas centraliza en un único lugar lo que hoy se dispersa en estados de Whats
 - Ubicación nunca expuesta al cliente (column-level grants)
 
 ### 🤖 Sistema de IA (infraestructura completa)
-- **Autocompletado de formulario**: Sube una imagen y la IA extrae especie, raza, color, tamaño y características automáticamente ✨ NUEVO
+- **Autocompletado inteligente de formulario**: Sube una foto del animal o de un cartel y la IA extrae automáticamente:
+  - Características visuales (especie, raza, color, tamaño, edad, collar, placa)
+  - Texto visible por OCR (ubicación, fecha, hora, contacto, recompensa) ✨ AMPLIADO
 - **Matching híbrido**: Coincidencias por similitud estructurada, semántica y visual
 - **OCR**: Extracción de texto de imágenes (carteles, anuncios)
 - **Computer Vision**: Análisis de características visuales de mascotas

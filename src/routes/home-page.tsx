@@ -12,9 +12,13 @@ import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from '../lib/config/site';
 import { searchPublications, countPublications, type PublicationSummary } from '../lib/supabase/publication-search';
 
 export function HomePage() {
+  const [allCases, setAllCases] = useState<PublicationSummary[]>([]);
   const [recentCases, setRecentCases] = useState<PublicationSummary[]>([]);
-  const [stats, setStats] = useState({ LOST: 0, FOUND: 0, ADOPTION: 0, total: 0 });
+  const [adoptionCases, setAdoptionCases] = useState<PublicationSummary[]>([]);
+  const [stats, setStats] = useState({ LOST: 0, FOUND: 0, ADOPTION: 0, ADOPTED: 0, total: 0 });
   const [loading, setLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
     setPageMeta({
@@ -30,8 +34,75 @@ export function HomePage() {
     });
     injectStructuredData(structuredData, 'website-structured-data');
 
+    let permissionListener: (() => void) | null = null;
+    let isRequestingLocation = false;
+
+    // Función para obtener la ubicación
+    const getLocation = () => {
+      if (isRequestingLocation || !('geolocation' in navigator)) return;
+      
+      isRequestingLocation = true;
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log('✅ Ubicación obtenida:', position.coords.latitude, position.coords.longitude);
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          setLocationError(false);
+          isRequestingLocation = false;
+        },
+        (error) => {
+          // Solo mostrar error si no es por denegación de permisos
+          if (error.code !== 1) { // 1 = PERMISSION_DENIED
+            console.warn('Error obteniendo ubicación:', error.message);
+          }
+          setLocationError(true);
+          isRequestingLocation = false;
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 300000, // 5 minutos
+        }
+      );
+    };
+
+    // Obtener ubicación inicial
+    getLocation();
+
+    // Observar cambios en los permisos de geolocalización
+    if ('permissions' in navigator && 'query' in navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' as PermissionName })
+        .then((permissionStatus) => {
+          // Listener para detectar cambios en el permiso
+          const handlePermissionChange = () => {
+            if (permissionStatus.state === 'granted') {
+              // Usuario acaba de otorgar el permiso, obtener ubicación
+              getLocation();
+            } else if (permissionStatus.state === 'denied') {
+              // Usuario denegó el permiso
+              setUserLocation(null);
+              setLocationError(true);
+            }
+          };
+          
+          permissionStatus.addEventListener('change', handlePermissionChange);
+          permissionListener = () => {
+            permissionStatus.removeEventListener('change', handlePermissionChange);
+          };
+        })
+        .catch(() => {
+          // Permissions API no soportada, no hacer nada
+        });
+    }
+
     return () => {
       removeStructuredData('website-structured-data');
+      if (permissionListener) {
+        permissionListener();
+      }
     };
   }, []);
 
@@ -40,20 +111,24 @@ export function HomePage() {
 
     async function load() {
       try {
-        const [recent, lostCount, foundCount, adoptionCount, totalCount] = await Promise.all([
-          searchPublications({ status: 'ACTIVE', limit: 6, offset: 0 }),
+        const [recent, adoptions, lostCount, foundCount, adoptionCount, adoptedCount, totalCount] = await Promise.all([
+          searchPublications({ status: 'ACTIVE', limit: 50, offset: 0 }), // Cargar más para filtrar por distancia
+          searchPublications({ type: 'ADOPTION', status: 'ACTIVE', limit: 3, offset: 0 }),
           countPublications({ type: 'LOST', status: 'ACTIVE' }),
           countPublications({ type: 'FOUND', status: 'ACTIVE' }),
           countPublications({ type: 'ADOPTION', status: 'ACTIVE' }),
+          countPublications({ type: 'ADOPTION', status: 'RESOLVED' }),
           countPublications({ status: 'ACTIVE' }),
         ]);
 
         if (active) {
-          setRecentCases(recent);
+          setAllCases(recent); // Guardar todos los casos
+          setAdoptionCases(adoptions);
           setStats({
             LOST: lostCount,
             FOUND: foundCount,
             ADOPTION: adoptionCount,
+            ADOPTED: adoptedCount,
             total: totalCount,
           });
         }
@@ -70,6 +145,50 @@ export function HomePage() {
       active = false;
     };
   }, []);
+
+  // Efecto separado para reordenar casos cuando cambia la ubicación
+  useEffect(() => {
+    if (allCases.length === 0) return;
+
+    let sortedRecent = allCases;
+    
+    if (userLocation) {
+      sortedRecent = allCases
+        .map((pub: PublicationSummary & { distance?: number }) => {
+          // Calcular distancia si la publicación tiene coordenadas
+          if (pub.approximateLat && pub.approximateLng) {
+            const distance = calculateDistance(
+              userLocation.lat,
+              userLocation.lng,
+              pub.approximateLat,
+              pub.approximateLng
+            );
+            return { ...pub, distance };
+          }
+          return { ...pub, distance: Infinity };
+        })
+        .sort((a: PublicationSummary & { distance?: number }, b: PublicationSummary & { distance?: number }) => 
+          (a.distance || Infinity) - (b.distance || Infinity)
+        );
+    }
+    
+    setRecentCases(sortedRecent.slice(0, 6));
+  }, [allCases, userLocation]);
+
+  // Función para calcular distancia entre dos coordenadas (fórmula de Haversine)
+  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radio de la Tierra en km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
 
   return (
     <div className="space-y-16 pb-16 pt-6 md:pt-10">
@@ -125,15 +244,85 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Lado derecho: Ilustración placeholder (aquí irían las ilustraciones anime) */}
+          {/* Lado derecho: Ilustración con logo animado */}
           <div className="relative flex items-center justify-center lg:justify-end">
             <div className="relative w-full max-w-md">
-              {/* Placeholder para ilustraciones anime de mascotas */}
               <div className="relative aspect-square flex items-center justify-center">
                 {/* Círculo decorativo de fondo */}
                 <div className="absolute inset-0 rounded-full bg-linear-to-br from-orange/20 to-turquoise/20 animate-float" />
                 
-                {/* Iconos de huellas decorativas */}
+                {/* Logo grande central */}
+                <div className="relative z-10 scale-150 transform">
+                  <svg
+                    width="120"
+                    height="120"
+                    viewBox="0 0 120 120"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="drop-shadow-xl"
+                  >
+                    {/* 4 dedos - naranja */}
+                    <ellipse 
+                      cx="24" 
+                      cy="48" 
+                      rx="9" 
+                      ry="12" 
+                      transform="rotate(-22 24 48)" 
+                      fill="#ff8c42"
+                      className="animate-paw-bounce"
+                    />
+                    <ellipse 
+                      cx="45" 
+                      cy="28" 
+                      rx="9" 
+                      ry="13" 
+                      transform="rotate(-8 45 28)" 
+                      fill="#ff8c42"
+                      className="animate-paw-bounce"
+                      style={{ animationDelay: '100ms' }}
+                    />
+                    <ellipse 
+                      cx="75" 
+                      cy="28" 
+                      rx="9" 
+                      ry="13" 
+                      transform="rotate(8 75 28)" 
+                      fill="#ff8c42"
+                      className="animate-paw-bounce"
+                      style={{ animationDelay: '200ms' }}
+                    />
+                    <ellipse 
+                      cx="96" 
+                      cy="48" 
+                      rx="9" 
+                      ry="12" 
+                      transform="rotate(22 96 48)" 
+                      fill="#ff8c42"
+                      className="animate-paw-bounce"
+                      style={{ animationDelay: '300ms' }}
+                    />
+                    
+                    {/* Almohadilla con gradiente */}
+                    <defs>
+                      <linearGradient id="paw-gradient" x1="60" y1="54" x2="60" y2="110" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#ff8c42" />
+                        <stop offset="100%" stopColor="#f56e20" />
+                      </linearGradient>
+                      <mask id="paw-mask-hero">
+                        <rect width="120" height="120" fill="white" />
+                        <circle cx="60" cy="75" r="8" fill="black" />
+                      </mask>
+                    </defs>
+                    <path
+                      d="M60 110 C60 110 33 91 33 74 C33 62 44 54 60 54 C76 54 87 62 87 74 C87 91 60 110 60 110Z"
+                      fill="url(#paw-gradient)"
+                      mask="url(#paw-mask-hero)"
+                      className="animate-float"
+                    />
+                  </svg>
+                </div>
+                
+                {/* Iconos de huellas decorativas más pequeñas */}
                 <div className="absolute top-10 left-10 animate-paw-bounce" style={{ animationDelay: '0s' }}>
                   <PawPrint className="size-8 text-orange/40" />
                 </div>
@@ -145,16 +334,6 @@ export function HomePage() {
                 </div>
                 <div className="absolute bottom-10 right-10 animate-paw-bounce" style={{ animationDelay: '1200ms' }}>
                   <PawPrint className="size-7 text-orange/40" />
-                </div>
-                
-                {/* Texto placeholder para ilustraciones */}
-                <div className="relative z-10 text-center p-8 rounded-2xl bg-white/40 backdrop-blur-sm border-2 border-dashed border-navy/20">
-                  <p className="font-display text-lg font-bold text-navy/60 mb-2">
-                    🐶 🐱
-                  </p>
-                  <p className="text-sm text-navy/50">
-                    Ilustraciones anime de mascotas
-                  </p>
                 </div>
               </div>
             </div>
@@ -172,9 +351,13 @@ export function HomePage() {
                 <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Casos activos</span>
               </div>
               <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
-                🐾 Casos cerca de ti
+                {userLocation ? '🐾 Casos cerca de ti' : '🐾 Casos recientes'}
               </h2>
-              <p className="text-navy/60 mt-1">Últimos casos publicados en tu zona</p>
+              <p className="text-navy/60 mt-1">
+                {userLocation 
+                  ? 'Ordenados por proximidad a tu ubicación' 
+                  : 'Últimos casos publicados'}
+              </p>
             </div>
             <LinkButton href="/buscar" variant="ghost" className="hidden sm:flex">
               Ver todos →
@@ -211,6 +394,55 @@ export function HomePage() {
         </section>
       </ScrollReveal>
 
+      {/* 💜 ADOPCIONES - Nueva sección */}
+      <ScrollReveal animation="fade-up">
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Heart className="size-5 text-purple" />
+                <span className="text-xs font-bold uppercase tracking-wider text-navy/60">Adopta, no compres</span>
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy">
+                💜 Buscan un hogar
+              </h2>
+              <p className="text-navy/60 mt-1">Estas patitas están esperando por ti</p>
+            </div>
+            <LinkButton href="/adopciones" variant="ghost" className="hidden sm:flex">
+              Ver todas →
+            </LinkButton>
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center gap-4 py-16">
+              <PawTrail />
+              <p className="text-sm text-navy/60">Cargando adopciones...</p>
+            </div>
+          ) : adoptionCases.length === 0 ? (
+            <EmptyState
+              title="No hay mascotas en adopción ahora"
+              description="Vuelve pronto para encontrar tu nuevo mejor amigo."
+              illustration="cat"
+              action={<LinkButton href="/publicar" variant="adoption">Publicar adopción</LinkButton>}
+            />
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {adoptionCases.map((pub, index) => (
+                <ScrollReveal key={pub.id} animation="scale-in" delay={index * 100}>
+                  <PublicationCard publication={pub} />
+                </ScrollReveal>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center pt-4">
+            <LinkButton href="/adopciones" variant="ghost" className="sm:hidden">
+              Ver todas las adopciones →
+            </LinkButton>
+          </div>
+        </section>
+      </ScrollReveal>
+
       {/* 🗺️ EXPLORA EN EL MAPA */}
       <ScrollReveal animation="fade-in-left">
         <section className="relative overflow-hidden rounded-3xl bg-linear-to-br from-turquoise/10 to-purple/10 border-2 border-navy/10 p-8 md:p-12">
@@ -230,8 +462,36 @@ export function HomePage() {
                 Abrir mapa →
               </LinkButton>
             </div>
-            <div className="relative aspect-video rounded-2xl bg-navy/5 border-2 border-dashed border-navy/20 flex items-center justify-center">
-              <MapIcon className="size-16 text-navy/20" />
+            <div className="relative aspect-video rounded-2xl bg-linear-to-br from-turquoise/10 to-purple/10 border-2 border-navy/10 flex items-center justify-center overflow-hidden">
+              {/* Simulación visual de mapa con marcadores */}
+              <div className="absolute inset-0 opacity-20">
+                {/* Grid de fondo simulando calles */}
+                <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#231942" strokeWidth="0.5"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+                </svg>
+              </div>
+              
+              {/* Marcadores de ubicación decorativos */}
+              <div className="absolute top-1/4 left-1/4 animate-paw-bounce">
+                <MapPin className="size-8 text-lost fill-lost/20" />
+              </div>
+              <div className="absolute top-1/3 right-1/3 animate-paw-bounce" style={{ animationDelay: '200ms' }}>
+                <MapPin className="size-6 text-found fill-found/20" />
+              </div>
+              <div className="absolute bottom-1/3 left-1/2 animate-paw-bounce" style={{ animationDelay: '400ms' }}>
+                <MapPin className="size-7 text-purple fill-purple/20" />
+              </div>
+              <div className="absolute bottom-1/4 right-1/4 animate-paw-bounce" style={{ animationDelay: '600ms' }}>
+                <MapPin className="size-5 text-turquoise fill-turquoise/20" />
+              </div>
+              
+              {/* Icono central */}
+              <MapIcon className="size-16 text-navy/30 relative z-10" />
             </div>
           </div>
         </section>
@@ -253,7 +513,7 @@ export function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-4">
             {/* Paso 1 */}
             <ScrollReveal animation="scale-in" delay={0}>
               <div className="group relative overflow-hidden rounded-2xl bg-white border-2 border-navy/10 p-8 shadow-md hover:shadow-xl transition-all duration-base hover:-translate-y-2">
@@ -300,6 +560,16 @@ export function HomePage() {
                   </p>
                 </div>
               </div>
+            </ScrollReveal>
+
+            {/* Nuevo: Paso 4 - Adoptados */}
+            <ScrollReveal animation="scale-in" delay={450}>
+              <StatCard 
+                value={stats.ADOPTED.toLocaleString()} 
+                label="Adoptados" 
+                tone="success"
+                icon={<Heart className="size-8" />}
+              />
             </ScrollReveal>
           </div>
         </section>
