@@ -125,7 +125,7 @@ returns table(
 )
 language plpgsql
 stable
-as $
+as $$
 begin
   return query
   select 
@@ -140,7 +140,7 @@ exception
     -- pgvector no disponible, retornar vacío
     return;
 end;
-$;
+$$;
 
 create or replace function public.search_similar_images(
   query_embedding vector(512),
@@ -153,7 +153,7 @@ returns table(
 )
 language plpgsql
 stable
-as $
+as $$
 begin
   return query
   select 
@@ -167,7 +167,7 @@ exception
   when undefined_function or undefined_object then
     return;
 end;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════
 -- Función: Calcular matching score estructurado
@@ -180,7 +180,7 @@ create or replace function public.calculate_structured_match_score(
 returns numeric
 language plpgsql
 stable
-as $
+as $$
 declare
   pub_a record;
   pub_b record;
@@ -241,7 +241,7 @@ begin
     return 0;
   end if;
 end;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════
 -- Triggers

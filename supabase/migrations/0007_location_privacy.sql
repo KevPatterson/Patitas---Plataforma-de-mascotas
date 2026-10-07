@@ -8,7 +8,7 @@ create or replace function public.fuzz_coordinates(lat numeric, lng numeric)
 returns table(fuzzed_lat numeric, fuzzed_lng numeric)
 language plpgsql
 immutable
-as $
+as $$
 begin
   -- Aplicar offset aleatorio de ±0.005 grados (~500m)
   -- Usamos hash del lat/lng como seed para consistencia en la misma ubicación
@@ -16,7 +16,7 @@ begin
     round((lat + (random() * 0.01 - 0.005))::numeric, 6) as fuzzed_lat,
     round((lng + (random() * 0.01 - 0.005))::numeric, 6) as fuzzed_lng;
 end;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════
 -- Trigger para aplicar fuzzing automático en INSERT
@@ -27,7 +27,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 begin
   -- Si se proporcionan coordenadas, aplicar fuzzing
   if new.approximate_lat is not null and new.approximate_lng is not null then
@@ -46,7 +46,7 @@ begin
   
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists locations_fuzz_coordinates on public.locations;
 
@@ -64,7 +64,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 begin
   -- Si se intentan actualizar coordenadas, aplicar fuzzing
   if new.approximate_lat is distinct from old.approximate_lat 
@@ -87,7 +87,7 @@ begin
   
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists locations_fuzz_coordinates_update on public.locations;
 

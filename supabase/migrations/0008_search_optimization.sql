@@ -25,7 +25,7 @@ alter table public.publications
 create or replace function public.publications_search_vector_update()
 returns trigger
 language plpgsql
-as $
+as $$
 begin
   new.search_vector := 
     setweight(to_tsvector('spanish', coalesce(new.title, '')), 'A') ||
@@ -37,7 +37,7 @@ begin
   
   return new;
 end;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════
 -- Trigger para actualizar search_vector automáticamente
@@ -140,7 +140,7 @@ returns table(
 )
 language plpgsql
 stable
-as $
+as $$
 declare
   ts_query tsquery;
 begin
@@ -186,7 +186,7 @@ begin
   limit result_limit
   offset result_offset;
 end;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════
 -- Comentarios explicativos
