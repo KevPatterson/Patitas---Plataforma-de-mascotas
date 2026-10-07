@@ -98,7 +98,7 @@ export function AISuggestions({ suggestions, onApply, onDismiss }: AISuggestions
                 <Button
                   variant="primary"
                   onClick={() => onApply(suggestion.field, suggestion.value)}
-                  className="px-3 py-1.5 !min-h-0"
+                  className="px-3 py-1.5 min-h-0!"
                 >
                   <Check className="size-4" />
                   <span className="hidden sm:inline">Aplicar</span>
@@ -106,7 +106,7 @@ export function AISuggestions({ suggestions, onApply, onDismiss }: AISuggestions
                 <Button
                   variant="secondary"
                   onClick={() => handleDismiss(suggestion.field)}
-                  className="px-2 py-1.5 !min-h-0"
+                  className="px-2 py-1.5 min-h-0!"
                 >
                   <X className="size-4" />
                 </Button>

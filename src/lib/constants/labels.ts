@@ -6,6 +6,14 @@ export const TYPE_LABELS: Record<string, string> = {
   SIGHTING: "Avistamiento",
 };
 
+export const TYPE_EMOJIS: Record<string, string> = {
+  LOST: "😢",
+  FOUND: "🎉",
+  ABANDONED: "💔",
+  ADOPTION: "🏠",
+  SIGHTING: "👀",
+};
+
 export const SPECIES_LABELS: Record<string, string> = {
   dog: "Perro",
   cat: "Gato",

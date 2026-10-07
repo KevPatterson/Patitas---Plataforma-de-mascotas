@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Bell, Search, MapPin, PlusCircle, LogOut, User, type LucideIcon } from 'lucide-react';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Bell, Search, MapPin, LogOut, User, Menu, X, type LucideIcon } from 'lucide-react';
 import { signOut } from '../../lib/supabase/auth';
 import { useAuth } from '../../app/auth-context';
 import { getUnreadNotificationsCount } from '../../lib/supabase/notifications';
@@ -12,36 +12,48 @@ type SiteShellProps = {
 };
 
 function NavItem({ href, label, Icon, badge }: { href: string; label: string; Icon: LucideIcon; badge?: number }) {
-  const location = useLocation();
-  const isActive = location.pathname === href || (href !== '/' && location.pathname.startsWith(href + '/'));
   return (
-    <Link
+    <NavLink
       to={href}
-      className={[
-        'flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-base ease-smooth relative',
+      className={({ isActive }) => [
+        'relative flex items-center gap-2 rounded-[14px] border-2 px-3.5 py-2 text-sm font-semibold transition-all duration-base',
         isActive
-          ? 'bg-navy text-white shadow-md'
-          : 'text-navy/70 hover:bg-navy/5 hover:text-navy hover:scale-105',
+          ? 'border-[#231942] bg-[#FFE3CC] text-[#231942]'
+          : 'border-transparent text-[#6B6585] hover:bg-[#FFE3CC] hover:text-[#231942]',
       ].join(' ')}
-      aria-current={isActive ? 'page' : undefined}
     >
-      <Icon className="size-4" aria-hidden="true" />
-      {label}
-      {(badge ?? 0) > 0 && (
-        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-lost text-white text-[10px] font-bold shadow-sm animate-paw-pulse">
-          {(badge ?? 0) > 9 ? '9+' : badge}
-        </span>
+      {({ isActive }) => (
+        <>
+          <Icon className="size-5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" />
+          {label}
+          {(badge ?? 0) > 0 && (
+            <span 
+              className="absolute -right-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#231942] bg-[#38C9A3] px-1 text-[11px] font-bold leading-none text-[#231942]"
+              aria-label={`${badge} notificaciones no leídas`}
+            >
+              {(badge ?? 0) > 9 ? '9+' : badge}
+            </span>
+          )}
+          {isActive && (
+            <span 
+              className="absolute -bottom-[9px] left-1/2 size-2.5 -translate-x-1/2 rounded-full border-2 border-[#231942] bg-orange" 
+              aria-hidden="true" 
+            />
+          )}
+        </>
       )}
-    </Link>
+    </NavLink>
   );
 }
 
 export function SiteShell({ children }: SiteShellProps) {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [loggingOut, setLoggingOut] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -97,78 +109,249 @@ export function SiteShell({ children }: SiteShellProps) {
     };
   }, [user, authLoading]);
 
+  // Cerrar menú móvil al navegar
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   return (
     <div className="flex min-h-screen flex-col bg-cream">
-      {/* Header con nueva estética */}
-      <header className="sticky top-0 z-40 border-b-2 border-navy/10 bg-white/95 backdrop-blur-md shadow-sm">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <Link 
-            to="/" 
-            className="flex items-center gap-3 text-navy no-underline transition-transform duration-base hover:scale-105" 
-            aria-label="Patitas - inicio"
+      {/* Header sticky con estilo "sticker" */}
+      <header className="sticky top-0 z-40 px-4 py-3.5">
+        <div className="relative mx-auto w-full max-w-[1180px]">
+          <nav 
+            className="flex items-center gap-2 rounded-[22px] border-2 border-[#231942] bg-white px-4 py-2 shadow-[0_4px_0_#231942]"
+            aria-label="Principal"
           >
-            <Logo variant="full" size={36} animated />
-          </Link>
-          
-          <div className="flex items-center gap-2">
-            <nav className="hidden items-center gap-2 md:flex" aria-label="Navegación principal">
+            {/* Logo con icono de huella en cuadrito */}
+            <Link 
+              to="/" 
+              className="mr-auto flex items-center gap-2.5 text-[#231942] no-underline transition-transform duration-[250ms] hover:-rotate-[12deg] hover:scale-[1.08] focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
+              aria-label="Patitas - inicio"
+            >
+              <div className="flex size-[34px] items-center justify-center rounded-xl border-[2.5px] border-[#231942] bg-orange transition-transform duration-[250ms]">
+                <svg 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 120 120" 
+                  fill="currentColor" 
+                  className="text-[#231942]"
+                  aria-hidden="true"
+                >
+                  <ellipse cx="24" cy="48" rx="9" ry="12" transform="rotate(-22 24 48)" />
+                  <ellipse cx="45" cy="28" rx="9" ry="13" transform="rotate(-8 45 28)" />
+                  <ellipse cx="75" cy="28" rx="9" ry="13" transform="rotate(8 75 28)" />
+                  <ellipse cx="96" cy="48" rx="9" ry="12" transform="rotate(22 96 48)" />
+                  <path d="M60 110 C60 110 33 91 33 74 C33 62 44 54 60 54 C76 54 87 62 87 74 C87 91 60 110 60 110Z" />
+                </svg>
+              </div>
+              <span className="hidden font-display text-[1.65rem] font-extrabold leading-none tracking-[-0.02em] sm:inline">
+                patitas
+              </span>
+            </Link>
+            
+            {/* Desktop Navigation Links */}
+            <div className="hidden gap-2 min-[901px]:flex">
               <NavItem href="/buscar" label="Buscar" Icon={Search} />
               <NavItem href="/mapa" label="Mapa" Icon={MapPin} />
               
-              {/* CTA destacado */}
-              <Link
-                to="/publicar"
-                className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-orange px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:shadow-lg hover:scale-105 hover:bg-orange-dark active:scale-95"
-                style={{ fontFamily: '"Baloo 2", cursive' }}
-              >
-                <PlusCircle className="size-4 transition-transform duration-base group-hover:rotate-90" aria-hidden="true" />
-                Publicar
-              </Link>
-              
               {user && (
-                <NavItem href="/notificaciones" label="Notificaciones" Icon={Bell} badge={unreadCount} />
+                <NavItem href="/notificaciones" label="Avisos" Icon={Bell} badge={unreadCount} />
               )}
-            </nav>
-            {/* Acciones de autenticación - siempre visibles */}
+            </div>
+            
+            {/* CTA Publicar - Desktop y tablet */}
+            <Link
+              to="/publicar"
+              className="group mx-2 hidden gap-2 rounded-2xl border-2 border-[#231942] bg-orange px-5 py-2.5 font-display text-sm font-extrabold text-[#231942] shadow-[0_4px_0_#231942] transition-all duration-base hover:-translate-y-0.5 hover:shadow-[0_6px_0_#231942] active:translate-y-[3px] active:shadow-[0_1px_0_#231942] focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange min-[901px]:inline-flex"
+            >
+              <svg 
+                className="size-5 transition-transform duration-300 group-hover:-rotate-[20deg] group-hover:scale-[1.2]" 
+                viewBox="0 0 24 24" 
+                fill="currentColor" 
+                aria-hidden="true"
+              >
+                <ellipse cx="6" cy="10" rx="2" ry="2.6"/>
+                <ellipse cx="10" cy="5.8" rx="2" ry="2.8"/>
+                <ellipse cx="14.5" cy="5.8" rx="2" ry="2.8"/>
+                <ellipse cx="18.5" cy="10" rx="2" ry="2.6"/>
+                <path d="M12 11c-3 0-5.6 3.4-5.6 6 0 1.8 1.4 2.6 3 2.4 1-.1 1.8-.5 2.6-.5s1.6.4 2.6.5c1.6.2 3-.6 3-2.4 0-2.6-2.6-6-5.6-6z"/>
+              </svg>
+              Publicar
+            </Link>
+            
+            {/* User Actions - Desktop */}
             {!authLoading && (
               user ? (
-                <div className="flex items-center gap-2">
+                <div className="hidden gap-1 min-[901px]:flex">
+                  {/* Perfil */}
                   <Link
                     to={profileHref}
-                    className="inline-flex items-center gap-2 rounded-xl border-2 border-navy/10 bg-white px-4 py-2.5 text-sm font-bold text-navy transition-all duration-base ease-smooth hover:bg-navy/5 hover:scale-105 active:scale-95"
-                    aria-label="Mi perfil"
+                    className="inline-flex items-center gap-2 rounded-full border-2 border-[#231942] bg-white px-3.5 py-2 text-sm font-semibold text-[#231942] transition-all duration-base hover:bg-[#FFE3CC] active:scale-95 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
                   >
-                    {avatarUrl ? (
-                      <img 
-                        src={avatarUrl} 
-                        alt="Avatar" 
-                        className="size-6 rounded-lg object-cover border border-navy/10"
-                      />
-                    ) : (
-                      <User className="size-4" aria-hidden="true" />
-                    )}
-                    <span className="hidden sm:inline">Perfil</span>
+                    <div className="flex size-[30px] items-center justify-center rounded-full border-2 border-[#231942] bg-cream/50 overflow-hidden">
+                      {avatarUrl ? (
+                        <img 
+                          src={avatarUrl} 
+                          alt="Avatar" 
+                          className="size-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="size-4 text-[#231942]" aria-hidden="true" />
+                      )}
+                    </div>
+                    <span>Perfil</span>
                   </Link>
+                  
+                  {/* Salir */}
                   <button
                     onClick={handleLogout}
                     disabled={loggingOut}
-                    className="inline-flex items-center gap-2 rounded-xl border-2 border-navy/10 bg-white px-4 py-2.5 text-sm font-bold text-navy transition-all duration-base ease-smooth hover:bg-navy/5 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Cerrar sesión"
+                    className="flex size-[42px] items-center justify-center rounded-[14px] border-2 border-transparent bg-transparent text-[#6B6585] transition-all duration-base hover:border-[#231942] hover:bg-[#FFE3CC] hover:text-[#231942] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange"
+                    aria-label="Salir"
                   >
-                    <LogOut className="size-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">{loggingOut ? 'Saliendo...' : 'Salir'}</span>
+                    <LogOut className="size-5" strokeWidth={2} aria-hidden="true" />
                   </button>
                 </div>
               ) : (
                 <Link
                   to="/auth/login"
-                  className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all duration-base ease-smooth hover:bg-navy/90 hover:scale-105 active:scale-95"
+                  className="hidden gap-2 rounded-full border-2 border-[#231942] bg-[#231942] px-5 py-2 text-sm font-extrabold text-white shadow-sm transition-all duration-base hover:bg-[#1a1332] hover:scale-105 active:scale-95 focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange min-[901px]:inline-flex"
                 >
                   Entrar
                 </Link>
               )
             )}
-          </div>
+            
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="inline-flex size-11 items-center justify-center rounded-[14px] border-2 border-[#231942] bg-white text-[#231942] transition-colors duration-base hover:bg-[#FFE3CC] focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-orange min-[901px]:hidden"
+              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="size-5" strokeWidth={2} aria-hidden="true" />
+              ) : (
+                <Menu className="size-5" strokeWidth={2} aria-hidden="true" />
+              )}
+            </button>
+          </nav>
+
+          {/* Mobile Menu Panel */}
+          {mobileMenuOpen && (
+            <div 
+              id="mobile-menu"
+              className="absolute left-4 right-4 top-[calc(100%-6px)] flex flex-col gap-1.5 rounded-[22px] border-2 border-[#231942] bg-white p-3.5 shadow-[0_4px_0_#231942] min-[901px]:hidden"
+            >
+              <NavLink
+                to="/buscar"
+                className={({ isActive }) => [
+                  'flex items-center gap-2 rounded-[14px] border-2 px-3.5 py-2 text-sm font-semibold transition-all duration-base',
+                  isActive
+                    ? 'border-[#231942] bg-[#FFE3CC] text-[#231942]'
+                    : 'border-transparent text-[#6B6585] hover:bg-[#FFE3CC] hover:text-[#231942]',
+                ].join(' ')}
+              >
+                <Search className="size-5" strokeWidth={2} aria-hidden="true" />
+                Buscar
+              </NavLink>
+
+              <NavLink
+                to="/mapa"
+                className={({ isActive }) => [
+                  'flex items-center gap-2 rounded-[14px] border-2 px-3.5 py-2 text-sm font-semibold transition-all duration-base',
+                  isActive
+                    ? 'border-[#231942] bg-[#FFE3CC] text-[#231942]'
+                    : 'border-transparent text-[#6B6585] hover:bg-[#FFE3CC] hover:text-[#231942]',
+                ].join(' ')}
+              >
+                <MapPin className="size-5" strokeWidth={2} aria-hidden="true" />
+                Mapa
+              </NavLink>
+
+              <Link
+                to="/publicar"
+                className="group flex items-center justify-center gap-2 rounded-2xl border-2 border-[#231942] bg-orange px-5 py-2.5 font-display text-sm font-extrabold text-[#231942] shadow-[0_4px_0_#231942] transition-all duration-base hover:-translate-y-0.5 hover:shadow-[0_6px_0_#231942] active:translate-y-[3px] active:shadow-[0_1px_0_#231942]"
+              >
+                <svg 
+                  className="size-5 transition-transform duration-300 group-hover:-rotate-[20deg] group-hover:scale-[1.2]" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor" 
+                  aria-hidden="true"
+                >
+                  <ellipse cx="6" cy="10" rx="2" ry="2.6"/>
+                  <ellipse cx="10" cy="5.8" rx="2" ry="2.8"/>
+                  <ellipse cx="14.5" cy="5.8" rx="2" ry="2.8"/>
+                  <ellipse cx="18.5" cy="10" rx="2" ry="2.6"/>
+                  <path d="M12 11c-3 0-5.6 3.4-5.6 6 0 1.8 1.4 2.6 3 2.4 1-.1 1.8-.5 2.6-.5s1.6.4 2.6.5c1.6.2 3-.6 3-2.4 0-2.6-2.6-6-5.6-6z"/>
+                </svg>
+                Publicar
+              </Link>
+
+              {user && (
+                <>
+                  <NavLink
+                    to="/notificaciones"
+                    className={({ isActive }) => [
+                      'relative flex items-center gap-2 rounded-[14px] border-2 px-3.5 py-2 text-sm font-semibold transition-all duration-base',
+                      isActive
+                        ? 'border-[#231942] bg-[#FFE3CC] text-[#231942]'
+                        : 'border-transparent text-[#6B6585] hover:bg-[#FFE3CC] hover:text-[#231942]',
+                    ].join(' ')}
+                  >
+                    <Bell className="size-5" strokeWidth={2} aria-hidden="true" />
+                    Avisos
+                    {unreadCount > 0 && (
+                      <span 
+                        className="ml-auto flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#231942] bg-[#38C9A3] px-1 text-[11px] font-bold leading-none text-[#231942]"
+                        aria-label={`${unreadCount} notificaciones no leídas`}
+                      >
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </NavLink>
+
+                  <Link
+                    to={profileHref}
+                    className="flex items-center gap-2 rounded-[14px] border-2 border-transparent px-3.5 py-2 text-sm font-semibold text-[#6B6585] transition-all duration-base hover:bg-[#FFE3CC] hover:text-[#231942]"
+                  >
+                    <div className="flex size-[30px] items-center justify-center rounded-full border-2 border-[#231942] bg-cream/50 overflow-hidden">
+                      {avatarUrl ? (
+                        <img 
+                          src={avatarUrl} 
+                          alt="Avatar" 
+                          className="size-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="size-4 text-[#231942]" aria-hidden="true" />
+                      )}
+                    </div>
+                    Perfil
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="flex items-center gap-2 rounded-[14px] border-2 border-transparent px-3.5 py-2 text-sm font-semibold text-[#6B6585] transition-all duration-base hover:bg-[#FFE3CC] hover:text-[#231942] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <LogOut className="size-5" strokeWidth={2} aria-hidden="true" />
+                    Salir
+                  </button>
+                </>
+              )}
+
+              {!user && !authLoading && (
+                <Link
+                  to="/auth/login"
+                  className="flex items-center justify-center gap-2 rounded-full border-2 border-[#231942] bg-[#231942] px-5 py-2.5 text-sm font-extrabold text-white shadow-sm transition-all duration-base hover:bg-[#1a1332] active:scale-95"
+                >
+                  Entrar
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

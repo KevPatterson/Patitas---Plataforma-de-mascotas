@@ -180,7 +180,7 @@ export function MatchCard({ match, publication, onConfirm, onDismiss }: MatchCar
               variant="primary"
               onClick={handleConfirm}
               disabled={loading}
-              className="flex-1 !min-h-0 !py-2"
+              className="flex-1 min-h-0! py-2!"
             >
               <Heart className="size-4" />
               Confirmar match
@@ -191,7 +191,7 @@ export function MatchCard({ match, publication, onConfirm, onDismiss }: MatchCar
               variant="secondary"
               onClick={handleDismiss}
               disabled={loading}
-              className="!min-h-0 !py-2"
+              className="min-h-0! py-2!"
             >
               <X className="size-4" />
             </Button>

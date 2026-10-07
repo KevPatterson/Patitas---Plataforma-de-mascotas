@@ -408,6 +408,7 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+    transform: none !important;
   }
   
   .animate-paw,
@@ -415,6 +416,13 @@
   .loader-paw,
   .blob-decoration {
     animation: none !important;
+  }
+
+  /* Navbar: sin transiciones ni transformaciones */
+  nav a,
+  nav button {
+    transition: none !important;
+    transform: none !important;
   }
 }
 

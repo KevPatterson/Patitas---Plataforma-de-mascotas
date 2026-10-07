@@ -11,7 +11,7 @@ import { PawLoader } from '../components/ui/paw-loader';
 import { createLocation, createPublication, uploadPublicationImages, createPet } from '../lib/supabase/publications';
 import { buildPublicationSlug } from '../lib/utils/slug';
 import { publicationFormSchema, type PublicationFormValues } from '../lib/validations/publication';
-import { TYPE_LABELS, SPECIES_LABELS, SEX_LABELS, SIZE_LABELS, MAX_IMAGES, MAX_IMAGE_BYTES, ALLOWED_IMAGE_TYPES } from '../lib/constants/labels';
+import { TYPE_LABELS, TYPE_EMOJIS, SPECIES_LABELS, SEX_LABELS, SIZE_LABELS, MAX_IMAGES, MAX_IMAGE_BYTES, ALLOWED_IMAGE_TYPES } from '../lib/constants/labels';
 import { CUBA, PROVINCES } from '../lib/constants/cuba';
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -267,7 +267,10 @@ export function PublishPage() {
                       ].join(' ')}
                     >
                       <span className="block text-xs font-bold uppercase tracking-[0.2em] text-navy/60">Tipo</span>
-                      <span className="mt-2 block font-semibold text-navy">{label}</span>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-2xl">{TYPE_EMOJIS[value]}</span>
+                        <span className="font-semibold text-navy">{label}</span>
+                      </div>
                     </button>
                   ))}
                 </div>
