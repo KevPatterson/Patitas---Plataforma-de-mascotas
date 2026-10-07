@@ -5,6 +5,9 @@ import { Button } from '../components/ui/button';
 import { TextareaField } from '../components/ui/textarea-field';
 import { StatusBadge } from '../components/ui/status-badge';
 import { PawLoader } from '../components/ui/paw-loader';
+import { ProcessingStatusBadge } from '../components/ai/processing-status';
+import { DuplicateWarning } from '../components/ai/duplicate-warning';
+import { MatchesPanel } from '../components/publications/matches-panel';
 import { createReport } from '../lib/supabase/reports';
 import { useAuth } from '../app/auth-context';
 import { getPublicationBySlug, searchPublications } from '../lib/supabase/publication-search';
@@ -374,6 +377,24 @@ export function PublicationPage() {
 
             {/* Columna lateral */}
             <aside className="space-y-5">
+              {/* Estado de procesamiento de IA */}
+              {publication.id && <ProcessingStatusBadge publicationId={publication.id} />}
+
+              {/* Alerta de duplicados */}
+              {publication.id && (
+                <DuplicateWarning
+                  publicationId={publication.id}
+                  onViewDuplicate={(duplicateId) => {
+                    window.open(`/admin/publications/${duplicateId}`, '_blank');
+                  }}
+                />
+              )}
+
+              {/* Panel de Matches de IA */}
+              {publication.id && (publication.type === 'LOST' || publication.type === 'FOUND') && (
+                <MatchesPanel publicationId={publication.id} />
+              )}
+
               {/* Detalles */}
               <div className="rounded-3xl border-2 border-turquoise/20 bg-white p-6 space-y-3 shadow-md">
                 <h2 className="font-display text-2xl font-extrabold text-navy">📍 Ubicación</h2>

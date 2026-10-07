@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, Search, MapPin, LogOut, User, Menu, X, type LucideIcon } from 'lucide-react';
 import { signOut } from '../../lib/supabase/auth';
 import { useAuth } from '../../app/auth-context';
-import { getUnreadNotificationsCount } from '../../lib/supabase/notifications';
+import { getUnreadCount } from '../../lib/supabase/notifications';
 import { supabase } from '../../lib/supabase/client';
 import { Logo } from '../Logo';
 
@@ -76,7 +76,7 @@ export function SiteShell({ children }: SiteShellProps) {
     let active = true;
     const fetchCount = async () => {
       try {
-        const count = await getUnreadNotificationsCount(user.id);
+        const count = await getUnreadCount();
         if (active) setUnreadCount(count);
       } catch {
         if (active) setUnreadCount(0);

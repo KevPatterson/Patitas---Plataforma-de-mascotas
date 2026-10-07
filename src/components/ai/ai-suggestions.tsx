@@ -1,128 +1,154 @@
-import { useState } from 'react';
-import { Sparkles, Check, X, Info } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Sparkles, Check, X } from 'lucide-react';
+import { getExtractedAttributes, createSuggestions, type AttributeSuggestion } from '../../lib/ai/processing';
 import { Button } from '../ui/button';
-import type { AttributeSuggestion } from '../../lib/ai/processing';
 
 type AISuggestionsProps = {
-  suggestions: AttributeSuggestion[];
-  onApply: (field: string, value: string) => void;
-  onDismiss: (field: string) => void;
+  publicationId: string;
+  onApplySuggestion?: (field: string, value: string) => void;
+  threshold?: number;
 };
 
-const fieldLabels: Record<string, string> = {
-  species: 'Especie',
-  breed: 'Raza',
-  color: 'Color',
-  sex: 'Sexo',
-  size: 'Tamaño',
-  collar: 'Collar',
-  plate: 'Placa',
-  contactPhone: 'Teléfono',
-  contactWhatsapp: 'WhatsApp',
-  contactEmail: 'Email',
-  petName: 'Nombre de la mascota',
-};
+export function AISuggestions({ publicationId, onApplySuggestion, threshold = 0.7 }: AISuggestionsProps) {
+  const [suggestions, setSuggestions] = useState<AttributeSuggestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [appliedFields, setAppliedFields] = useState<Set<string>>(new Set());
 
-const sourceLabels: Record<string, string> = {
-  vision: 'Análisis visual',
-  ocr: 'Texto detectado',
-  hybrid: 'Análisis combinado',
-};
+  useEffect(() => {
+    let mounted = true;
 
-export function AISuggestions({ suggestions, onApply, onDismiss }: AISuggestionsProps) {
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+    async function load() {
+      try {
+        const attributes = await getExtractedAttributes(publicationId);
+        if (mounted && attributes.length > 0) {
+          const suggs = createSuggestions(attributes, threshold);
+          setSuggestions(suggs);
+        }
+      } catch (error) {
+        console.error('Error loading AI suggestions:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
 
-  if (suggestions.length === 0) {
+    load();
+
+    return () => {
+      mounted = false;
+    };
+  }, [publicationId, threshold]);
+
+  if (loading || suggestions.length === 0) {
     return null;
   }
 
-  const visibleSuggestions = suggestions.filter(
-    (s) => !s.applied && !dismissed.has(s.field)
-  );
-
-  if (visibleSuggestions.length === 0) {
-    return null;
-  }
+  const handleApply = (suggestion: AttributeSuggestion) => {
+    onApplySuggestion?.(suggestion.field, suggestion.value);
+    setAppliedFields((prev) => new Set(prev).add(suggestion.field));
+  };
 
   const handleDismiss = (field: string) => {
-    setDismissed(new Set([...dismissed, field]));
-    onDismiss(field);
+    setSuggestions((prev) => prev.filter((s) => s.field !== field));
   };
 
   return (
-    <div className="rounded-2xl border-2 border-purple/20 bg-purple/5 p-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="size-8 rounded-lg bg-purple/20 flex items-center justify-center">
-          <Sparkles className="size-4 text-purple" />
-        </div>
-        <div>
-          <h3 className="font-display text-lg font-bold text-navy">
-            Sugerencias de IA
-          </h3>
-          <p className="text-sm text-navy/70">
-            Detectamos información automáticamente de tus imágenes
-          </p>
-        </div>
+    <div className="rounded-xl border-2 border-turquoise/20 bg-turquoise/5 p-4 shadow-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <Sparkles className="size-4 text-turquoise" />
+        <h3 className="font-display text-sm font-bold text-navy">Sugerencias de IA</h3>
+        <span className="ml-auto rounded-full bg-turquoise/20 px-2 py-0.5 text-xs font-bold text-turquoise-dark">
+          {suggestions.length}
+        </span>
       </div>
 
-      <div className="space-y-3">
-        {visibleSuggestions.map((suggestion) => (
-          <div
-            key={suggestion.field}
-            className="group rounded-xl border-2 border-navy/10 bg-white p-4 transition-all hover:border-purple/30 hover:shadow-md"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-navy text-sm">
-                    {fieldLabels[suggestion.field] || suggestion.field}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-purple/10 text-purple text-xs font-medium">
-                    {Math.round(suggestion.confidence * 100)}% confianza
-                  </span>
+      <div className="space-y-2">
+        {suggestions.map((suggestion) => {
+          const isApplied = appliedFields.has(suggestion.field);
+
+          return (
+            <div
+              key={suggestion.field}
+              className={`rounded-lg border p-3 transition ${
+                isApplied
+                  ? 'border-found/20 bg-found/5'
+                  : 'border-navy/10 bg-white hover:border-turquoise/30'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold text-navy/60 uppercase tracking-wider">
+                      {getFieldLabel(suggestion.field)}
+                    </span>
+                    <span className="text-xs text-navy/40">
+                      {Math.round(suggestion.confidence * 100)}% confianza
+                    </span>
+                  </div>
+                  <p className="font-medium text-navy truncate">{suggestion.value}</p>
+                  <p className="text-xs text-navy/50 mt-1">Fuente: {getSourceLabel(suggestion.source)}</p>
                 </div>
 
-                <p className="text-navy font-semibold mb-1 truncate">
-                  {suggestion.value}
-                </p>
-
-                <div className="flex items-center gap-1 text-xs text-navy/60">
-                  <Info className="size-3" />
-                  <span>
-                    {sourceLabels[suggestion.source] || suggestion.source}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-2 shrink-0">
-                <Button
-                  variant="primary"
-                  onClick={() => onApply(suggestion.field, suggestion.value)}
-                  className="px-3 py-1.5 min-h-0!"
-                >
-                  <Check className="size-4" />
-                  <span className="hidden sm:inline">Aplicar</span>
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => handleDismiss(suggestion.field)}
-                  className="px-2 py-1.5 min-h-0!"
-                >
-                  <X className="size-4" />
-                </Button>
+                {isApplied ? (
+                  <div className="flex items-center gap-1 rounded-full bg-found/20 px-2 py-1 text-xs font-bold text-found">
+                    <Check className="size-3" />
+                    Aplicado
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleApply(suggestion)}
+                      className="h-8 px-3 text-xs gap-1 bg-turquoise/10 hover:bg-turquoise/20 text-turquoise-dark font-semibold"
+                    >
+                      <Check className="size-3" />
+                      Aplicar
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleDismiss(suggestion.field)}
+                      className="h-8 w-8 p-0 text-navy/40 hover:text-lost hover:bg-lost/10"
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <div className="flex items-start gap-2 p-3 rounded-lg bg-turquoise/5 border border-turquoise/20">
-        <Info className="size-4 text-turquoise mt-0.5 shrink-0" />
-        <p className="text-xs text-navy/70">
-          Estas sugerencias fueron generadas automáticamente. Revisa y confirma antes de aplicar.
-          Siempre puedes editar o rechazar las sugerencias.
-        </p>
-      </div>
+      <p className="mt-3 text-xs text-navy/60 leading-relaxed">
+        💡 Estas sugerencias fueron extraídas automáticamente. Revisa y confirma antes de aplicar.
+      </p>
     </div>
   );
+}
+
+function getFieldLabel(field: string): string {
+  const labels: Record<string, string> = {
+    species: 'Especie',
+    breed: 'Raza',
+    color: 'Color',
+    sex: 'Sexo',
+    size: 'Tamaño',
+    collar: 'Collar',
+    plate: 'Placa',
+    contactPhone: 'Teléfono',
+    contactWhatsapp: 'WhatsApp',
+    contactEmail: 'Email',
+    petName: 'Nombre',
+  };
+  return labels[field] || field;
+}
+
+function getSourceLabel(source: string): string {
+  const labels: Record<string, string> = {
+    vision: 'Análisis visual',
+    ocr: 'Texto en imagen',
+    hybrid: 'Análisis combinado',
+  };
+  return labels[source] || source;
 }

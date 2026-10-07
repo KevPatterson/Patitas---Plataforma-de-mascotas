@@ -166,3 +166,6 @@ export type DuplicateDetection = {
   created_at: string;
   metadata: Record<string, unknown>;
 };
+
+// Alias para compatibilidad
+export type AIProcessingJob = AIJob;

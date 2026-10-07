@@ -44,7 +44,7 @@ const SECTIONS = [
     icon: Flag,
     color: 'lost',
     title: 'Comunidad cuidada',
-    text: 'Cualquier persona puede reportar publicaciones falsas o spam. Un equipo de moderación revisa cada reporte.',
+    text: 'Un equipo de moderación revisa cada reporte para evitar que cualquier persona pueda reportar publicaciones falsas o spam.',
   },
   {
     icon: CheckCircle,

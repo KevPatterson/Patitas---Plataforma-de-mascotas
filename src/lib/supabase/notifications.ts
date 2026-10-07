@@ -1,8 +1,11 @@
 import { supabase } from './client';
 
-export type NotificationItem = {
+export type NotificationType = 'MATCH' | 'REPORT' | 'MESSAGE' | 'PUBLICATION_UPDATE' | 'SYSTEM';
+
+export type Notification = {
   id: string;
-  type: 'MATCH' | 'REPORT' | 'MESSAGE' | 'PUBLICATION_UPDATE' | 'SYSTEM';
+  profile_id: string;
+  type: NotificationType;
   title: string;
   body: string;
   link: string | null;
@@ -11,63 +14,122 @@ export type NotificationItem = {
   read_at: string | null;
 };
 
-export async function getNotifications(profileId: string) {
+/**
+ * Obtener todas las notificaciones del usuario autenticado
+ */
+export async function getNotifications(limit = 50): Promise<Notification[]> {
+  const { data: userResponse } = await supabase.auth.getUser();
+  const user = userResponse.user;
+
+  if (!user) {
+    throw new Error('No hay sesión activa');
+  }
+
   const { data, error } = await supabase
     .from('notifications')
-    .select('id, type, title, body, link, is_read, created_at, read_at')
-    .eq('profile_id', profileId)
+    .select('*')
+    .eq('profile_id', user.id)
     .order('created_at', { ascending: false })
-    .limit(40);
+    .limit(limit);
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []) as NotificationItem[];
+  return (data as Notification[]) || [];
 }
 
-export async function markNotificationAsRead(notificationId: string, profileId: string) {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ is_read: true, read_at: new Date().toISOString() })
-    .eq('id', notificationId)
-    .eq('profile_id', profileId);
+/**
+ * Obtener contador de notificaciones no leídas
+ */
+export async function getUnreadCount(): Promise<number> {
+  const { data: userResponse } = await supabase.auth.getUser();
+  const user = userResponse.user;
 
-  if (error) {
-    throw error;
+  if (!user) {
+    return 0;
   }
-}
 
-export async function markAllNotificationsAsRead(profileId: string) {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ is_read: true, read_at: new Date().toISOString() })
-    .eq('profile_id', profileId)
-    .eq('is_read', false);
-
-  if (error) {
-    throw error;
-  }
-}
-
-export async function getUnreadNotificationsCount(profileId: string): Promise<number> {
   const { count, error } = await supabase
     .from('notifications')
     .select('id', { count: 'exact', head: true })
-    .eq('profile_id', profileId)
+    .eq('profile_id', user.id)
     .eq('is_read', false);
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error getting unread count:', error);
+    return 0;
+  }
+
   return count ?? 0;
 }
 
+/**
+ * Marcar una notificación como leída
+ */
+export async function markAsRead(notificationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('notifications')
+    .update({
+      is_read: true,
+      read_at: new Date().toISOString(),
+    })
+    .eq('id', notificationId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+/**
+ * Marcar todas las notificaciones como leídas
+ */
+export async function markAllAsRead(): Promise<void> {
+  const { data: userResponse } = await supabase.auth.getUser();
+  const user = userResponse.user;
+
+  if (!user) {
+    throw new Error('No hay sesión activa');
+  }
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({
+      is_read: true,
+      read_at: new Date().toISOString(),
+    })
+    .eq('profile_id', user.id)
+    .eq('is_read', false);
+
+  if (error) {
+    throw error;
+  }
+}
+
+/**
+ * Eliminar una notificación
+ */
+export async function deleteNotification(notificationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('notifications')
+    .delete()
+    .eq('id', notificationId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+/**
+ * Crear una notificación (solo para uso interno/server-side)
+ */
 export async function createNotification(input: {
   profileId: string;
-  type: NotificationItem['type'];
+  type: NotificationType;
   title: string;
   body: string;
   link?: string;
-}) {
+}): Promise<string> {
   const { data, error } = await supabase
     .from('notifications')
     .insert({
@@ -76,6 +138,7 @@ export async function createNotification(input: {
       title: input.title,
       body: input.body,
       link: input.link || null,
+      is_read: false,
     })
     .select('id')
     .single();
@@ -84,15 +147,18 @@ export async function createNotification(input: {
     throw error;
   }
 
-  return data;
+  return data.id;
 }
 
+/**
+ * Suscribirse a notificaciones en tiempo real
+ */
 export function subscribeToNotifications(
   userId: string,
-  callback: (notification: NotificationItem) => void
+  onNotification: (notification: Notification) => void
 ) {
   const channel = supabase
-    .channel(`notifications:${userId}`)
+    .channel('notifications')
     .on(
       'postgres_changes',
       {
@@ -102,7 +168,7 @@ export function subscribeToNotifications(
         filter: `profile_id=eq.${userId}`,
       },
       (payload) => {
-        callback(payload.new as NotificationItem);
+        onNotification(payload.new as Notification);
       }
     )
     .subscribe();

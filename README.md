@@ -1,220 +1,775 @@
-# 🐾 PATITAS — Ayudemos a que vuelvan a casa
+# 🐾 Patitas — Ayudemos a que vuelvan a casa
 
-Plataforma comunitaria de mascotas **perdidas, encontradas, abandonadas y en adopción**.
-Centraliza en un solo lugar lo que hoy se dispersa por estados de WhatsApp, Instagram y
-Facebook: información estructurada, buscable, geolocalizada y orientada a resultados.
+**Plataforma comunitaria para reencontrar mascotas perdidas, reportar encontradas y promover adopciones responsables.**
 
-**Contexto inicial:** Cuba (provincias y municipios). La arquitectura permite expandirse
-a otros países.
+Patitas centraliza en un único lugar lo que hoy se dispersa en estados de WhatsApp, Instagram y Facebook: información estructurada, buscable, geolocalizada y orientada a resultados reales.
 
-> 🎨 **Nuevo:** Rediseño visual completo **Anime Edition** implementado. Ver [REDISENO_ANIME_EDITION.md](./REDISENO_ANIME_EDITION.md) para detalles.
+**Contexto inicial:** Cuba (provincias y municipios). La arquitectura permite expandirse a otros países.
 
----
-
-## 🏗️ Arquitectura
-React + TypeScript + Vite (SPA)
-│  HTTPS
-▼
-Vercel
-├── SPA Hosting
-└── Serverless Functions (/api/*)  ← únicamente operaciones privilegiadas
-│
-▼
-Supabase
-├── PostgreSQL (+ RLS en TODAS las tablas)
-├── Auth (email + OAuth-ready)
-├── Storage (pet-images, avatares)
-└── Realtime (notificaciones, selectivo)
-plain
-
-**Principio:** el cliente habla **directo con Supabase** para el CRUD permitido por RLS.
-Las Vercel Functions solo se usan para operaciones con privilegios/secretos
-(moderación, auditoría, webhooks, futuras integraciones IA/OCR).
+> 🎨 **Rediseño Anime Edition:** Identidad visual única con animaciones avanzadas y responsive design completo. Ver [docs/REDISENO_FINAL_COMPLETO.md](./docs/REDISENO_FINAL_COMPLETO.md) para detalles.
 
 ---
 
-## 🚀 Setup local
+## 📋 Índice
 
-### Requisitos
-- Node.js ≥ 18
-- CLI de Supabase (`npm i -g supabase`)
+- [🐾 Patitas — Ayudemos a que vuelvan a casa](#-patitas--ayudemos-a-que-vuelvan-a-casa)
+  - [📋 Índice](#-índice)
+  - [✨ Características principales](#-características-principales)
+    - [� Búsqueda y filtrado](#-búsqueda-y-filtrado)
+    - [📍 Geolocalización](#-geolocalización)
+    - [🤖 Sistema de IA (infraestructura completa)](#-sistema-de-ia-infraestructura-completa)
+    - [📱 PWA y Compartir](#-pwa-y-compartir)
+    - [🔔 Notificaciones en tiempo real](#-notificaciones-en-tiempo-real)
+    - [👥 Sistema social](#-sistema-social)
+    - [🛡️ Seguridad y moderación](#️-seguridad-y-moderación)
+  - [🛠 Stack tecnológico](#-stack-tecnológico)
+    - [Frontend](#frontend)
+    - [Backend](#backend)
+    - [Herramientas](#herramientas)
+  - [🏗 Arquitectura](#-arquitectura)
+    - [Principios](#principios)
+  - [🚀 Instalación rápida](#-instalación-rápida)
+    - [Requisitos previos](#requisitos-previos)
+    - [Pasos](#pasos)
+    - [Configuración `.env`](#configuración-env)
+  - [💻 Desarrollo local](#-desarrollo-local)
+    - [Comandos disponibles](#comandos-disponibles)
+    - [Usuarios de prueba (seed local)](#usuarios-de-prueba-seed-local)
+  - [📁 Estructura del proyecto](#-estructura-del-proyecto)
+  - [🗄 Modelo de datos (resumen)](#-modelo-de-datos-resumen)
+    - [Tablas principales](#tablas-principales)
+    - [Tablas IA (infraestructura completa)](#tablas-ia-infraestructura-completa)
+    - [Características del modelo](#características-del-modelo)
+  - [🔐 Seguridad y privacidad](#-seguridad-y-privacidad)
+    - [Row Level Security (RLS)](#row-level-security-rls)
+    - [Protección de datos sensibles](#protección-de-datos-sensibles)
+    - [Rate limiting](#rate-limiting)
+    - [Headers de seguridad (Vercel)](#headers-de-seguridad-vercel)
+    - [Privacidad de ubicación](#privacidad-de-ubicación)
+  - [🎨 Sistema de diseño](#-sistema-de-diseño)
+    - [Anime Edition](#anime-edition)
+      - [Paleta de colores](#paleta-de-colores)
+      - [Tipografía](#tipografía)
+      - [Animaciones (11 tipos)](#animaciones-11-tipos)
+      - [Componentes destacados](#componentes-destacados)
+  - [🌐 Despliegue](#-despliegue)
+    - [Vercel (recomendado)](#vercel-recomendado)
+    - [Preview deployments](#preview-deployments)
+  - [📜 Convenciones](#-convenciones)
+    - [Commits (Conventional Commits)](#commits-conventional-commits)
+    - [Código](#código)
+    - [Accesibilidad](#accesibilidad)
+  - [📊 Estado del proyecto](#-estado-del-proyecto)
+    - [Progreso general: ~35% completado](#progreso-general-35-completado)
+    - [Implementado ✅](#implementado-)
+    - [Pendiente ⏳](#pendiente-)
+  - [📚 Documentación completa](#-documentación-completa)
+    - [Documentos disponibles](#documentos-disponibles)
+    - [API Documentation](#api-documentation)
+      - [Endpoints disponibles](#endpoints-disponibles)
+  - [🤝 Contribuir](#-contribuir)
+    - [Workflow](#workflow)
+    - [Antes de enviar PR](#antes-de-enviar-pr)
+    - [Guías](#guías)
+  - [📄 Licencia](#-licencia)
+  - [💡 Filosofía del producto](#-filosofía-del-producto)
+    - [El flujo ideal](#el-flujo-ideal)
+    - [Valores](#valores)
+  - [📧 Contacto](#-contacto)
+  - [🙏 Agradecimientos](#-agradecimientos)
 
-### 1. Clonar y dependencias
+---
+
+## ✨ Características principales
+
+### � Búsqueda y filtrado
+- **Full-text search** optimizado con PostgreSQL (`tsvector` + `pg_trgm`)
+- Filtros por tipo (perdida, encontrada, adopción, etc.)
+- Filtros geográficos (provincia, municipio)
+- Filtros por características (especie, raza, tamaño, sexo, color)
+- Búsqueda semántica con IA (en desarrollo)
+
+### 📍 Geolocalización
+- **Mapa interactivo** con Leaflet + OpenStreetMap (sin API keys)
+- **Privacidad garantizada**: coordenadas difuminadas automáticamente (±500m)
+- Visualización de publicaciones por zona
+- Ubicación nunca expuesta al cliente (column-level grants)
+
+### 🤖 Sistema de IA (infraestructura completa)
+- **Matching híbrido**: Coincidencias por similitud estructurada, semántica y visual
+- **OCR**: Extracción de texto de imágenes (carteles, anuncios)
+- **Computer Vision**: Análisis de características visuales de mascotas
+- **Detección de duplicados**: Evita publicaciones repetidas
+- **Moderación automática**: Pre-filtrado de contenido inapropiado
+- Procesamiento asíncrono con cola de jobs
+
+### 📱 PWA y Compartir
+- **Instalable** como app en dispositivos móviles
+- Service Worker para funcionamiento offline básico
+- **Compartir** con un clic: WhatsApp, Facebook, Telegram, copiar enlace
+- **Web Share API** para compartir nativo en móviles
+- Open Graph tags para previews atractivos
+- JSON-LD para SEO
+
+### 🔔 Notificaciones en tiempo real
+- Alertas de **coincidencias** con publicaciones propias
+- Notificaciones de **comentarios** y **avistamientos**
+- Actualizaciones de **reportes** y moderación
+- Subscripción selectiva con **Supabase Realtime**
+- Contador visual en navegación
+
+### 👥 Sistema social
+- **Comentarios** en publicaciones
+- **Timeline de avistamientos** cronológica
+- **Solicitudes de adopción** con estados (pendiente, aceptada, rechazada)
+- **Sistema de reportes** comunitario
+- **Perfiles públicos** con actividad del usuario
+- **Dashboard privado** con estadísticas
+
+### 🛡️ Seguridad y moderación
+- **Row Level Security (RLS)** en todas las tablas
+- **Column-level grants** para datos sensibles (teléfono, microchip)
+- **Rate limiting** en endpoints críticos
+- Panel de **moderación** para administradores
+- **Logs de auditoría** para trazabilidad
+- Protección contra IDOR, escalada de privilegios y abuso
+
+---
+
+## 🛠 Stack tecnológico
+
+### Frontend
+| Tecnología | Versión | Uso |
+|------------|---------|-----|
+| React | 19.1.1 | UI library |
+| TypeScript | 5.9.2 | Tipado estático |
+| Vite | 7.1.7 | Build tool ultrarrápido |
+| React Router | 7.9.1 | Enrutamiento SPA |
+| Tailwind CSS | 4.1.14 | Estilos con utilidades |
+| React Hook Form | 7.89.0 | Gestión de formularios |
+| Zod | 4.6.5 | Validación de schemas |
+| Leaflet | 1.9.4 | Mapas interactivos |
+| Lucide React | 1.52.0 | Iconografía |
+
+### Backend
+| Servicio | Uso |
+|----------|-----|
+| Supabase PostgreSQL | Base de datos con RLS |
+| Supabase Auth | Autenticación (email + OAuth) |
+| Supabase Storage | Imágenes (pet-images, avatars) |
+| Supabase Realtime | Subscripciones en tiempo real |
+| Vercel Functions | Serverless para operaciones privilegiadas |
+
+### Herramientas
+- **ESLint** + **Prettier**: Linting y formateo
+- **Vitest**: Testing unitario
+- **TypeScript strict mode**: Cero tolerancia a `any`
+
+---
+
+## 🏗 Arquitectura
+
+```
+┌────────────────────────────────────────────────────────┐
+│                    CLIENTE (SPA)                        │
+│  React + TypeScript + Tailwind + React Router          │
+│  • Comunicación directa con Supabase (protegida por RLS)│
+└────────────────────┬───────────────────────────────────┘
+                     │ HTTPS
+                     ▼
+┌────────────────────────────────────────────────────────┐
+│                       VERCEL                            │
+│  ┌─────────────┐  ┌─────────────────────────────────┐ │
+│  │ Static SPA  │  │  Serverless Functions (/api)    │ │
+│  │   Hosting   │  │  • Moderación                   │ │
+│  └─────────────┘  │  • Rate limiting                │ │
+│                   │  • Procesamiento IA             │ │
+│                   └─────────────────────────────────┘ │
+└────────────────────┬───────────────────────────────────┘
+                     │
+                     ▼
+┌────────────────────────────────────────────────────────┐
+│                    SUPABASE                             │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ PostgreSQL con RLS activo en TODAS las tablas    │  │
+│  │ • 20+ tablas con políticas de seguridad          │  │
+│  │ • Full-text search + índices optimizados         │  │
+│  │ • Triggers automáticos (fuzzy location)          │  │
+│  └──────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ Auth + Storage + Realtime                        │  │
+│  └──────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────┘
+```
+
+### Principios
+
+1. **Cliente → Supabase directo**: El frontend hace CRUD directamente protegido por RLS
+2. **Vercel Functions solo para privilegios**: Moderación, auditoría, IA, webhooks
+3. **Seguridad en capas**: RLS + validación Zod + rate limiting + headers
+4. **Privacidad por diseño**: Fuzzing automático de ubicaciones, grants de columna
+
+---
+
+## 🚀 Instalación rápida
+
+### Requisitos previos
+- **Node.js** >= 18.0.0
+- **npm** >= 9.0.0
+- **Supabase CLI** (opcional): `npm i -g supabase`
+
+### Pasos
+
 ```bash
-git clone <repo> && cd patitas
+# 1. Clonar repositorio
+git clone https://github.com/tu-usuario/patitas.git
+cd patitas
+
+# 2. Instalar dependencias
 npm install
-2. Supabase local (o proyecto cloud)
-bash
-supabase init            # si usas supabase local
+
+# 3. Configurar Supabase (opción A: local con Docker)
+supabase init
 supabase start
-supabase db reset        # aplica migrations/ + seed.sql
-O en supabase.com: crea el proyecto, abre el SQL Editor y ejecuta
-en orden supabase/migrations/0001_schema.sql, 0002_rls.sql, 0003_functions.sql
-(y opcionalmente seed.sql — solo desarrollo).
-3. Variables de entorno
-bash
-cp .env.example .env.local
-Table
-Variable	Dónde	Descripción
-VITE_SUPABASE_URL	cliente	URL pública del proyecto
-VITE_SUPABASE_ANON_KEY	cliente	anon key (segura para el navegador gracias a RLS)
-SUPABASE_URL	solo servidor	URL para las Functions
-SUPABASE_SERVICE_ROLE_KEY	solo servidor	⚠️ NUNCA con prefijo VITE_. Rompe RLS: solo en Vercel
-4. Arrancar
-bash
-npm run dev          # http://localhost:5173
-Usuarios de prueba (seed): ana@patitas.dev, luis@patitas.dev (USER),
-mod@patitas.dev (MODERATOR) — contraseña: patitas123 (solo dev local).
-🧩 Stack
-Table
-Área	Tecnología
-Frontend	React 18 + TypeScript (estricto) + Vite
-Estilos	Tailwind CSS + Design System propio (src/styles/index.css)
-Ruteo	React Router v6 (lazy + protección de rutas)
-Datos	TanStack Query + Supabase JS
-Formularios	React Hook Form + Zod (validaciones compartidas con api/)
-Mapa	Leaflet + OpenStreetMap (sin API keys)
-Backend gestionado	Supabase: Postgres, Auth, RLS, Storage, Realtime
-Serverless	Vercel Functions (api/*)
-PWA	manifest + service worker básico
-🗂️ Estructura
-plain
-patitas/
-├── api/                    # Vercel Serverless Functions (privilegios/secretos)
-│   ├── _lib/               # http, auth, rateLimit, supabaseAdmin, audit
-│   ├── admin/              # reports.ts, publications.ts, action.ts
-│   └── health.ts
-├── src/
-│   ├── components/
-│   │   ├── ui/             # Button, Field, Modal, Toast, Logo, TypeBadge…
-│   │   ├── layout/         # Navbar, BottomNav, Footer, ProtectedRoute
-│   │   ├── pets/           # PetCard, ResolvedBanner
-│   │   ├── publications/   # FilterBar, ShareButtons, ReportModal
-│   │   └── map/            # MapView, LocationPicker
-│   ├── features/→ hooks/   # useAuth, usePublications, useAdmin, useNotifications
-│   ├── lib/
-│   │   ├── supabase/       # cliente singleton
-│   │   ├── validations/    # Zod compartido cliente/servidor
-│   │   └── utils/          # cn, format, share
-│   ├── routes/             # una página por archivo (lazy)
-│   ├── styles/             # tokens del Design System + tema leaflet
-│   └── types/              # tipos fuertes (espejo del esquema SQL)
-├── supabase/
-│   ├── migrations/         # 0001_schema, 0002_rls, 0003_functions
-│   ├── seed.sql            # MOCK — solo desarrollo
-│   └── config.toml
-├── public/                 # PWA (manifest, sw.js, favicon)
-├── .env.example
-└── vercel.json             # security headers + SPA fallback
-🗄️ Modelo de datos (PostgreSQL)
-profiles · pets · publications · publication_images · locations · sightings ·
-reports · notifications · comments · adoption_requests · audit_logs · match_signals
-UUIDs, FKs, constraints, created_at/updated_at/deleted_at.
-Full-text search: search_tsv GIN sobre título+descripción.
-Índices para feed, filtros y mapa.
-Ubicación difuminada: el trigger set_fuzzy_location aleatoriza
-fuzzy_lat/lng (±~350 m). El cliente jamás recibe lat/lng exactas
-(sin grants de columna). Las publicaciones nunca revelan direcciones exactas.
-🔐 Seguridad
-RLS activo en todas las tablas. La autorización no depende del frontend.
-Columnas sensibles (profiles.phone, pets.microchip) protegidas por
-column-level grants — no solo por convenios del cliente.
-service_role_key solo en variables de servidor de Vercel (sin VITE_).
-Las Functions revalidan identidad y rol con el token del llamante.
-Rate limiting en /api/* (por instancia; intercambiable por KV/Upstash).
-Headers de seguridad en vercel.json, límite de payload (100 KB),
-validación Zod en el borde del servidor, errores genéricos al cliente,
-detalles solo en logs.
-Storage: buckets pet-images/avatars, lectura pública (necesaria para
-previews de compartir), escritura solo en la carpeta uid del usuario.
-Resumen de políticas RLS
-Table
-Tabla	Público	Autenticado	Moderador	Admin
-profiles	vía public_profiles (no sensible)	lee/actualiza lo suyo	SELECT	todo
-pets	si tiene publicación activa	CRUD propio	SELECT	todo
-publications	SELECT ACTIVE	CRUD propio	ocultar/restaurar	DELETE
-locations	coordenadas fuzzy	insert/update propio	—	—
-reports	—	crear + ver las suyas	gestionar	gestionar
-notifications	—	solo las suyas	—	—
-audit_logs	—	—	SELECT	SELECT
-🎨 Design System — Anime Edition
+supabase db reset
 
-**Sistema de diseño completamente rediseñado** con identidad visual única inspirada en anime moderno.
+# 3. Alternativa (opción B: Supabase Cloud)
+# - Crear proyecto en supabase.com
+# - Ejecutar migraciones desde supabase/migrations/ en SQL Editor
+# - Copiar URL y anon key desde Settings > API
 
-### Paleta de Colores
-- **Navy** (#1a2332) — Color principal estructural
-- **Cream** (#fef8f0) — Fondo cálido que reemplaza el blanco
-- **Orange** (#ff8c42) — Acento principal vibrante
-- **Turquoise** (#4ecdc4) — Acento secundario fresco
-- **Purple** (#a78bfa) — Adopción y elementos emocionales
-- **Lost** (#ef4444) — Casos perdidos
-- **Found** (#10b981) — Casos encontrados
+# 4. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales de Supabase
 
-### Componentes Clave
-- **PawLoader** — Loader personalizado con huella animada
-- **EmptyState / ErrorState** — Estados con personalidad y mascotas
-- **PublicationCard** — Rediseñada con hover effects, emojis y gradientes
-- **Button** — 5 variantes (primary, secondary, adoption, ghost, danger) con microinteracciones
-- **StatCard** — Cards con iconos y efectos hover
-- **Logo** — Animado con gradientes y transformaciones
+# 5. Iniciar desarrollo
+npm run dev
+# → http://localhost:5173
+```
 
-### Animaciones
-- **paw-bounce** — Huellas rebotando (identidad de marca)
-- **float** — Flotación suave para elementos decorativos
-- **paw-pulse** — Pulso de loader
-- **shake** — Feedback de error
-- **fade-up** — Entrada de secciones
-- **blob-morph** — Decoraciones orgánicas animadas
+### Configuración `.env`
 
-### Hero Principal
-Hero completamente rediseñado con el mensaje:
-> **"Cada patita merece volver a casa"**
+```env
+# CLIENTE (expuestas al navegador, seguras con RLS)
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-anon-key-aqui
+VITE_SITE_URL=http://localhost:5173
 
-Incluye: gradientes anime, decoraciones con huellas, blobs animados, mini estadísticas y CTAs destacados.
+# SERVIDOR (Vercel Functions - NUNCA con prefijo VITE_)
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key-aqui
+```
 
-### Características
-✅ **Accesibilidad** — Focus visible, ARIA labels, soporte `prefers-reduced-motion`  
-✅ **Responsive** — Mobile first, optimizado de 320px a 1920px  
-✅ **Performance** — Animaciones CSS optimizadas, lazy loading  
-✅ **Microinteracciones** — Feedback visual en cada acción  
-
-Ver documentación completa en [REDISENO_ANIME_EDITION.md](./REDISENO_ANIME_EDITION.md)
+⚠️ **CRÍTICO**: `SUPABASE_SERVICE_ROLE_KEY` solo en servidor (sin `VITE_`). Bypasea RLS.
 
 ---
-✅ Estado por fases
-Table
-Fase	Estado
-1. Arquitectura + Design System	✅
-2. Supabase: schema + RLS + functions + seed	✅
-3. Auth (registro/login/recuperar/protección)	✅
-4. Publicaciones: wizard + Storage	✅
-5. Búsqueda + filtros (full-text + índices)	✅
-6. Mapa (Leaflet, coordenadas difuminadas)	✅
-7. Compartir (enlace/WA/FB/TG/WebShare) + JSON-LD	✅
-8. Reportes + moderación (/admin + Functions)	✅
-9. Notificaciones + Realtime (selectivo)	✅
-10. Coincidencias (heurística SQL + notificaciones)	✅
-11. Testing	⚠️ estructura lista (vitest/playwright en devDeps); añadir specs
-12. Security hardening	✅ (headers, RLS, rate limit, column grants)
-13. Producción	📝 ver despliegue abajo
 
-🌐 Despliegue (Vercel + Supabase)
-Push a GitHub → importar repo en Vercel (framework: Vite, auto-detectado).
-En Vercel → Settings → Environment Variables: añade SUPABASE_URL,
-SUPABASE_SERVICE_ROLE_KEY, SITE_URL, límites de rate limit.
-Nunca añadas la service key como VITE_*.
-En Supabase cloud: aplica las 3 migraciones y configura Auth
-(Site URL = tu dominio Vercel, redirect URLs).
-Habilita Realtime para notifications en Supabase → Database → Replication.
-Preview deployments automáticos por PR.
+## 💻 Desarrollo local
 
-📜 Convenciones
-Commits semánticos: feat(auth): …, fix(rls): restrict publication updates to owners.
-TypeScript estricto, sin any, ESLint + Prettier, HTML semántico, focus visible,
-aria-* en interactivos, contraste AA.
+### Comandos disponibles
 
-❤️ Producto
-Patitas no es "otro sitio de anuncios": es el lugar donde buscas cuando una
-mascota desaparece. Perdí → busco → filtro por zona → reviso el mapa →
-encuentro coincidencias → contacto → recupero → marco resuelto.
-plain
+```bash
+npm run dev      # Servidor de desarrollo (http://localhost:5173)
+npm run build    # Build de producción
+npm run preview  # Preview del build
+npm run lint     # Verificar código con ESLint
+npm run format   # Formatear código con Prettier
+npm run test     # Ejecutar tests con Vitest
+```
+
+### Usuarios de prueba (seed local)
+
+Si usas Supabase local, las migraciones incluyen usuarios de prueba:
+
+```
+Email: ana@patitas.dev | luis@patitas.dev
+Rol: USER
+Contraseña: patitas123
+
+Email: mod@patitas.dev
+Rol: MODERATOR
+Contraseña: patitas123
+```
+
+---
+
+## 📁 Estructura del proyecto
+
+```
+patitas/
+├── api/                      # Vercel Serverless Functions
+│   ├── _lib/                 # Utilidades (rate limit, supabase admin)
+│   ├── admin/moderation.ts   # Moderación
+│   ├── ai/                   # Procesamiento IA
+│   ├── publications/create.ts
+│   ├── uploads/validate.ts
+│   └── health.ts
+│
+├── src/
+│   ├── app/                  # Configuración App
+│   │   ├── App.tsx           # Router principal
+│   │   ├── auth-context.ts   # Context autenticación
+│   │   └── auth-provider.tsx # Provider autenticación
+│   │
+│   ├── components/           # Componentes React
+│   │   ├── ai/               # Componentes IA (suggestions, matches, status)
+│   │   ├── layout/           # Layout (navbar, footer, bottom-nav)
+│   │   ├── publications/     # Publicaciones (card, comments, timeline)
+│   │   └── ui/               # UI base (button, input, loader, etc.)
+│   │
+│   ├── lib/                  # Lógica de negocio
+│   │   ├── ai/               # Sistema IA (jobs, matching, duplicates)
+│   │   ├── config/           # Configuración sitio
+│   │   ├── constants/        # Constantes (Cuba, labels)
+│   │   ├── matching/         # Lógica matching
+│   │   ├── seo/              # Meta tags + JSON-LD
+│   │   ├── supabase/         # Clientes y operaciones DB
+│   │   ├── utils/            # Utilidades (scroll, responsive, share)
+│   │   └── validations/      # Schemas Zod
+│   │
+│   ├── routes/               # Páginas
+│   │   ├── auth/             # Login, register, callback, etc.
+│   │   ├── home-page.tsx
+│   │   ├── search-page.tsx
+│   │   ├── map-page.tsx
+│   │   ├── publish-page.tsx
+│   │   ├── publication-page.tsx
+│   │   ├── profile-page.tsx
+│   │   ├── dashboard-page.tsx
+│   │   ├── adoptions-page.tsx
+│   │   ├── notifications-page.tsx
+│   │   ├── how-it-works-page.tsx
+│   │   └── admin-page.tsx
+│   │
+│   ├── styles/globals.css    # Estilos globales + Tailwind
+│   ├── types/index.ts        # Tipos TypeScript
+│   └── main.tsx              # Entry point
+│
+├── supabase/
+│   ├── migrations/           # 10 migraciones SQL
+│   │   ├── 0001_initial_schema.sql
+│   │   ├── 0002_storage_policies.sql
+│   │   ├── ...
+│   │   └── 0010_matching_system.sql
+│   └── config.toml
+│
+├── docs/                     # Documentación
+│   ├── ESTADO_IMPLEMENTACION.md
+│   ├── PROGRESO_IMPLEMENTACION.md
+│   └── REDISENO_FINAL_COMPLETO.md
+│
+├── .env.example
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── tailwind.config.js
+└── vercel.json
+```
+
+---
+
+## 🗄 Modelo de datos (resumen)
+
+### Tablas principales
+
+- **`profiles`**: Perfiles de usuario (1:1 con `auth.users`)
+- **`pets`**: Información de mascotas
+- **`publications`**: Publicaciones (LOST, FOUND, ADOPTION, etc.)
+- **`publication_images`**: Imágenes de publicaciones (hasta 10)
+- **`locations`**: Ubicaciones con fuzzing automático
+- **`comments`**: Sistema de comentarios
+- **`sightings`**: Timeline de avistamientos
+- **`notifications`**: Notificaciones en tiempo real
+- **`reports`**: Sistema de reportes comunitarios
+- **`adoption_requests`**: Solicitudes de adopción
+- **`audit_logs`**: Trazabilidad de acciones críticas
+
+### Tablas IA (infraestructura completa)
+
+- **`ai_processing_jobs`**: Cola de procesamiento asíncrono
+- **`ai_matches`**: Coincidencias calculadas
+- **`ai_ocr_results`**: Resultados de OCR
+- **`ai_vision_results`**: Análisis visual
+- **`ai_text_embeddings`**: Embeddings de texto
+- **`ai_image_embeddings`**: Embeddings de imágenes
+- **`ai_moderation_results`**: Moderación automática
+- **`duplicate_detections`**: Detección de duplicados
+
+### Características del modelo
+
+- ✅ **UUIDs** como primary keys
+- ✅ **Foreign keys** con `ON DELETE` apropiados
+- ✅ **Timestamps**: `created_at`, `updated_at`, `deleted_at` (soft deletes)
+- ✅ **Full-text search**: columna `search_tsv` con índice GIN
+- ✅ **Índices optimizados** para filtros y ordenamiento
+- ✅ **Triggers**: Fuzzing de ubicación, actualización de timestamps
+- ✅ **Constraints**: Validación de datos a nivel DB
+
+---
+
+## 🔐 Seguridad y privacidad
+
+### Row Level Security (RLS)
+
+**RLS activo en TODAS las tablas**. Políticas por rol:
+
+| Tabla | Público | Autenticado | Moderador | Admin |
+|-------|---------|-------------|-----------|-------|
+| profiles | Solo públicas | CRUD propio | SELECT | TODO |
+| pets | Con publicación | CRUD propio | SELECT | TODO |
+| publications | SELECT ACTIVE | CRUD propio | ocultar/restaurar | DELETE |
+| locations | Solo fuzzy | insert/update | - | - |
+| reports | - | crear + ver propios | gestionar | gestionar |
+| notifications | - | solo propias | - | - |
+
+### Protección de datos sensibles
+
+- **Column-level grants**: `profiles.phone`, `pets.microchip_private` NO accesibles directamente
+- **Coordenadas exactas**: `locations.exact_lat/lng` sin grants, cliente solo ve fuzzy
+- **Service role key**: NUNCA expuesta al cliente (sin prefijo `VITE_`)
+
+### Rate limiting
+
+Endpoints protegidos (100 requests/15min por IP):
+- `/api/publications/create`
+- `/api/uploads/validate`
+- `/api/ai/*`
+
+### Headers de seguridad (Vercel)
+
+```json
+{
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(self)"
+}
+```
+
+### Privacidad de ubicación
+
+1. Usuario ingresa ubicación (provincia, municipio, coordenadas opcionales)
+2. **Trigger automático** difumina coordenadas (±500m)
+3. Cliente **nunca recibe** coordenadas exactas
+4. Mapa muestra ubicación aproximada
+
+---
+
+## 🎨 Sistema de diseño
+
+### Anime Edition
+
+Identidad visual única inspirada en anime moderno con personalidad y cercanía.
+
+#### Paleta de colores
+
+```css
+--color-navy:      #1a2332  /* Estructura, texto principal */
+--color-cream:     #fef8f0  /* Fondo cálido */
+--color-orange:    #ff8c42  /* Acción, CTAs */
+--color-turquoise: #4ecdc4  /* Comunidad, éxito */
+--color-purple:    #a78bfa  /* Adopción, emocional */
+--color-lost:      #ef4444  /* Urgente, perdidos */
+--color-found:     #10b981  /* Resuelto, encontrados */
+```
+
+#### Tipografía
+
+- **Display**: Baloo 2 (redondeada, amigable, títulos)
+- **Sans**: Figtree (moderna, legible, cuerpo)
+
+#### Animaciones (11 tipos)
+
+- `paw-bounce`: Huellas rebotando (identidad de marca)
+- `float`: Flotación suave decorativa
+- `paw-pulse`: Pulso de huella en loaders
+- `shake`: Sacudida para errores
+- `fade-up`, `scale-in`, `slide-up`: Scroll reveals
+- `glow`: Efecto brillo pulsante
+- `blob-morph`: Decoraciones orgánicas
+
+#### Componentes destacados
+
+- **PawLoader**: Loader con huella animada (3 tamaños)
+- **PublicationCard**: Card con hover effects, gradientes y microinteracciones
+- **Button**: 5 variantes (primary, secondary, adoption, ghost, danger)
+- **ScrollReveal**: Componente para animaciones de scroll
+- **EmptyState**: Estados vacíos con personalidad y mascotas
+
+Ver documentación completa en [docs/REDISENO_FINAL_COMPLETO.md](./docs/REDISENO_FINAL_COMPLETO.md)
+
+---
+
+## 🌐 Despliegue
+
+### Vercel (recomendado)
+
+1. **Push a GitHub**
+
+2. **Importar en Vercel**
+   - Framework preset: Vite (auto-detectado)
+   - Build command: `npm run build`
+   - Output directory: `dist`
+
+3. **Configurar variables de entorno** en Vercel:
+   ```
+   SUPABASE_URL
+   SUPABASE_SERVICE_ROLE_KEY
+   VITE_SUPABASE_URL
+   VITE_SUPABASE_ANON_KEY
+   VITE_SITE_URL (tu dominio Vercel)
+   ```
+
+4. **Configurar Supabase Auth**:
+   - Site URL: `https://tu-app.vercel.app`
+   - Redirect URLs: `https://tu-app.vercel.app/auth/callback`
+
+5. **Deploy automático** en cada push a `main`
+
+### Preview deployments
+
+Vercel crea automáticamente preview deployments por cada PR.
+
+---
+
+## 📜 Convenciones
+
+### Commits (Conventional Commits)
+
+```bash
+feat(auth): agregada recuperación de contraseña
+fix(rls): corregidas políticas de publications
+docs(readme): actualizada documentación de API
+refactor(matching): optimizado cálculo de scores
+chore(deps): actualizado React a v19
+```
+
+**Reglas:**
+- ✅ Siempre en español
+- ✅ Tipos: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `style`
+- ✅ Máximo 72 caracteres en el subject
+- ✅ Modo imperativo participio: "Agregada validación" (no "Se agregó")
+
+### Código
+
+- ✅ **TypeScript strict** sin `any`
+- ✅ **ESLint + Prettier**: Código consistente
+- ✅ **Comentarios en español**
+- ✅ **Componentes**: PascalCase (`PublicationCard.tsx`)
+- ✅ **Utilidades**: camelCase (`slugify.ts`)
+- ✅ **Constantes**: UPPER_SNAKE_CASE (`SITE_NAME`)
+
+### Accesibilidad
+
+- ✅ HTML semántico (`<nav>`, `<main>`, `<article>`)
+- ✅ `aria-label` en elementos interactivos sin texto
+- ✅ `alt` text descriptivo en imágenes
+- ✅ Focus visible (outline naranja)
+- ✅ Contraste WCAG AA mínimo
+- ✅ Touch targets 44px (WCAG AAA)
+
+---
+
+## 📊 Estado del proyecto
+
+### Progreso general: ~35% completado
+
+| Área | Estado | Notas |
+|------|--------|-------|
+| **Autenticación** | ✅ 100% | Email, OAuth, recuperación |
+| **Perfiles** | ✅ 100% | Públicos, dashboard, avatares |
+| **Publicaciones** | ✅ 90% | CRUD, wizard, imágenes |
+| **Búsqueda** | ✅ 85% | Full-text, filtros, paginación |
+| **Mapa** | 🟨 60% | Estructura lista, falta integración |
+| **Notificaciones** | ✅ 100% | Real-time, subscripciones |
+| **Coincidencias (IA)** | 🟨 70% | Infraestructura completa, falta IA real |
+| **Moderación** | 🟨 40% | Reportes funcionando, panel básico |
+| **Adopciones** | 🟨 50% | Solicitudes OK, falta panel completo |
+| **Testing** | 🟥 10% | Configuración lista, faltan tests |
+| **Seguridad** | ✅ 100% | RLS, rate limiting, headers |
+| **Design System** | ✅ 100% | Anime Edition completo |
+
+### Implementado ✅
+
+- ✅ Base de datos con 20+ tablas y RLS completo
+- ✅ Sistema de autenticación (email + OAuth ready)
+- ✅ CRUD completo de publicaciones con wizard
+- ✅ Búsqueda avanzada con full-text search
+- ✅ Sistema de notificaciones en tiempo real
+- ✅ Infraestructura completa de IA (jobs, matching, OCR, vision)
+- ✅ Detección de duplicados
+- ✅ Rate limiting en endpoints críticos
+- ✅ Privacidad de ubicación con fuzzing
+- ✅ Sistema de comentarios y avistamientos
+- ✅ PWA con service worker
+- ✅ Compartir en redes sociales
+- ✅ SEO con meta tags y JSON-LD
+- ✅ Design System Anime Edition completo
+- ✅ Responsive design (320px - 4K+)
+- ✅ Animaciones avanzadas de scroll
+
+### Pendiente ⏳
+
+- ⏳ Proveedores de IA reales (OpenAI, Cloudflare AI)
+- ⏳ Workers para procesamiento asíncrono
+- ⏳ Búsqueda semántica con embeddings
+- ⏳ Matching visual con Computer Vision
+- ⏳ OCR real para extracción de texto
+- ⏳ Panel de moderación completo
+- ⏳ Dashboard de adopciones completo
+- ⏳ Mapa interactivo funcional
+- ⏳ Testing (unitario, integración, E2E)
+- ⏳ Observabilidad y métricas
+
+Ver estado detallado en [docs/ESTADO_IMPLEMENTACION.md](./docs/ESTADO_IMPLEMENTACION.md)
+
+---
+
+## 📚 Documentación completa
+
+### Documentos disponibles
+
+- **[ESTADO_IMPLEMENTACION.md](./docs/ESTADO_IMPLEMENTACION.md)**: Estado actual detallado por fase
+- **[PROGRESO_IMPLEMENTACION.md](./docs/PROGRESO_IMPLEMENTACION.md)**: Progreso de desarrollo por sesión
+- **[REDISENO_FINAL_COMPLETO.md](./docs/REDISENO_FINAL_COMPLETO.md)**: Documentación completa del Design System Anime Edition
+- **[ANALISIS_PATITAS.md](./docs/ANALISIS_PATITAS.md)**: Análisis inicial del proyecto
+
+### API Documentation
+
+#### Endpoints disponibles
+
+**Health check**
+```
+GET /api/health
+```
+
+**Validar upload**
+```
+POST /api/uploads/validate
+Body: { file: File, publicationId?: string }
+```
+
+**Crear publicación (con rate limit)**
+```
+POST /api/publications/create
+Body: PublicationData
+```
+
+**Moderación administrativa**
+```
+POST /api/admin/moderation
+Body: { action, targetId, reason }
+Headers: Authorization
+```
+
+**Procesar publicación con IA**
+```
+POST /api/ai/process-publication
+Body: { publicationId }
+```
+
+**Calcular coincidencias**
+```
+POST /api/ai/calculate-matches
+Body: { publicationId }
+```
+
+**Crear match**
+```
+POST /api/ai/create-match
+Body: { publicationAId, publicationBId, scores }
+```
+
+---
+
+## 🤝 Contribuir
+
+### Workflow
+
+1. **Fork** el repositorio
+2. **Crea una rama** para tu feature: `git checkout -b feat/nueva-funcionalidad`
+3. **Commit** tus cambios: `git commit -m "feat(scope): descripción"`
+4. **Push** a la rama: `git push origin feat/nueva-funcionalidad`
+5. **Abre un Pull Request** describiendo los cambios
+
+### Antes de enviar PR
+
+```bash
+# Verificar código
+npm run lint
+
+# Formatear
+npm run format
+
+# Ejecutar tests
+npm run test
+
+# Build exitoso
+npm run build
+```
+
+### Guías
+
+- Sigue las [convenciones de commits](#-convenciones)
+- Mantén TypeScript strict (sin `any`)
+- Agrega tests para nuevas funcionalidades
+- Documenta cambios significativos
+- Respeta el Design System existente
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo licencia **MIT**. Ver archivo `LICENSE` para más detalles.
+
+---
+
+## 💡 Filosofía del producto
+
+**Patitas no es "otro sitio de anuncios"**: es el lugar donde buscas cuando una mascota desaparece.
+
+### El flujo ideal
+
+1. **Perdí** mi mascota → Publico con fotos y ubicación
+2. **Busco** publicaciones similares → Filtro por zona y características
+3. **Reviso el mapa** → Veo avistamientos cercanos
+4. **IA encuentra coincidencias** → Recibo notificación de posible match
+5. **Contacto** con quien la vio → Coordinamos recuperación
+6. **Marco como resuelto** → ¡Celebración! 🎉
+
+### Valores
+
+- **Privacidad primero**: Ubicaciones difuminadas, datos sensibles protegidos
+- **Comunidad activa**: Comentarios, avistamientos, ayuda mutua
+- **Tecnología al servicio**: IA que ayuda, no reemplaza
+- **Accesibilidad universal**: Funciona para todos, en cualquier dispositivo
+- **Transparencia**: Código auditable, políticas claras
+
+---
+
+## 📧 Contacto
+
+- **Issues**: [GitHub Issues](https://github.com/KevPatterson/Patitas---Plataforma-de-mascotas/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/KevPatterson/Patitas---Plataforma-de-mascotas/discussions)
+- **Email**: kevinpatterson618@gmail.com
+
+---
+
+## 🙏 Agradecimientos
+
+- **Supabase** por la infraestructura backend
+- **Vercel** por el hosting y serverless functions
+- **OpenStreetMap** por los mapas gratuitos
+- Comunidad de código abierto por las librerías utilizadas
+
+---
+
+<div align="center">
+
+**🐾 Cada patita merece volver a casa 🐾**
+
+Hecho con ❤️ para las mascotas y las personas que las aman
+
+[⬆ Volver arriba](#-patitas--ayudemos-a-que-vuelvan-a-casa)
+
+</div>

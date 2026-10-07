@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/auth-context';
 import { getMyPublications, type MyPublication } from '../lib/supabase/my-publications';
-import { resolvePublication, hidePublication, deletePublication } from '../lib/supabase/publication-actions';
+import { resolvePublication, deletePublication } from '../lib/supabase/publication-actions';
 import { signOut } from '../lib/supabase/auth';
 import { getProfile, uploadAvatar, deleteAvatar } from '../lib/supabase/profiles';
 import { PublicationCard } from '../components/publications/publication-card';

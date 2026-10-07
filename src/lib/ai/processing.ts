@@ -1,7 +1,7 @@
 // Servicio de procesamiento automático de publicaciones con IA
 
 import { supabase } from '../supabase/client';
-import type { ExtractedAttribute, OCRResult, VisionResult } from './types';
+import type { ExtractedAttribute, OCRResult, VisionResult, AIProcessingJob, AIJobStatus, AIJobType } from './types';
 
 export type ProcessingStatus = {
   ocr: 'pending' | 'processing' | 'completed' | 'failed';
@@ -10,6 +10,36 @@ export type ProcessingStatus = {
   moderation: 'pending' | 'processing' | 'completed' | 'failed';
   overall: 'pending' | 'processing' | 'completed' | 'partial' | 'failed';
 };
+
+/**
+ * Iniciar procesamiento de IA para una publicación
+ */
+export async function startProcessing(
+  publicationId: string,
+  tasks?: AIJobType[]
+): Promise<{ ok: boolean; jobs?: Array<{ id: string; job_type: string }> }> {
+  const { data: session } = await supabase.auth.getSession();
+
+  if (!session.session) {
+    throw new Error('No hay sesión activa');
+  }
+
+  const response = await fetch('/api/ai/process-publication', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.session.access_token}`,
+    },
+    body: JSON.stringify({ publicationId, tasks }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error al iniciar procesamiento');
+  }
+
+  return response.json();
+}
 
 // Obtener estado de procesamiento de una publicación
 export async function getProcessingStatus(publicationId: string): Promise<ProcessingStatus> {
@@ -67,6 +97,41 @@ export async function getProcessingStatus(publicationId: string): Promise<Proces
   statusMap.overall = overall;
 
   return statusMap;
+}
+
+/**
+ * Obtener jobs de procesamiento de una publicación
+ */
+export async function getProcessingJobs(publicationId: string): Promise<AIProcessingJob[]> {
+  const { data, error } = await supabase
+    .from('ai_processing_jobs')
+    .select('*')
+    .eq('publication_id', publicationId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching processing jobs:', error);
+    return [];
+  }
+
+  return (data as AIProcessingJob[]) || [];
+}
+
+/**
+ * Reintentar un job fallido
+ */
+export async function retryJob(jobId: string): Promise<void> {
+  const { error } = await supabase
+    .from('ai_processing_jobs')
+    .update({
+      status: 'PENDING' as AIJobStatus,
+      error_message: null,
+    })
+    .eq('id', jobId);
+
+  if (error) {
+    throw error;
+  }
 }
 
 // Obtener atributos extraídos automáticamente
@@ -279,7 +344,7 @@ export async function needsModerationReview(publicationId: string): Promise<bool
     .eq('requires_human_review', true)
     .is('reviewed_at', null)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   return !!data;
 }
@@ -292,7 +357,7 @@ export async function getModerationClassification(publicationId: string) {
     .eq('publication_id', publicationId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   return data;
 }
