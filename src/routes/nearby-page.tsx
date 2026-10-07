@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { MapPin, Navigation } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { PublicationCard } from '../components/publications/publication-card';
@@ -38,10 +38,84 @@ export function NearbyPage() {
     });
   }, []);
 
+  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  const getFallbackLocation = useCallback(async () => {
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+
+      if (data.latitude && data.longitude) {
+        const location = {
+          lat: data.latitude,
+          lng: data.longitude,
+        };
+        setUserLocation(location);
+        // Guardar en localStorage
+        localStorage.setItem('userLocation', JSON.stringify(location));
+        setLocationError(false);
+        return true;
+      }
+    } catch (_error) {
+      console.warn('No se pudo obtener ubicación por IP:', _error);
+    }
+    return false;
+  }, []);
+
+  const getLocation = useCallback(async () => {
+    if (requestingLocation || !('geolocation' in navigator)) {
+      if (!('geolocation' in navigator)) {
+        await getFallbackLocation();
+      }
+      return;
+    }
+
+    setRequestingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(location);
+        // Guardar en localStorage
+        localStorage.setItem('userLocation', JSON.stringify(location));
+        setLocationError(false);
+        setRequestingLocation(false);
+      },
+      async () => {
+        setRequestingLocation(false);
+        console.warn('Error obteniendo ubicación GPS, intentando por IP...');
+        const fallbackSuccess = await getFallbackLocation();
+        if (!fallbackSuccess) {
+          setLocationError(true);
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0,
+      }
+    );
+  }, [requestingLocation, getFallbackLocation]);
+
   // Obtener ubicación
   useEffect(() => {
     getLocation();
-  }, []);
+  }, [getLocation]);
 
   // Cargar casos
   useEffect(() => {
@@ -54,8 +128,8 @@ export function NearbyPage() {
         if (active) {
           setAllCases(cases);
         }
-      } catch (error) {
-        console.error('Error loading nearby cases:', error);
+      } catch (_error) {
+        console.error('Error loading nearby cases:', _error);
       } finally {
         if (active) setLoading(false);
       }
@@ -88,81 +162,8 @@ export function NearbyPage() {
         })
         .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
     });
-  }, [userLocation]);
+  }, [userLocation, allCases.length]);
 
-  const getLocation = async () => {
-    if (requestingLocation || !('geolocation' in navigator)) {
-      if (!('geolocation' in navigator)) {
-        await getFallbackLocation();
-      }
-      return;
-    }
-
-    setRequestingLocation(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const location = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        setUserLocation(location);
-        // Guardar en localStorage
-        localStorage.setItem('userLocation', JSON.stringify(location));
-        setLocationError(false);
-        setRequestingLocation(false);
-      },
-      async (error) => {
-        setRequestingLocation(false);
-        console.warn('Error obteniendo ubicación GPS, intentando por IP...');
-        const fallbackSuccess = await getFallbackLocation();
-        if (!fallbackSuccess) {
-          setLocationError(true);
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 0,
-      }
-    );
-  };
-
-  const getFallbackLocation = async () => {
-    try {
-      const response = await fetch('https://ipapi.co/json/');
-      const data = await response.json();
-
-      if (data.latitude && data.longitude) {
-        const location = {
-          lat: data.latitude,
-          lng: data.longitude,
-        };
-        setUserLocation(location);
-        // Guardar en localStorage
-        localStorage.setItem('userLocation', JSON.stringify(location));
-        setLocationError(false);
-        return true;
-      }
-    } catch (error) {
-      console.warn('No se pudo obtener ubicación por IP:', error);
-    }
-    return false;
-  };
-
-  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
 
   const handleRequestLocation = () => {
     getLocation();

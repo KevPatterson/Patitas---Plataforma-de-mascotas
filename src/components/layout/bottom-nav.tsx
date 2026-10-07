@@ -1,6 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Search, MapPinned, PlusCircle, Bell } from 'lucide-react';
-import { useAuth } from '../../app/auth-context';
 import { useNotificationCount } from '../../lib/hooks/use-notification-count';
 
 const items = [
@@ -12,7 +11,6 @@ const items = [
 ];
 
 export function BottomNav() {
-  const { user } = useAuth();
   const location = useLocation();
   const unreadCount = useNotificationCount();
 

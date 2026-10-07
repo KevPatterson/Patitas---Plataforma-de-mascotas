@@ -5,6 +5,7 @@ export type AuthContextValue = {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  isLoading: boolean; // Alias de loading para consistencia
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);

@@ -23,6 +23,14 @@ import { findMatches } from '../lib/matching/match-calculator';
 import { createAdoptionRequest } from '../lib/supabase/adoption-requests';
 import { generateLostPetStructuredData, injectStructuredData, removeStructuredData } from '../lib/seo/structured-data';
 import { SPECIES_LABELS, SEX_LABELS, SIZE_LABELS, AGE_LABELS } from '../lib/constants/labels';
+
+// Helper para normalizar location que puede venir como objeto o array
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeLocation(location: any) {
+  if (!location) return null;
+  return Array.isArray(location) ? location[0] : location;
+}
+
 export function PublicationPage() {
   const { user } = useAuth();
   const { slug } = useParams();
@@ -63,6 +71,9 @@ export function PublicationPage() {
       }
 
       if (data) {
+        // Normalizar location: puede ser objeto o array
+        const loc = normalizeLocation(data.location);
+        
         // Cargar avistamientos
         const sightingsData = await getSightings(data.id);
         if (active) {
@@ -80,8 +91,8 @@ export function PublicationPage() {
             color: data.color,
             size: data.size,
             sex: data.sex,
-            province: data.location?.[0]?.province ?? '',
-            municipality: data.location?.[0]?.municipality ?? '',
+            province: loc?.province ?? '',
+            municipality: loc?.municipality ?? '',
             event_date: data.event_date,
           };
 
@@ -151,14 +162,15 @@ export function PublicationPage() {
 
     // Agregar structured data para publicaciones perdidas/encontradas
     if ((publication.type === 'LOST' || publication.type === 'FOUND') && image) {
+      const loc = normalizeLocation(publication.location);
       const structuredData = generateLostPetStructuredData({
         name: publication.title,
         description: publication.description,
         image,
         species: publication.species,
         location: {
-          municipality: publication.location?.[0]?.municipality ?? '',
-          province: publication.location?.[0]?.province ?? '',
+          municipality: loc?.municipality ?? '',
+          province: loc?.province ?? '',
         },
         datePosted: publication.published_at,
         url: `${window.location.origin}/p/${publication.slug}`,
@@ -428,7 +440,10 @@ export function PublicationPage() {
                 <h2 className="font-display text-2xl font-extrabold text-navy">📍 Ubicación</h2>
                 <p className="flex items-center gap-2 text-sm text-navy/70">
                   <MapPin size={16} className="shrink-0 text-turquoise" />
-                  {[publication.location?.[0]?.zone, publication.location?.[0]?.municipality, publication.location?.[0]?.province].filter(Boolean).join(', ')}
+                  {(() => {
+                    const loc = normalizeLocation(publication.location);
+                    return [loc?.zone, loc?.municipality, loc?.province].filter(Boolean).join(', ');
+                  })()}
                 </p>
                 {publication.event_date ? (
                   <p className="flex items-center gap-2 text-sm text-navy/70">

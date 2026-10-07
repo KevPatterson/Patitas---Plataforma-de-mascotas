@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       user: session?.user ?? null,
       loading,
+      isLoading: loading, // Alias para consistencia
     }),
     [loading, session]
   );

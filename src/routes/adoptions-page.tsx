@@ -16,18 +16,19 @@ export function AdoptionsPage() {
   const [results, setResults] = useState<PublicationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(() => {
-    // Cargar ubicación guardada de localStorage
+  
+  // Cargar ubicación guardada de localStorage
+  const userLocation = (() => {
     try {
       const saved = localStorage.getItem('userLocation');
       if (saved) {
-        return JSON.parse(saved);
+        return JSON.parse(saved) as { lat: number; lng: number };
       }
     } catch (error) {
       console.warn('Error cargando ubicación:', error);
     }
     return null;
-  });
+  })();
 
   useEffect(() => {
     setPageMeta({
@@ -66,7 +67,7 @@ export function AdoptionsPage() {
 
           // Calcular distancia si hay ubicación del usuario
           if (userLocation) {
-            filtered = filtered.map((pub) => {
+            filtered = filtered.map((pub: PublicationSummary) => {
               if (pub.approximateLat && pub.approximateLng) {
                 const distance = calculateDistance(
                   userLocation.lat,
@@ -255,7 +256,7 @@ export function AdoptionsPage() {
               <PublicationCard 
                 key={publication.id} 
                 publication={publication} 
-                distance={(publication as any).distance}
+                distance={publication.distance}
               />
             ))}
           </div>

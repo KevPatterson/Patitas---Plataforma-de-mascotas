@@ -53,6 +53,7 @@ export type PublicationSummary = {
   approximateLat: number | null;
   approximateLng: number | null;
   coverImageUrl: string | null;
+  distance?: number; // Distancia calculada en km (opcional)
 };
 
 type SearchFilters = {
@@ -70,16 +71,20 @@ type SearchFilters = {
   offset?: number;
 };
 
-function mapPublication(row: PublicationRow): PublicationSummary {
-  const cover = row.publication_images.find((image) => image.is_cover) ?? row.publication_images[0] ?? null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapPublication(row: any): PublicationSummary {
+  const cover = row.publication_images?.find((image: { is_cover: boolean }) => image.is_cover) ?? row.publication_images?.[0] ?? null;
+
+  // Normalizar location: puede ser objeto o array[0]
+  const location = Array.isArray(row.location) ? row.location[0] : row.location;
 
   // Debug: log para verificar las coordenadas
-  if (!row.location?.approximate_lat || !row.location?.approximate_lng) {
+  if (!location?.approximate_lat || !location?.approximate_lng) {
     console.warn('⚠️ Publicación sin coordenadas:', {
       title: row.title,
-      hasLocation: !!row.location,
-      lat: row.location?.approximate_lat,
-      lng: row.location?.approximate_lng
+      hasLocation: !!location,
+      lat: location?.approximate_lat,
+      lng: location?.approximate_lng
     });
   }
 
@@ -96,11 +101,11 @@ function mapPublication(row: PublicationRow): PublicationSummary {
     sex: row.sex,
     size: row.size,
     publishedAt: row.published_at,
-    province: row.location?.province ?? null,
-    municipality: row.location?.municipality ?? null,
-    zone: row.location?.zone ?? null,
-    approximateLat: row.location?.approximate_lat ?? null,
-    approximateLng: row.location?.approximate_lng ?? null,
+    province: location?.province ?? null,
+    municipality: location?.municipality ?? null,
+    zone: location?.zone ?? null,
+    approximateLat: location?.approximate_lat ?? null,
+    approximateLng: location?.approximate_lng ?? null,
     coverImageUrl: cover ? supabase.storage.from('pet-images').getPublicUrl(cover.storage_path).data.publicUrl : null,
   };
 }
@@ -131,7 +136,7 @@ export async function searchPublications(filters: SearchFilters) {
         const ids = ftsResults.map((r: { id: string }) => r.id);
         const { data: withImages, error: imgError } = await supabase
           .from('publications')
-          .select('id, location:locations(province, municipality, zone, approximate_lat, approximate_lng), publication_images(storage_path, is_cover, alt_text)')
+          .select('id, location:locations!inner(province, municipality, zone, approximate_lat, approximate_lng), publication_images(storage_path, is_cover, alt_text)')
           .in('id', ids);
 
         if (!imgError && withImages) {
@@ -150,8 +155,23 @@ export async function searchPublications(filters: SearchFilters) {
             color: string;
             published_at: string;
           }) => {
-            const withImg = withImages.find((w: { id: string }) => w.id === fts.id);
-            const cover = withImg?.publication_images?.find((img: { is_cover: boolean }) => img.is_cover) ?? 
+            const withImg = withImages.find((w: { 
+              id: string;
+              location?: {
+                province: string;
+                municipality: string;
+                zone: string | null;
+                approximate_lat: number | null;
+                approximate_lng: number | null;
+              } | null;
+              publication_images?: Array<{
+                storage_path: string;
+                is_cover: boolean;
+                alt_text: string | null;
+              }>;
+            }) => w.id === fts.id);
+            
+            const cover = withImg?.publication_images?.find((img) => img.is_cover) ?? 
                          withImg?.publication_images?.[0] ?? null;
             
             return {
@@ -249,7 +269,11 @@ export async function searchPublications(filters: SearchFilters) {
     throw error;
   }
 
-  const mapped = (data as PublicationRow[]).map(mapPublication);
+  if (!data) {
+    return [];
+  }
+
+  const mapped = data.map(mapPublication);
   
   // Debug: verificar cuántas tienen coordenadas
   const withCoords = mapped.filter(p => p.approximateLat !== null && p.approximateLng !== null);

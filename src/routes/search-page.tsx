@@ -31,18 +31,19 @@ export function SearchPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(() => {
-    // Cargar ubicación guardada de localStorage
+  
+  // Cargar ubicación guardada de localStorage
+  const userLocation = useMemo(() => {
     try {
       const saved = localStorage.getItem('userLocation');
       if (saved) {
-        return JSON.parse(saved);
+        return JSON.parse(saved) as { lat: number; lng: number };
       }
     } catch (error) {
       console.warn('Error cargando ubicación:', error);
     }
     return null;
-  });
+  }, []);
 
   const LIMIT = 48;
 
@@ -79,7 +80,7 @@ export function SearchPage() {
           // Calcular distancia si hay ubicación del usuario
           let resultsWithDistance = data;
           if (userLocation) {
-            resultsWithDistance = data.map((pub) => {
+            resultsWithDistance = data.map((pub: PublicationSummary) => {
               if (pub.approximateLat && pub.approximateLng) {
                 const distance = calculateDistance(
                   userLocation.lat,
@@ -368,7 +369,7 @@ export function SearchPage() {
               <PublicationCard 
                 key={pub.id} 
                 publication={pub} 
-                distance={(pub as any).distance}
+                distance={pub.distance}
               />
             ))}
           </div>

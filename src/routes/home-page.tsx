@@ -31,7 +31,8 @@ export function HomePage() {
     }
     return null;
   });
-  const [locationError, setLocationError] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_locationError, setLocationError] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(() => {
     // Si ya tiene ubicación guardada, no mostrar indicador
     try {
@@ -273,8 +274,8 @@ export function HomePage() {
         );
       console.log('✅ Ordenado. Primeros 3:', sortedRecent.slice(0, 3).map(c => ({ 
         title: c.title.substring(0, 20), 
-        distance: (c as any).distance?.toFixed(2),
-        hasDistance: (c as any).distance !== undefined
+        distance: c.distance?.toFixed(2),
+        hasDistance: c.distance !== undefined
       })));
     } else {
       console.log('❌ Sin ubicación');
@@ -505,7 +506,7 @@ export function HomePage() {
                 <ScrollReveal key={pub.id} animation="scale-in" delay={index * 100}>
                   <PublicationCard 
                     publication={pub} 
-                    distance={(pub as any).distance}
+                    distance={pub.distance}
                   />
                 </ScrollReveal>
               ))}
