@@ -9,12 +9,14 @@
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed:test": "node scripts/seed-test-publications.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@supabase/supabase-js": "^2.117.2",
     "@types/leaflet": "^1.9.22",
+    "dotenv": "^16.4.7",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.52.0",
     "react": "^19.1.1",

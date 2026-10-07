@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import { Icon, type LatLngExpression } from 'leaflet';
+import { Icon, type LatLngExpression, divIcon } from 'leaflet';
 import { MapPin, Filter, X, Layers, PawPrint } from 'lucide-react';
+import { renderToString } from 'react-dom/server';
 import { Button } from '../components/ui/button';
 import { StatusBadge } from '../components/ui/status-badge';
 import { searchPublications, type PublicationSummary } from '../lib/supabase/publication-search';
@@ -11,21 +12,9 @@ import { setPageMeta } from '../lib/seo/page-meta';
 import { Link } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 
-// Fix para iconos de Leaflet en Vite
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-delete (Icon.Default.prototype as any)._getIconUrl;
-Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-// Iconos personalizados por tipo - forma de patita
-const createCustomIcon = (type: PublicationSummary['type']) => {
+// Iconos personalizados usando PawPrint de Lucide (igual que la leyenda)
+// Creamos los iconos fuera del componente para evitar problemas de renderizado
+const MARKER_ICONS: Record<PublicationSummary['type'], ReturnType<typeof divIcon>> = (() => {
   const colors: Record<PublicationSummary['type'], string> = {
     LOST: '#E63946',
     FOUND: '#38C9A3',
@@ -34,52 +23,49 @@ const createCustomIcon = (type: PublicationSummary['type']) => {
     SIGHTING: '#FF9E00',
   };
 
-  const svgIcon = `
-    <svg width="40" height="45" viewBox="0 0 40 45" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <filter id="shadow-${type}" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-          <feOffset dx="0" dy="2" result="offsetblur"/>
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="0.3"/>
-          </feComponentTransfer>
-          <feMerge> 
-            <feMergeNode/>
-            <feMergeNode in="SourceGraphic"/> 
-          </feMerge>
-        </filter>
-      </defs>
-      
-      <!-- Huella de patita -->
-      <g filter="url(#shadow-${type})">
-        <!-- 4 dedos -->
-        <ellipse cx="12" cy="13" rx="3.5" ry="5" transform="rotate(-20 12 13)" fill="${colors[type]}" stroke="#231942" stroke-width="1.5"/>
-        <ellipse cx="18" cy="9" rx="3.5" ry="5" transform="rotate(-8 18 9)" fill="${colors[type]}" stroke="#231942" stroke-width="1.5"/>
-        <ellipse cx="25" cy="9" rx="3.5" ry="5" transform="rotate(8 25 9)" fill="${colors[type]}" stroke="#231942" stroke-width="1.5"/>
-        <ellipse cx="31" cy="13" rx="3.5" ry="5" transform="rotate(20 31 13)" fill="${colors[type]}" stroke="#231942" stroke-width="1.5"/>
-        
-        <!-- Almohadilla principal -->
-        <path d="M 20 40 C 20 40 10 32 10 24 C 10 18 14 14 20 14 C 26 14 30 18 30 24 C 30 32 20 40 20 40 Z" 
-              fill="${colors[type]}" 
-              stroke="#231942" 
-              stroke-width="1.5"/>
-        
-        <!-- Badge con tipo -->
-        <circle cx="20" cy="25" r="6" fill="white" opacity="0.95"/>
-        <text x="20" y="28.5" text-anchor="middle" font-size="9" font-weight="bold" fill="#231942">
-          ${type === 'LOST' ? '?' : type === 'FOUND' ? '!' : type === 'ADOPTION' ? '♥' : type === 'SIGHTING' ? '👁' : '📍'}
-        </text>
-      </g>
-    </svg>
-  `;
+  const fillColors: Record<PublicationSummary['type'], string> = {
+    LOST: 'rgba(230, 57, 70, 0.2)',
+    FOUND: 'rgba(56, 201, 163, 0.2)',
+    ABANDONED: 'rgba(107, 101, 133, 0.1)',
+    ADOPTION: 'rgba(155, 81, 224, 0.2)',
+    SIGHTING: 'rgba(255, 158, 0, 0.2)',
+  };
 
-  return new Icon({
-    iconUrl: `data:image/svg+xml;base64,${btoa(svgIcon)}`,
-    iconSize: [40, 45],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
-  });
-};
+  const icons: Partial<Record<PublicationSummary['type'], ReturnType<typeof divIcon>>> = {};
+
+  for (const [type, color] of Object.entries(colors)) {
+    const fillColor = fillColors[type as PublicationSummary['type']];
+    
+    // Usar el icono PawPrint de Lucide igual que en la leyenda
+    const iconHtml = renderToString(
+      <div style={{ 
+        width: '40px', 
+        height: '40px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        transform: 'translate(-50%, -100%)'
+      }}>
+        <PawPrint 
+          size={32}
+          color={color}
+          fill={fillColor}
+          strokeWidth={2.5}
+        />
+      </div>
+    );
+
+    icons[type as PublicationSummary['type']] = divIcon({
+      html: iconHtml,
+      className: 'custom-paw-marker',
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -40],
+    });
+  }
+
+  return icons as Record<PublicationSummary['type'], ReturnType<typeof divIcon>>;
+})();
 
 // Componente para recentrar el mapa
 function MapRecenter({ center }: { center: LatLngExpression }) {
@@ -349,15 +335,36 @@ export function MapPage() {
             />
             <MapRecenter center={mapCenter} />
 
+            {/* Estilos personalizados para los marcadores PawPrint */}
+            <style>{`
+              .custom-paw-marker {
+                background: transparent !important;
+                border: none !important;
+              }
+              .custom-paw-marker svg {
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+              }
+            `}</style>
+
             <MarkerClusterGroup chunkedLoading>
               {publications.map((pub) => {
-                if (!pub.approximateLat || !pub.approximateLng) return null;
+                if (!pub.approximateLat || !pub.approximateLng) {
+                  console.warn('Publicación sin coordenadas válidas:', pub.title);
+                  return null;
+                }
+
+                console.log('Renderizando marcador:', {
+                  title: pub.title,
+                  lat: pub.approximateLat,
+                  lng: pub.approximateLng,
+                  type: pub.type
+                });
 
                 return (
                   <Marker
                     key={pub.id}
                     position={[pub.approximateLat, pub.approximateLng]}
-                    icon={createCustomIcon(pub.type)}
+                    icon={MARKER_ICONS[pub.type]}
                   >
                     <Popup maxWidth={300} className="custom-popup">
                       <div className="space-y-3 p-2">
@@ -431,7 +438,7 @@ export function MapPage() {
           </div>
         </div>
         <p className="mt-4 text-xs text-navy/60 leading-relaxed">
-          🐾 Cada huella representa un caso. Las ubicaciones son aproximadas (±500m) para proteger la privacidad. Los grupos de huellas representan múltiples casos en la misma zona.
+          🐾 Cada huella representa un caso. Las ubicaciones son aproximadas (±50m) para proteger la privacidad. Los grupos de huellas representan múltiples casos en la misma zona.
         </p>
       </div>
     </section>

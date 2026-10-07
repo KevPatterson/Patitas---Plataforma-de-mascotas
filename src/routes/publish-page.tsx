@@ -27,8 +27,10 @@ function LocationPicker({ onChange }: { onChange: (lat: string, lng: string) => 
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
-      const fuzzLat = lat + (Math.random() - 0.5) * 0.04;
-      const fuzzLng = lng + (Math.random() - 0.5) * 0.04;
+      // Difuminación de ±0.0005° (aproximadamente ±50 metros)
+      const fuzzLat = lat + (Math.random() - 0.5) * 0.001;
+      const fuzzLng = lng + (Math.random() - 0.5) * 0.001;
+      console.log('📍 Ubicación seleccionada:', { original: { lat, lng }, difuminada: { fuzzLat, fuzzLng } });
       onChange(fuzzLat.toFixed(6), fuzzLng.toFixed(6));
     },
   });
@@ -68,6 +70,8 @@ export function PublishPage() {
     eventDate: '',
     eventTimeApprox: '',
   });
+  const [addressSearch, setAddressSearch] = useState('');
+  const [geocoding, setGeocoding] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successSlug, setSuccessSlug] = useState<string | null>(null);
@@ -172,6 +176,71 @@ export function PublishPage() {
     setErrorMessage(null);
   };
 
+  const handleGeocode = async () => {
+    if (!addressSearch.trim()) {
+      setErrorMessage('Escribe una dirección para buscar');
+      return;
+    }
+
+    setGeocoding(true);
+    setErrorMessage(null);
+
+    try {
+      // Construir consulta con contexto de Cuba
+      const searchParts = [addressSearch];
+      if (values.municipality) searchParts.push(values.municipality);
+      if (values.province) searchParts.push(values.province);
+      searchParts.push('Cuba');
+      
+      const query = searchParts.join(', ');
+      console.log('🔍 Geocodificando:', query);
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=cu`,
+        {
+          headers: {
+            'User-Agent': 'Patitas App'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Error al buscar la dirección');
+      }
+
+      const data = await response.json();
+      
+      if (data.length === 0) {
+        setErrorMessage('No se encontró la dirección. Intenta ser más específico o usa el mapa directamente.');
+        return;
+      }
+
+      const location = data[0];
+      const lat = parseFloat(location.lat);
+      const lng = parseFloat(location.lon);
+
+      // Aplicar difuminación de ±50m (±0.0005°)
+      const fuzzLat = lat + (Math.random() - 0.5) * 0.001;
+      const fuzzLng = lng + (Math.random() - 0.5) * 0.001;
+
+      console.log('✅ Ubicación encontrada:', { 
+        address: location.display_name,
+        original: { lat, lng },
+        difuminada: { fuzzLat, fuzzLng }
+      });
+
+      updateValue('approximateLat', fuzzLat.toFixed(6));
+      updateValue('approximateLng', fuzzLng.toFixed(6));
+      setAddressSearch('');
+      
+    } catch (error) {
+      console.error('❌ Error en geocodificación:', error);
+      setErrorMessage('No se pudo encontrar la dirección. Intenta con el mapa.');
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
   const validateStep = (currentStep: number): string | null => {
     if (currentStep === 1) {
       if (!values.title || values.title.trim().length < 3) {
@@ -198,9 +267,10 @@ export function PublishPage() {
       if (!values.municipality || values.municipality.trim().length < 2) {
         return 'Debes seleccionar un municipio.';
       }
-      if (!values.approximateLat || !values.approximateLng) {
-        return 'Debes hacer clic en el mapa para marcar la ubicación aproximada.';
-      }
+      // Las coordenadas ahora son opcionales - se pueden agregar por mapa o por dirección
+      // if (!values.approximateLat || !values.approximateLng) {
+      //   return 'Debes hacer clic en el mapa para marcar la ubicación aproximada.';
+      // }
     }
     
     if (currentStep === 5) {
@@ -245,6 +315,14 @@ export function PublishPage() {
       const parsed = publicationFormSchema.parse(values);
       const slug = buildPublicationSlug(parsed.title);
 
+      console.log('📝 Datos del formulario parseados:', {
+        province: parsed.province,
+        municipality: parsed.municipality,
+        zone: parsed.zone,
+        approximateLat: parsed.approximateLat,
+        approximateLng: parsed.approximateLng,
+      });
+
       const locationId = await createLocation({
         province: parsed.province,
         municipality: parsed.municipality,
@@ -252,6 +330,8 @@ export function PublishPage() {
         approximateLat: parsed.approximateLat,
         approximateLng: parsed.approximateLng,
       });
+
+      console.log('✅ Location creada con ID:', locationId);
 
       const petId = await createPet({
         ownerProfileId: user?.id ?? '',
@@ -573,25 +653,70 @@ export function PublishPage() {
 
               <fieldset className="space-y-4">
                 <div className="bg-turquoise/10 border-2 border-turquoise/30 rounded-2xl p-4">
-                  <legend className="text-base font-bold text-navy mb-2">📍 Ubicación aproximada (REQUERIDO)</legend>
-                  <p className="text-sm text-navy/70 mb-3">
-                    Haz clic en el mapa para marcar dónde ocurrió el evento. Esta ubicación ayuda a encontrar casos cercanos.
+                  <legend className="text-base font-bold text-navy mb-2">📍 Ubicación aproximada</legend>
+                  <p className="text-sm text-navy/70 mb-4">
+                    Puedes marcar la ubicación de dos formas: escribiendo la dirección o haciendo clic en el mapa.
                   </p>
+
+                  {/* Campo de búsqueda de dirección */}
+                  <div className="mb-4 p-4 bg-white rounded-xl border-2 border-navy/10">
+                    <label className="block text-sm font-semibold text-navy mb-2">
+                      🔍 Buscar por dirección
+                    </label>
+                    <p className="text-xs text-navy/60 mb-3">
+                      Escribe la calle, avenida o lugar específico. Ejemplo: "Calle 23 y 12, Vedado"
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={addressSearch}
+                        onChange={(e) => setAddressSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleGeocode();
+                          }
+                        }}
+                        placeholder="Ej: Malecón, esquina Prado"
+                        className="flex-1 h-11 rounded-xl border-2 border-navy/10 bg-white px-4 text-sm font-medium text-navy shadow-sm outline-none transition hover:border-navy/20 focus:border-orange focus:ring-4 focus:ring-orange/20"
+                        disabled={geocoding}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleGeocode}
+                        disabled={geocoding || !addressSearch.trim()}
+                        variant="secondary"
+                        className="shrink-0"
+                      >
+                        {geocoding ? 'Buscando...' : 'Buscar'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-navy/20"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-turquoise/10 px-2 text-navy/60">O usa el mapa</span>
+                    </div>
+                  </div>
+
                   {!values.approximateLat && !values.approximateLng && (
-                    <div className="bg-orange/10 border-2 border-orange/30 rounded-xl px-4 py-3 flex items-start gap-3">
+                    <div className="mt-4 bg-orange/10 border-2 border-orange/30 rounded-xl px-4 py-3 flex items-start gap-3">
                       <span className="text-2xl shrink-0">👆</span>
                       <div>
-                        <p className="text-sm font-semibold text-orange">¡Haz clic en el mapa!</p>
-                        <p className="text-xs text-orange/80">Debes marcar la ubicación para continuar</p>
+                        <p className="text-sm font-semibold text-orange">Busca la dirección o haz clic en el mapa</p>
+                        <p className="text-xs text-orange/80">La ubicación ayuda a otros a encontrar el caso</p>
                       </div>
                     </div>
                   )}
                   {values.approximateLat && values.approximateLng && (
-                    <div className="bg-turquoise/10 border-2 border-turquoise/30 rounded-xl px-4 py-3 flex items-start gap-3">
+                    <div className="mt-4 bg-turquoise/10 border-2 border-turquoise/30 rounded-xl px-4 py-3 flex items-start gap-3">
                       <span className="text-2xl shrink-0">✅</span>
                       <div>
                         <p className="text-sm font-semibold text-turquoise">Ubicación marcada</p>
-                        <p className="text-xs text-turquoise/80">Puedes hacer clic de nuevo para ajustar</p>
+                        <p className="text-xs text-turquoise/80">Puedes buscar de nuevo o hacer clic en el mapa para ajustar</p>
                       </div>
                     </div>
                   )}
@@ -607,7 +732,7 @@ export function PublishPage() {
                       onChange={(lat, lng) => {
                         updateValue('approximateLat', lat);
                         updateValue('approximateLng', lng);
-                        setErrorMessage(null); // Limpiar error cuando se selecciona ubicación
+                        setErrorMessage(null);
                       }}
                     />
                   </MapContainer>
@@ -616,14 +741,14 @@ export function PublishPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <TextField
                     label="Latitud aprox."
-                    placeholder="Haz clic en el mapa"
+                    placeholder="Usa el buscador o el mapa"
                     value={values.approximateLat ?? ''}
                     onChange={(event) => updateValue('approximateLat', event.target.value)}
                     readOnly
                   />
                   <TextField
                     label="Longitud aprox."
-                    placeholder="Haz clic en el mapa"
+                    placeholder="Usa el buscador o el mapa"
                     value={values.approximateLng ?? ''}
                     onChange={(event) => updateValue('approximateLng', event.target.value)}
                     readOnly
@@ -634,7 +759,7 @@ export function PublishPage() {
                   <p className="text-xs text-navy/70 flex items-start gap-2">
                     <span className="text-base">🔒</span>
                     <span>
-                      <strong>Privacidad:</strong> Las coordenadas se difuminan automáticamente ±0.02° (aprox. 2 km) 
+                      <strong>Privacidad:</strong> Las coordenadas se difuminan automáticamente ±50 metros 
                       para proteger tu ubicación exacta. Solo se muestra una zona aproximada.
                     </span>
                   </p>

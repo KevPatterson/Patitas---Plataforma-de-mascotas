@@ -20,13 +20,13 @@ type PublicationRow = {
   event_date?: string | null;
   event_time_approx?: string | null;
   owner_profile_id?: string;
-  location: Array<{
+  location: {
     province: string;
     municipality: string;
     zone: string | null;
     approximate_lat: number | null;
     approximate_lng: number | null;
-  }>;
+  } | null;
   publication_images: Array<{
     storage_path: string;
     is_cover: boolean;
@@ -73,6 +73,16 @@ type SearchFilters = {
 function mapPublication(row: PublicationRow): PublicationSummary {
   const cover = row.publication_images.find((image) => image.is_cover) ?? row.publication_images[0] ?? null;
 
+  // Debug: log para verificar las coordenadas
+  if (!row.location?.approximate_lat || !row.location?.approximate_lng) {
+    console.warn('⚠️ Publicación sin coordenadas:', {
+      title: row.title,
+      hasLocation: !!row.location,
+      lat: row.location?.approximate_lat,
+      lng: row.location?.approximate_lng
+    });
+  }
+
   return {
     id: row.id,
     slug: row.slug,
@@ -86,11 +96,11 @@ function mapPublication(row: PublicationRow): PublicationSummary {
     sex: row.sex,
     size: row.size,
     publishedAt: row.published_at,
-    province: row.location[0]?.province ?? null,
-    municipality: row.location[0]?.municipality ?? null,
-    zone: row.location[0]?.zone ?? null,
-    approximateLat: row.location[0]?.approximate_lat ?? null,
-    approximateLng: row.location[0]?.approximate_lng ?? null,
+    province: row.location?.province ?? null,
+    municipality: row.location?.municipality ?? null,
+    zone: row.location?.zone ?? null,
+    approximateLat: row.location?.approximate_lat ?? null,
+    approximateLng: row.location?.approximate_lng ?? null,
     coverImageUrl: cover ? supabase.storage.from('pet-images').getPublicUrl(cover.storage_path).data.publicUrl : null,
   };
 }
@@ -157,11 +167,11 @@ export async function searchPublications(filters: SearchFilters) {
               sex: fts.sex,
               size: fts.size,
               publishedAt: fts.published_at,
-              province: withImg?.location?.[0]?.province ?? null,
-              municipality: withImg?.location?.[0]?.municipality ?? null,
-              zone: withImg?.location?.[0]?.zone ?? null,
-              approximateLat: withImg?.location?.[0]?.approximate_lat ?? null,
-              approximateLng: withImg?.location?.[0]?.approximate_lng ?? null,
+              province: withImg?.location?.province ?? null,
+              municipality: withImg?.location?.municipality ?? null,
+              zone: withImg?.location?.zone ?? null,
+              approximateLat: withImg?.location?.approximate_lat ?? null,
+              approximateLng: withImg?.location?.approximate_lng ?? null,
               coverImageUrl: cover ? supabase.storage.from('pet-images').getPublicUrl(cover.storage_path).data.publicUrl : null,
             };
           });
@@ -239,7 +249,13 @@ export async function searchPublications(filters: SearchFilters) {
     throw error;
   }
 
-  return (data as PublicationRow[]).map(mapPublication);
+  const mapped = (data as PublicationRow[]).map(mapPublication);
+  
+  // Debug: verificar cuántas tienen coordenadas
+  const withCoords = mapped.filter(p => p.approximateLat !== null && p.approximateLng !== null);
+  console.log(`📊 searchPublications: ${mapped.length} total, ${withCoords.length} con coordenadas`);
+
+  return mapped;
 }
 
 export async function countPublications(filters: SearchFilters): Promise<number> {
