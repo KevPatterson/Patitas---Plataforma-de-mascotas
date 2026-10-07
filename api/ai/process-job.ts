@@ -1,16 +1,16 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { supabaseAdmin } from '../_lib/supabase-admin';
+import { getAIProvider } from '../_lib/ai-provider';
 
 /**
- * Endpoint interno para procesar un job de IA específico
+ * Endpoint para procesar un job de IA específico
  * POST /api/ai/process-job
  * 
  * Body: {
  *   jobId: string;
  * }
  * 
- * Este endpoint es llamado internamente para procesar jobs pendientes.
- * En producción real, esto debería ser un worker asíncrono (cron, queue, etc.)
+ * Este endpoint es llamado por un worker/cron para procesar jobs pendientes
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store');
@@ -19,11 +19,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Verificar autorización (internal secret)
+  // Verificar autorización (solo llamadas internas o con API key)
   const authHeader = req.headers.authorization;
-  const internalSecret = process.env.INTERNAL_API_SECRET;
+  const apiKey = process.env.INTERNAL_API_KEY;
 
-  if (internalSecret && authHeader !== `Bearer ${internalSecret}`) {
+  if (!apiKey || authHeader !== `Bearer ${apiKey}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -50,23 +50,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(404).json({ error: 'Job not found' });
   }
 
-  // Verificar que el job esté en estado procesable
+  // Verificar que el job esté pendiente o en estado de reintento
   if (job.status !== 'PENDING' && job.status !== 'FAILED') {
-    return res.status(400).json({ error: `Job is in ${job.status} state, cannot process` });
-  }
-
-  // Verificar max retries
-  if (job.retry_count >= job.max_retries) {
-    await supabaseAdmin
-      .from('ai_processing_jobs')
-      .update({
-        status: 'FAILED',
-        error_message: 'Max retries exceeded',
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', payload.jobId);
-
-    return res.status(400).json({ error: 'Max retries exceeded' });
+    return res.status(400).json({ error: `Job status is ${job.status}, cannot process` });
   }
 
   // Actualizar estado a PROCESSING
@@ -77,400 +63,390 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .update({
       status: 'PROCESSING',
       started_at: new Date().toISOString(),
-      retry_count: job.retry_count + 1,
     })
-    .eq('id', payload.jobId);
+    .eq('id', job.id);
 
   try {
     // Procesar según el tipo de job
-    await processJobByType(job);
+    let result;
 
-    // Actualizar estado a COMPLETED
+    switch (job.job_type) {
+      case 'ocr':
+        result = await processOCRJob(job.publication_id);
+        break;
+      case 'vision':
+        result = await processVisionJob(job.publication_id);
+        break;
+      case 'embedding_text':
+        result = await processTextEmbeddingJob(job.publication_id);
+        break;
+      case 'embedding_image':
+        result = await processImageEmbeddingJob(job.publication_id);
+        break;
+      case 'moderation':
+        result = await processModerationJob(job.publication_id);
+        break;
+      case 'extraction':
+        result = await processExtractionJob(job.publication_id);
+        break;
+      default:
+        throw new Error(`Unknown job type: ${job.job_type}`);
+    }
+
     const processingTime = Date.now() - startTime;
 
+    // Actualizar job como completado
     await supabaseAdmin
       .from('ai_processing_jobs')
       .update({
         status: 'COMPLETED',
         completed_at: new Date().toISOString(),
         processing_time_ms: processingTime,
-        error_message: null,
+        metadata: { ...job.metadata, result },
       })
-      .eq('id', payload.jobId);
+      .eq('id', job.id);
 
     return res.status(200).json({
       ok: true,
-      message: 'Job processed successfully',
+      jobId: job.id,
+      status: 'COMPLETED',
       processingTime,
+      result,
     });
   } catch (error) {
-    console.error(`Error processing job ${payload.jobId}:`, error);
+    const processingTime = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // Actualizar estado a FAILED
+    console.error(`Job ${job.id} failed:`, errorMessage);
+
+    // Verificar si debe reintentar
+    const shouldRetry = job.retry_count < job.max_retries;
+    const newStatus = shouldRetry ? 'PENDING' : 'FAILED';
+
     await supabaseAdmin
       .from('ai_processing_jobs')
       .update({
-        status: 'FAILED',
-        completed_at: new Date().toISOString(),
-        error_message: error instanceof Error ? error.message : 'Unknown error',
+        status: newStatus,
+        retry_count: job.retry_count + 1,
+        error_message: errorMessage,
+        processing_time_ms: processingTime,
+        completed_at: shouldRetry ? null : new Date().toISOString(),
       })
-      .eq('id', payload.jobId);
+      .eq('id', job.id);
 
     return res.status(500).json({
       ok: false,
-      error: 'Job processing failed',
-      details: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
+      jobId: job.id,
+      willRetry: shouldRetry,
+      retryCount: job.retry_count + 1,
     });
   }
 }
 
 /**
- * Procesar job según su tipo
+ * Procesar OCR en imágenes de la publicación
  */
-async function processJobByType(job: {
-  id: string;
-  publication_id: string;
-  job_type: string;
-  provider: string | null;
-  model: string | null;
-}): Promise<void> {
-  switch (job.job_type) {
-    case 'embedding_text':
-      await processTextEmbedding(job);
-      break;
+async function processOCRJob(publicationId: string) {
+  const provider = getAIProvider();
 
-    case 'embedding_image':
-      await processImageEmbedding(job);
-      break;
+  // Obtener imágenes de la publicación
+  const { data: images, error: imgError } = await supabaseAdmin
+    .from('publication_images')
+    .select('id, storage_path')
+    .eq('publication_id', publicationId)
+    .limit(5); // Máximo 5 imágenes por publicación
 
-    case 'ocr':
-      await processOCR(job);
-      break;
-
-    case 'vision':
-      await processVision(job);
-      break;
-
-    case 'moderation':
-      await processModeration(job);
-      break;
-
-    case 'extraction':
-      await processExtraction(job);
-      break;
-
-    default:
-      throw new Error(`Unknown job type: ${job.job_type}`);
+  if (imgError || !images || images.length === 0) {
+    throw new Error('No images found for publication');
   }
+
+  const results = [];
+
+  for (const image of images) {
+    const imageUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/pet-images/${image.storage_path}`;
+
+    try {
+      const ocrResult = await provider.extractTextFromImage(imageUrl);
+
+      // Guardar resultado en la base de datos
+      const { error: insertError } = await supabaseAdmin
+        .from('ai_ocr_results')
+        .insert({
+          publication_image_id: image.id,
+          provider: process.env.AI_PROVIDER || 'MOCK',
+          model: 'llava-1.5-7b-hf',
+          extracted_text: ocrResult.text,
+          confidence: ocrResult.confidence,
+          language: ocrResult.language,
+          bounding_boxes: ocrResult.boundingBoxes || null,
+        });
+
+      if (insertError) {
+        console.error('Error saving OCR result:', insertError);
+      }
+
+      results.push({
+        imageId: image.id,
+        text: ocrResult.text,
+        confidence: ocrResult.confidence,
+      });
+    } catch (error) {
+      console.error(`OCR failed for image ${image.id}:`, error);
+      results.push({
+        imageId: image.id,
+        error: error instanceof Error ? error.message : 'OCR failed',
+      });
+    }
+  }
+
+  return { imagesProcessed: images.length, results };
 }
 
 /**
- * Procesar embedding de texto
+ * Procesar Computer Vision en imágenes
  */
-async function processTextEmbedding(job: {
-  id: string;
-  publication_id: string;
-}): Promise<void> {
-  // Obtener la publicación
-  const { data: publication } = await supabaseAdmin
+async function processVisionJob(publicationId: string) {
+  const provider = getAIProvider();
+
+  const { data: images, error: imgError } = await supabaseAdmin
+    .from('publication_images')
+    .select('id, storage_path')
+    .eq('publication_id', publicationId)
+    .limit(5);
+
+  if (imgError || !images || images.length === 0) {
+    throw new Error('No images found for publication');
+  }
+
+  const results = [];
+
+  for (const image of images) {
+    const imageUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/pet-images/${image.storage_path}`;
+
+    try {
+      const visionResult = await provider.analyzeImage(imageUrl);
+
+      // Crear registro de vision result
+      const { data: visionRecord, error: visionError } = await supabaseAdmin
+        .from('ai_vision_results')
+        .insert({
+          publication_image_id: image.id,
+          provider: process.env.AI_PROVIDER || 'MOCK',
+          model: 'llava-1.5-7b-hf',
+          metadata: {
+            description: visionResult.description,
+            objects: visionResult.objects,
+          },
+        })
+        .select('id')
+        .single();
+
+      if (visionError) {
+        throw visionError;
+      }
+
+      // Guardar atributos extraídos
+      const attributes = visionResult.labels.map((label) => ({
+        vision_result_id: visionRecord.id,
+        publication_id: publicationId,
+        attribute_key: label.label,
+        attribute_value: label.label,
+        confidence: label.confidence,
+        source: 'vision',
+      }));
+
+      if (attributes.length > 0) {
+        await supabaseAdmin.from('ai_extracted_attributes').insert(attributes);
+      }
+
+      results.push({
+        imageId: image.id,
+        labels: visionResult.labels,
+        description: visionResult.description,
+      });
+    } catch (error) {
+      console.error(`Vision failed for image ${image.id}:`, error);
+      results.push({
+        imageId: image.id,
+        error: error instanceof Error ? error.message : 'Vision failed',
+      });
+    }
+  }
+
+  return { imagesProcessed: images.length, results };
+}
+
+/**
+ * Generar embedding de texto
+ */
+async function processTextEmbeddingJob(publicationId: string) {
+  const provider = getAIProvider();
+
+  // Obtener publicación
+  const { data: publication, error: pubError } = await supabaseAdmin
     .from('publications')
-    .select('title, description, species, breed, color, characteristics')
-    .eq('id', job.publication_id)
+    .select('id, title, description, species, breed, color, characteristics')
+    .eq('id', publicationId)
     .single();
 
-  if (!publication) {
+  if (pubError || !publication) {
     throw new Error('Publication not found');
   }
 
   // Combinar texto relevante
-  const textParts: string[] = [
-    publication.title || '',
-    publication.description || '',
-    publication.species || '',
-    publication.breed || '',
-    publication.color || '',
-    publication.characteristics || '',
+  const textParts = [
+    publication.title,
+    publication.description,
+    publication.species,
+    publication.breed,
+    publication.color,
+    publication.characteristics,
   ].filter(Boolean);
 
   const combinedText = textParts.join(' ');
 
-  // Mock: Generar embedding (en producción, usar proveedor real)
-  const embedding = generateMockEmbedding(combinedText, 1536);
+  const embeddingResult = await provider.generateTextEmbedding(combinedText);
 
   // Guardar embedding
-  await supabaseAdmin.from('ai_text_embeddings').upsert({
-    publication_id: job.publication_id,
-    job_id: job.id,
-    provider: 'CUSTOM',
-    model: 'mock-embedding-v1',
-    model_version: '1.0',
-    embedding_dimension: 1536,
-    embedding_data: embedding,
-    text_source: 'combined',
-  });
+  await supabaseAdmin
+    .from('ai_text_embeddings')
+    .upsert({
+      publication_id: publicationId,
+      provider: process.env.AI_PROVIDER || 'MOCK',
+      model: 'bge-base-en-v1.5',
+      embedding_dimension: embeddingResult.dimension,
+      embedding: embeddingResult.embedding,
+      embedding_data: embeddingResult.embedding, // Fallback JSON
+      text_source: 'combined',
+    });
+
+  return {
+    dimension: embeddingResult.dimension,
+    textLength: combinedText.length,
+  };
 }
 
 /**
- * Procesar embedding de imagen
+ * Generar embedding de imagen
  */
-async function processImageEmbedding(job: {
-  id: string;
-  publication_id: string;
-}): Promise<void> {
-  // Obtener imágenes de la publicación
-  const { data: images } = await supabaseAdmin
+async function processImageEmbeddingJob(publicationId: string) {
+  const provider = getAIProvider();
+
+  const { data: images, error: imgError } = await supabaseAdmin
     .from('publication_images')
     .select('id, storage_path')
-    .eq('publication_id', job.publication_id)
-    .limit(5);
+    .eq('publication_id', publicationId)
+    .eq('is_cover', true)
+    .maybeSingle();
 
-  if (!images || images.length === 0) {
-    throw new Error('No images found for publication');
-  }
+  if (imgError || !images) {
+    // Si no hay cover, tomar la primera
+    const { data: firstImage } = await supabaseAdmin
+      .from('publication_images')
+      .select('id, storage_path')
+      .eq('publication_id', publicationId)
+      .limit(1)
+      .single();
 
-  // Procesar cada imagen
-  for (const image of images) {
-    // Mock: Generar embedding (en producción, usar proveedor real)
-    const embedding = generateMockEmbedding(image.storage_path, 512);
-
-    // Calcular hash de imagen (en producción, usar hash real)
-    const imageHash = Buffer.from(image.storage_path).toString('base64').slice(0, 32);
-
-    await supabaseAdmin.from('ai_image_embeddings').upsert({
-      publication_image_id: image.id,
-      job_id: job.id,
-      provider: 'CUSTOM',
-      model: 'mock-image-embedding-v1',
-      model_version: '1.0',
-      embedding_dimension: 512,
-      embedding_data: embedding,
-      image_hash: imageHash,
-    });
-  }
-}
-
-/**
- * Procesar OCR
- */
-async function processOCR(job: {
-  id: string;
-  publication_id: string;
-}): Promise<void> {
-  // Obtener imágenes de la publicación
-  const { data: images } = await supabaseAdmin
-    .from('publication_images')
-    .select('id, storage_path')
-    .eq('publication_id', job.publication_id)
-    .limit(5);
-
-  if (!images || images.length === 0) {
-    return; // No hay imágenes, no es un error
-  }
-
-  // Mock: Extraer texto de imágenes
-  for (const image of images) {
-    // Simulación: 40% de las imágenes tienen texto
-    const seed = image.storage_path.length;
-    const hasText = seed % 10 < 4;
-
-    if (!hasText) continue;
-
-    const sampleTexts = [
-      'PERDIDO - Llamar al 5555-1234',
-      'RECOMPENSA',
-      'Contacto: 5243-5678',
-      'Se perdió en La Habana',
-      'URGENTE',
-    ];
-
-    const text = sampleTexts[seed % sampleTexts.length];
-
-    await supabaseAdmin.from('ai_ocr_results').insert({
-      publication_image_id: image.id,
-      job_id: job.id,
-      provider: 'CUSTOM',
-      model: 'mock-ocr-v1',
-      extracted_text: text,
-      confidence: 0.85,
-      language: 'es',
-      metadata: {},
-    });
-
-    // Extraer atributos del texto
-    const phoneMatch = text.match(/(\d{4})-(\d{4})/);
-    if (phoneMatch) {
-      await supabaseAdmin.from('ai_extracted_attributes').insert({
-        publication_id: job.publication_id,
-        attribute_key: 'phone',
-        attribute_value: phoneMatch[0],
-        confidence: 0.9,
-        source: 'ocr',
-        metadata: {},
-      });
+    if (!firstImage) {
+      throw new Error('No images found');
     }
+
+    const imageUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/pet-images/${firstImage.storage_path}`;
+    const embeddingResult = await provider.generateImageEmbedding(imageUrl);
+
+    await supabaseAdmin
+      .from('ai_image_embeddings')
+      .upsert({
+        publication_image_id: firstImage.id,
+        provider: process.env.AI_PROVIDER || 'MOCK',
+        model: 'resnet-50',
+        embedding_dimension: embeddingResult.dimension,
+        embedding: embeddingResult.embedding,
+        embedding_data: embeddingResult.embedding,
+      });
+
+    return { dimension: embeddingResult.dimension };
   }
+
+  const imageUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/pet-images/${images.storage_path}`;
+  const embeddingResult = await provider.generateImageEmbedding(imageUrl);
+
+  await supabaseAdmin
+    .from('ai_image_embeddings')
+    .upsert({
+      publication_image_id: images.id,
+      provider: process.env.AI_PROVIDER || 'MOCK',
+      model: 'resnet-50',
+      embedding_dimension: embeddingResult.dimension,
+      embedding: embeddingResult.embedding,
+      embedding_data: embeddingResult.embedding,
+    });
+
+  return { dimension: embeddingResult.dimension };
 }
 
 /**
- * Procesar Vision (análisis de imágenes)
+ * Moderar contenido
  */
-async function processVision(job: {
-  id: string;
-  publication_id: string;
-}): Promise<void> {
-  // Obtener imágenes de la publicación
-  const { data: images } = await supabaseAdmin
-    .from('publication_images')
-    .select('id, storage_path')
-    .eq('publication_id', job.publication_id)
-    .limit(5);
+async function processModerationJob(publicationId: string) {
+  const provider = getAIProvider();
 
-  if (!images || images.length === 0) {
-    return;
+  const { data: publication, error: pubError } = await supabaseAdmin
+    .from('publications')
+    .select('id, title, description')
+    .eq('id', publicationId)
+    .single();
+
+  if (pubError || !publication) {
+    throw new Error('Publication not found');
   }
 
-  // Procesar primera imagen (cover)
-  const image = images[0];
-  const seed = image.storage_path.length;
+  const textToModerate = `${publication.title} ${publication.description}`;
+  const moderationResult = await provider.moderateContent(textToModerate);
 
-  // Crear resultado de vision
-  const { data: visionResult } = await supabaseAdmin
-    .from('ai_vision_results')
+  // Guardar resultado
+  await supabaseAdmin
+    .from('ai_moderation_results')
     .insert({
-      publication_image_id: image.id,
-      job_id: job.id,
-      provider: 'CUSTOM',
-      model: 'mock-vision-v1',
-      model_version: '1.0',
-      metadata: {},
-    })
-    .select('id')
-    .single();
+      publication_id: publicationId,
+      provider: process.env.AI_PROVIDER || 'MOCK',
+      model: 'llama-3-8b-instruct',
+      classification: moderationResult.classification,
+      confidence: moderationResult.confidence,
+      reason: moderationResult.reason,
+      requires_human_review: moderationResult.confidence < 0.85 || moderationResult.classification !== 'SAFE',
+      metadata: { categories: moderationResult.categories },
+    });
 
-  if (!visionResult) return;
-
-  // Extraer atributos simulados
-  const species = seed % 2 === 0 ? 'dog' : 'cat';
-  const colors = ['negro', 'blanco', 'marrón', 'gris', 'naranja'];
-  const sizes = ['SMALL', 'MEDIUM', 'LARGE'];
-
-  const attributes = [
-    {
-      vision_result_id: visionResult.id,
-      publication_id: job.publication_id,
-      attribute_key: 'species',
-      attribute_value: species,
-      confidence: 0.9,
-      source: 'vision' as const,
-      metadata: {},
-    },
-    {
-      vision_result_id: visionResult.id,
-      publication_id: job.publication_id,
-      attribute_key: 'color',
-      attribute_value: colors[seed % colors.length],
-      confidence: 0.85,
-      source: 'vision' as const,
-      metadata: {},
-    },
-    {
-      vision_result_id: visionResult.id,
-      publication_id: job.publication_id,
-      attribute_key: 'size',
-      attribute_value: sizes[seed % sizes.length],
-      confidence: 0.75,
-      source: 'vision' as const,
-      metadata: {},
-    },
-  ];
-
-  await supabaseAdmin.from('ai_extracted_attributes').insert(attributes);
+  return {
+    classification: moderationResult.classification,
+    confidence: moderationResult.confidence,
+    requiresReview: moderationResult.confidence < 0.85,
+  };
 }
 
 /**
- * Procesar moderación
+ * Extraer atributos estructurados (combinando OCR + Vision)
  */
-async function processModeration(job: {
-  id: string;
-  publication_id: string;
-}): Promise<void> {
-  // Obtener la publicación
-  const { data: publication } = await supabaseAdmin
-    .from('publications')
-    .select('title, description')
-    .eq('id', job.publication_id)
-    .single();
+async function processExtractionJob(publicationId: string) {
+  // Este job combina resultados de OCR y Vision para extraer atributos estructurados
+  const { data: ocrResults } = await supabaseAdmin
+    .from('ai_ocr_results')
+    .select('extracted_text')
+    .eq('publication_image_id', publicationId);
 
-  if (!publication) {
-    throw new Error('Publication not found');
-  }
+  const { data: visionResults } = await supabaseAdmin
+    .from('ai_vision_results')
+    .select('metadata')
+    .eq('publication_image_id', publicationId);
 
-  const text = `${publication.title} ${publication.description}`.toLowerCase();
+  // Aquí se implementaría la lógica para extraer atributos estructurados
+  // Por ejemplo: detectar teléfonos, fechas, ubicaciones, etc.
 
-  // Mock: Moderación básica
-  const spamKeywords = ['viagra', 'casino', 'click aquí', 'gana dinero'];
-  const hasSpam = spamKeywords.some((kw) => text.includes(kw));
-
-  const classification = hasSpam ? 'SPAM' : 'SAFE';
-  const confidence = hasSpam ? 0.95 : 0.98;
-
-  await supabaseAdmin.from('ai_moderation_results').insert({
-    publication_id: job.publication_id,
-    job_id: job.id,
-    provider: 'CUSTOM',
-    model: 'mock-moderation-v1',
-    classification,
-    confidence,
-    reason: hasSpam ? 'Contiene palabras clave de spam' : null,
-    requires_human_review: hasSpam,
-    metadata: {},
-  });
-}
-
-/**
- * Procesar extracción estructurada
- */
-async function processExtraction(job: {
-  id: string;
-  publication_id: string;
-}): Promise<void> {
-  // Obtener la publicación y OCR results
-  const { data: publication } = await supabaseAdmin
-    .from('publications')
-    .select('title, description')
-    .eq('id', job.publication_id)
-    .single();
-
-  if (!publication) {
-    throw new Error('Publication not found');
-  }
-
-  const text = `${publication.title} ${publication.description}`.toLowerCase();
-
-  // Extraer información estructurada
-  const petNames = ['toby', 'max', 'luna', 'coco', 'rocky', 'bella'];
-  for (const name of petNames) {
-    if (text.includes(name)) {
-      await supabaseAdmin.from('ai_extracted_attributes').insert({
-        publication_id: job.publication_id,
-        attribute_key: 'pet_name',
-        attribute_value: name.charAt(0).toUpperCase() + name.slice(1),
-        confidence: 0.8,
-        source: 'hybrid',
-        metadata: {},
-      });
-      break;
-    }
-  }
-}
-
-/**
- * Generar embedding mock determinista
- */
-function generateMockEmbedding(text: string, dimension: number): number[] {
-  const seed = text.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return Array.from({ length: dimension }, (_, i) => {
-    const x = Math.sin(seed + i * 0.1) * 10000;
-    return (x - Math.floor(x)) * 2 - 1; // Normalizar a [-1, 1]
-  });
+  return {
+    ocrCount: ocrResults?.length || 0,
+    visionCount: visionResults?.length || 0,
+  };
 }
